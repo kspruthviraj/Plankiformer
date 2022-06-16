@@ -200,26 +200,26 @@ class import_and_train_model:
         self.import_deit_models(data_loader, class_main)
         if class_main.params.finetune == 0:
             self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, 'original')
-            self.run_prediction(self, class_main, data_loader, 'original')
+            self.run_prediction(class_main, data_loader, 'original')
 
         elif class_main.params.finetune == 1:
             self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, 'original')
-            self.run_prediction(self, class_main, data_loader, 'original')
+            self.run_prediction(class_main, data_loader, 'original')
 
             self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr/10, 'tuned')
-            self.run_prediction(self, class_main, data_loader, 'tuned')
+            self.run_prediction(class_main, data_loader, 'tuned')
             self.finetuning(data_loader, class_main, class_main.params.lr/10)
 
         elif class_main.params.finetune == 2:
             self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, 'original')
-            self.run_prediction(self, class_main, 'original')
+            self.run_prediction(class_main, data_loader, 'original')
 
             self.run_training(class_main, class_main.params.finetune_epochs, class_main.params.lr/10, 'tuned')
-            self.run_prediction(self, class_main, data_loader, 'tuned')
+            self.run_prediction(class_main, data_loader, 'tuned')
             self.finetuning(data_loader, class_main, class_main.params.lr/10)
 
             self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr/100, 'finetuned')
-            self.run_prediction(self, class_main, data_loader, 'finetuned')
+            self.run_prediction(class_main, data_loader, 'finetuned')
             self.finetuning(data_loader, class_main, class_main.params.lr / 100)
         else:
             print('Choose the correct finetune label')
