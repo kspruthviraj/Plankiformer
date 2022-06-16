@@ -1,0 +1,212 @@
+#
+# Script to prepare the data
+#
+#
+
+###########
+# IMPORTS #
+###########
+
+import argparse
+import pathlib
+import sys
+from pathlib import Path
+
+import numpy as np
+
+from utils import for_plankton as fplankton
+from utils import model_training as mt
+from utils import prepare_train_test_data as pdata
+
+
+###############
+# TRAIN CLASS #
+###############
+
+def ArgsCheck(args):
+    """ Consistency checks for command line arguments """
+
+    if args.ttkind != 'image' and args.aug == True:
+        print('User asked for data augmentation, but we set it to False, because we only do it for `image` models')
+        args.aug = False
+
+    if args.ttkind == 'image':
+        args.compute_extrafeat = 'no'
+        print(
+            'User asked for computing extra features, but we set it to False, because we only do it for `mixed` '
+            'models')
+
+    return
+
+
+class LoadInputParameters:
+    def __init__(self, initMode='default', verbose=True):
+        self.fsummary = None
+        self.tt = None
+        self.verbose = verbose
+        self.params = None
+        self.paramsDict = None
+        self.data = None
+        self.trainSize = None
+        self.testSize = None
+        self.model = None
+        self.opt = None
+        self.SetParameters(mode=initMode)
+
+        return
+
+    def SetParameters(self, mode='default'):
+        """ default, from args"""
+        if mode == 'default':
+            self.ReadArgs(string=None)
+        elif mode == 'args':
+            self.ReadArgs(string=sys.argv[1:])
+        else:
+            print('Unknown parameter mode', mode)
+            raise NotImplementedError
+        return
+
+    def ReadArgs(self, string=None):
+        if string is None:
+            string = ""
+
+        parser = argparse.ArgumentParser(description='Create Dataset')
+
+        parser.add_argument('-datapaths', nargs='*',
+                            default=['./data/1_zooplankton_0p5x/training/zooplankton_trainingset_2020.04.28/'],
+                            help="Directories with the data.")
+        parser.add_argument('-trainpath', nargs='*',
+                            default=['./data/1_zooplankton_0p5x/training/zooplankton_trainingset_2020.04.28/'],
+                            help="Directories with the data.")
+        parser.add_argument('-testpath', nargs='*',
+                            default=['./data/1_zooplankton_0p5x/training/zooplankton_trainingset_2020.04.28/'],
+                            help="Directories with the data.")
+        parser.add_argument('-outpath', default='./out/', help="directory where you want the output saved")
+
+        parser.add_argument('-aug', action='store_true',
+                            help="Perform data augmentation. Augmentation parameters are hard-coded.")
+        # Data
+        parser.add_argument('-L', type=int, default=128, help="Images are resized to a square of LxL pixels")
+        parser.add_argument('-testSplit', type=float, default=0.2, help="Fraction of examples in the test set")
+        parser.add_argument('-class_select', nargs='*', default=None,
+                            help='List of classes to be looked at (put the class names '
+                                 'one by one, separated by spaces).'
+                                 ' If None, all available classes are studied.')
+        parser.add_argument('-classifier', choices=['binary', 'multi', 'versusall'], default='multi',
+                            help='Choose between "binary","multi","versusall" classifier')
+        parser.add_argument('-balance_weight', choices=['yes', 'no'], default='no',
+                            help='Choose "yes" or "no" for balancing class weights for imbalance classes')
+        parser.add_argument('-datakind', choices=['mixed', 'feat', 'image'], default=None,
+                            help="Which data to load: features, images, or both")
+        parser.add_argument('-ttkind', choices=['mixed', 'feat', 'image'], default=None,
+                            help="Which data to use in the test and training sets: features, images, or both")
+        parser.add_argument('-training_data', choices=['True', 'False'], default='True',
+                            help="This is to cope with the different directory structures")
+
+        # Preprocessing Images
+        parser.add_argument('-resize_images', type=int, default=1,
+                            help="Images are resized to a square of LxL pixels by keeping the initial image "
+                                 "proportions if resize=1. If resize=2, then the proportions are not kept but resized "
+                                 "to match the user defined dimension")
+
+        parser.add_argument('-save_data', choices=['yes', 'no'], default=None,
+                            help="Whether to save the data for later use or not")
+        parser.add_argument('-compute_extrafeat', choices=['yes', 'no'], default=None,
+                            help="Whether to compute extra features or not")
+        parser.add_argument('-valid_set', choices=['yes', 'no'], default='yes',
+                            help="Select to have validation set. Choose from Yes or No")
+        parser.add_argument('-test_set', choices=['yes', 'no'], default='yes',
+                            help="Select to have validation set. Choose from Yes or No")
+
+        # Choose dataset name
+        parser.add_argument('-dataset_name', choices=['zoolake', 'zooscan', 'whoi', 'kaggle',
+                                                      'eilat', 'rsmas', 'nabirds', 'dogs', 'beetle', 'wildtrap'],
+                            default='multi', help='Choose between different datasets "zoolake", "zooscan", "whoi", '
+                                                  '"kaggle", "eilat", "rsmas", "nabirds", "dogs", "beetle", "wildtrap"')
+
+        # For model training
+        parser.add_argument('-batch_size', type=int, default=16, help="Batch size for training")
+        parser.add_argument('-image_size', type=int, default=224, help="Image size for training the model")
+        parser.add_argument('-epochs', type=int, default=100, help="number of epochs for training the model")
+        parser.add_argument('-gpu_id', type=int, default=1, help="select the gpu id ")
+        parser.add_argument('-lr', type=float, default=1e-4, help="starting learning rate")
+        parser.add_argument('-warmup', type=int, default=10, help="starting learning rate")
+        parser.add_argument('-weight_decay', type=float, default=1e-4, help="weight decay")
+        parser.add_argument('-clip_grad_norm', type=float, default=0, help="clip gradient norm")
+        parser.add_argument('-disable_cos', choices=['yes', 'no'], default='yes',
+                            help="Disable cos. Choose from Yes or No")
+        parser.add_argument('-batch_size', type=int, default=16, help="Batch size for training")
+
+        # Superclass or not
+        parser.add_argument('-super_class', choices=['yes', 'no'], default='yes', )
+
+        args = parser.parse_args(string)
+
+        for i, elem in enumerate(args.datapaths):
+            args.datapaths[i] = elem + '/'
+
+        args.outpath = args.outpath + '/'
+        args.training_data = True if args.training_data == 'True' else False
+
+        ArgsCheck(args)
+        self.params = args
+
+        if self.verbose:
+            print(args)
+
+        return
+
+    def CreateOutDir(self):
+        """ Create a unique output directory, and put inside it a file with the simulation parameters """
+        pathlib.Path(self.params.outpath).mkdir(parents=True, exist_ok=True)
+        self.WriteParams()
+        MainModelPath = self.params.outpath
+        checkpoint_path = MainModelPath + 'WILD_trap_FROM_PAPER_VER02_04/'
+        Path(checkpoint_path).mkdir(parents=True, exist_ok=True)
+
+        return
+
+    def WriteParams(self):
+        """ Writes a txt file with the simulation parameters """
+        self.fsummary = open(self.params.outpath + '/params.txt', 'w')
+        print(self.params, file=self.fsummary)
+        self.fsummary.flush()
+
+        ''' Writes the same simulation parameters in binary '''
+        np.save(self.params.outpath + '/params.npy', self.params)
+        return
+
+    def UpdateParams(self, **kwargs):
+        """ Updates the parameters given in kwargs, and updates params.txt"""
+        self.paramsDict = vars(self.params)
+        if kwargs is not None:
+            for key, value in kwargs.items():
+                self.paramsDict[key] = value
+        self.CreateOutDir()
+        self.WriteParams()
+
+        return
+
+
+if __name__ == '__main__':
+    print('\nRunning', sys.argv[0], sys.argv[1:])
+
+    # Loading Input parameters
+    inp_params = LoadInputParameters(initMode='args')
+    inp_params.CreateOutDir()
+    print('Loaded input parameters')
+    #
+    print('Creating dataset using input parameters')
+    prep_data = pdata.CreateDataset()
+    prep_data.LoadData(inp_params)
+    prep_data.CreateTrainTestSets(inp_params)
+
+    # For Plankton
+    for_plankton = fplankton.CreateDataForPlankton()
+    for_plankton.make_train_test_for_model(inp_params)
+    for_plankton.create_data_loaders(inp_params)
+
+    # Model Training
+    model_training = mt.import_and_train_model()
+    # Run training
+    model_training.train_and_save(for_plankton, inp_params)
