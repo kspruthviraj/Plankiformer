@@ -35,7 +35,6 @@ def ArgsCheck(args):
         print(
             'User asked for computing extra features, but we set it to False, because we only do it for `mixed` '
             'models')
-
     return
 
 
@@ -135,7 +134,6 @@ class LoadInputParameters:
         parser.add_argument('-clip_grad_norm', type=float, default=0, help="clip gradient norm")
         parser.add_argument('-disable_cos', choices=['yes', 'no'], default='yes',
                             help="Disable cos. Choose from Yes or No")
-        parser.add_argument('-batch_size', type=int, default=16, help="Batch size for training")
 
         # Superclass or not
         parser.add_argument('-super_class', choices=['yes', 'no'], default='yes', )
