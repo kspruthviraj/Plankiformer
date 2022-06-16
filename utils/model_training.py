@@ -58,7 +58,17 @@ class import_and_train_model:
         self.lr_scheduler = LRScheduler(self.optimizer)
         self.early_stopping = EarlyStopping()
 
-    def run_training(self, class_main):
+    def finetuning(self, data_loader, class_main, lr):
+        device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        self.model.to(device)
+        self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
+        torch.cuda.set_device(class_main.params.gpu_id)
+        self.model.cuda(class_main.params.gpu_id)
+        self.criterion = self.criterion.cuda(class_main.params.gpu_id)
+        # Observe that all parameters are being optimized
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=class_main.params.weight_decay)
+
+    def run_training(self, class_main, epochs, lr, name):
 
         best_acc1, best_f1 = 0, 0
         train_losses, test_losses, train_accuracies, test_accuracies, train_f1s, test_f1s = [], [], [], [], [], []
@@ -67,8 +77,9 @@ class import_and_train_model:
         time_begin = time()
 
         for epoch in range(class_main.params.epochs):
-            print('EPOCH : {} / {}'.format(epoch + 1, class_main.params.epochs))
-            adjust_learning_rate(self.optimizer, epoch, class_main.params.lr, class_main.params.warmup,
+            print('EPOCH : {} / {}'.format(epoch + 1, epochs))
+
+            adjust_learning_rate(self.optimizer, epoch, lr, class_main.params.warmup,
                                  class_main.params.disable_cos,
                                  class_main.params.epochs)
             train_acc1, train_loss, train_outputs, train_targets = cls_train(self.train_dataloader, self.model,
@@ -90,7 +101,7 @@ class import_and_train_model:
             if test_f1 > best_f1:
                 torch.save({'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict()},
-                           self.checkpoint_path + '/trained_model.pth')
+                           self.checkpoint_path + '/trained_model_' + name + '.pth')
             best_f1 = max(test_f1, best_f1)
 
             train_losses.append(train_loss)
@@ -120,13 +131,12 @@ class import_and_train_model:
               f'best acc top-1: {best_acc1:.2f}, '
               f'best f1 top-1: {best_f1:.2f}, '
               f'final top-1: {acc1:.2f}')
-        # torch.save(model.state_dict(), checkpoint_path)
 
         Logs = [train_losses, train_accuracies, test_losses, test_accuracies, train_f1s, test_f1s]
 
         Log_Path = self.checkpoint_path
 
-        with open(Log_Path + '/Logs.pickle', 'wb') as cw:
+        with open(Log_Path + '/Logs_' + name + 'pickle', 'wb') as cw:
             pickle.dump(Logs, cw)
 
         # Logs = pd.read_pickle(Log_Path + '/Logs.pickle')
@@ -142,19 +152,17 @@ class import_and_train_model:
         plt.plot(train_losses, label='Training loss')
         plt.subplot(1, 2, 1)
         plt.plot(test_losses, label='Validation loss')
-        # plt.yscale('log')
 
         plt.subplot(1, 2, 2)
         plt.plot(train_f1s, label='Training F1')
         plt.subplot(1, 2, 2)
         plt.plot(test_f1s, label='Validation F1')
-        # plt.yscale('log')
 
-        plt.savefig('performance_curves.png')
+        plt.savefig('performance_curves_' + name + '.png')
 
-    def run_prediction(self, class_main):
+    def run_prediction(self, class_main, name):
         classes = np.load(class_main.params.outpath + '/classes.npy')
-        PATH = self.checkpoint_path + '/trained_finetune_model.pth'
+        PATH = self.checkpoint_path + '/trained_model_' + name + '.pth'
 
         checkpoint = torch.load(PATH)
         self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -176,21 +184,45 @@ class import_and_train_model:
         output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
 
         GT_Pred_GTLabel_PredLabel_Prob = [target, output_max, target_label, output_label, prob]
-        with open(self.checkpoint_path + '/GT_Pred_GTLabel_PredLabel_prob_model.pickle', 'wb') as cw:
+        with open(self.checkpoint_path + '/GT_Pred_GTLabel_PredLabel_prob_model_' + name + '.pickle', 'wb') as cw:
             pickle.dump(GT_Pred_GTLabel_PredLabel_Prob, cw)
 
         accuracy_model = accuracy_score(target_label, output_label)
         clf_report = classification_report(target_label, output_label)
         f1 = f1_score(target_label, output_label, average='macro')
 
-        f = open(self.checkpoint_path + 'test_report.txt', 'w')
-        f.write('\n Accuracy\n\n{}\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model,
-                                                                                                    f1, clf_report))
+        f = open(self.checkpoint_path + 'test_report_' + name + '.txt', 'w')
+        f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
+                                                                                              clf_report))
         f.close()
 
     def train_and_save(self, data_loader, class_main):
         self.import_deit_models(data_loader, class_main)
-        self.run_training(class_main)
+        if class_main.params.finetune == 0:
+            self.run_training(class_main, class_main.params.epochs, class_main.params.lr, 'original')
+            self.run_prediction(self, class_main, 'original')
+
+        elif class_main.params.finetune == 1:
+            self.run_training(class_main, class_main.params.epochs, class_main.params.lr, 'original')
+            self.run_prediction(self, class_main, 'original')
+
+            self.run_training(class_main, class_main.params.finetune_epochs, class_main.params.lr/10, 'tuned')
+            self.run_prediction(self, class_main, 'tuned')
+            self.finetuning(data_loader, class_main, class_main.params.lr/10)
+
+        elif class_main.params.finetune == 2:
+            self.run_training(class_main, class_main.params.epochs, class_main.params.lr, 'original')
+            self.run_prediction(self, class_main, 'original')
+
+            self.run_training(class_main, class_main.params.finetune_epochs, class_main.params.lr/10, 'tuned')
+            self.run_prediction(self, class_main, 'tuned')
+            self.finetuning(data_loader, class_main, class_main.params.lr/10)
+
+            self.run_training(class_main, class_main.params.finetune_epochs, class_main.params.lr/100, 'finetuned')
+            self.run_prediction(self, class_main, 'finetuned')
+            self.finetuning(data_loader, class_main, class_main.params.lr / 100)
+        else:
+            print('Choose the correct finetune label')
 
 
 def adjust_learning_rate(optimizer, epoch, lr, warmup, disable_cos, epochs):

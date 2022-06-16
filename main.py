@@ -139,6 +139,9 @@ class LoadInputParameters:
 
         # Superclass or not
         parser.add_argument('-super_class', choices=['yes', 'no'], default='yes', )
+        parser.add_argument('-finetune', type=int, default=0, help='Choose "0" or "1" or "2" for finetuning')
+        parser.add_argument('-finetune_epochs', type=int, default=40,
+                            help="Total number of epochs for the funetune training")
 
         args = parser.parse_args(string)
 
