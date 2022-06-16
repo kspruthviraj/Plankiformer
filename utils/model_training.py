@@ -101,12 +101,12 @@ class import_and_train_model:
 
             best_acc1 = max(acc1, best_acc1)
             print('This is the name: {}'.format(name))
-            print('This is the checkpoint_path: {}'.format(self.checkpoint_path ))
+            print('This is the checkpoint_path: {}'.format(data_loader.checkpoint_path))
 
             if test_f1 > best_f1:
                 torch.save({'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict()},
-                           self.checkpoint_path + '/trained_model_' + name + '.pth')
+                           data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
             best_f1 = max(test_f1, best_f1)
 
             train_losses.append(train_loss)
@@ -138,7 +138,7 @@ class import_and_train_model:
 
         Logs = [train_losses, train_accuracies, test_losses, test_accuracies, train_f1s, test_f1s]
 
-        Log_Path = self.checkpoint_path
+        Log_Path = data_loader.checkpoint_path
 
         with open(Log_Path + '/Logs_' + name + 'pickle', 'wb') as cw:
             pickle.dump(Logs, cw)
@@ -166,7 +166,7 @@ class import_and_train_model:
 
     def run_prediction(self, class_main, data_loader, name):
         classes = np.load(class_main.params.outpath + '/classes.npy')
-        PATH = self.checkpoint_path + '/trained_model_' + name + '.pth'
+        PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
 
         checkpoint = torch.load(PATH)
         self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -189,14 +189,15 @@ class import_and_train_model:
         output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
 
         GT_Pred_GTLabel_PredLabel_Prob = [target, output_max, target_label, output_label, prob]
-        with open(self.checkpoint_path + '/GT_Pred_GTLabel_PredLabel_prob_model_' + name + '.pickle', 'wb') as cw:
+        with open(data_loader.checkpoint_path + '/GT_Pred_GTLabel_PredLabel_prob_model_' + name + '.pickle', 'wb') \
+                as cw:
             pickle.dump(GT_Pred_GTLabel_PredLabel_Prob, cw)
 
         accuracy_model = accuracy_score(target_label, output_label)
         clf_report = classification_report(target_label, output_label)
         f1 = f1_score(target_label, output_label, average='macro')
 
-        f = open(self.checkpoint_path + 'test_report_' + name + '.txt', 'w')
+        f = open(data_loader.checkpoint_path + 'test_report_' + name + '.txt', 'w')
         f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                               clf_report))
         f.close()
