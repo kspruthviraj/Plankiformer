@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim
 import torch.utils.data
-from sklearn.metrics import f1_score, accuracy_score
+from sklearn.metrics import f1_score, accuracy_score, classification_report, confusion_matrix
 from torchvision.utils import make_grid
 
 
@@ -128,6 +128,65 @@ class import_and_train_model:
 
         with open(Log_Path + '/Logs.pickle', 'wb') as cw:
             pickle.dump(Logs, cw)
+
+        # Logs = pd.read_pickle(Log_Path + '/Logs.pickle')
+
+        train_losses = Logs[0]
+        train_f1s = Logs[4]
+        test_losses = Logs[2]
+        test_f1s = Logs[5]
+
+        fig = plt.figure(figsize=(10, 3))
+
+        plt.subplot(1, 2, 1)
+        plt.plot(train_losses, label='Training loss')
+        plt.subplot(1, 2, 1)
+        plt.plot(test_losses, label='Validation loss')
+        # plt.yscale('log')
+
+        plt.subplot(1, 2, 2)
+        plt.plot(train_f1s, label='Training F1')
+        plt.subplot(1, 2, 2)
+        plt.plot(test_f1s, label='Validation F1')
+        # plt.yscale('log')
+
+        plt.savefig('performance_curves.png')
+
+    def run_prediction(self, class_main):
+        classes = np.load(class_main.params.outpath + '/classes.npy')
+        PATH = self.checkpoint_path + '/trained_finetune_model.pth'
+
+        checkpoint = torch.load(PATH)
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+        avg_acc1, target, output, prob = cls_predict(self.val_dataloader, self.model, self.criterion, time_begin=None)
+
+        target = torch.cat(target)
+        output = torch.cat(output)
+        prob = torch.cat(prob)
+
+        target = target.cpu().numpy()
+        output = output.cpu().numpy()
+        prob = prob.cpu().numpy()
+
+        output_max = output.argmax(axis=1)
+
+        target_label = np.array([classes[target[i]] for i in range(len(target))], dtype=object)
+        output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
+
+        GT_Pred_GTLabel_PredLabel_Prob = [target, output_max, target_label, output_label, prob]
+        with open(self.checkpoint_path + '/GT_Pred_GTLabel_PredLabel_prob_model.pickle', 'wb') as cw:
+            pickle.dump(GT_Pred_GTLabel_PredLabel_Prob, cw)
+
+        accuracy_model = accuracy_score(target_label, output_label)
+        clf_report = classification_report(target_label, output_label)
+        f1 = f1_score(target_label, output_label, average='macro')
+
+        f = open(self.checkpoint_path + 'test_report.txt', 'w')
+        f.write('\n Accuracy\n\n{}\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model,
+                                                                                                    f1, clf_report))
+        f.close()
 
     def train_and_save(self, data_loader, class_main):
         self.import_deit_models(data_loader, class_main)
