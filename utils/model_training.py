@@ -68,7 +68,7 @@ class import_and_train_model:
         # Observe that all parameters are being optimized
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=class_main.params.weight_decay)
 
-    def run_training(self, class_main, epochs, lr, name):
+    def run_training(self, class_main, data_loader, epochs, lr, name):
 
         best_acc1, best_f1 = 0, 0
         train_losses, test_losses, train_accuracies, test_accuracies, train_f1s, test_f1s = [], [], [], [], [], []
@@ -82,11 +82,11 @@ class import_and_train_model:
             adjust_learning_rate(self.optimizer, epoch, lr, class_main.params.warmup,
                                  class_main.params.disable_cos,
                                  class_main.params.epochs)
-            train_acc1, train_loss, train_outputs, train_targets = cls_train(self.train_dataloader, self.model,
+            train_acc1, train_loss, train_outputs, train_targets = cls_train(data_loader.train_dataloader, self.model,
                                                                              self.criterion,
                                                                              self.optimizer,
                                                                              class_main.params.clip_grad_norm)
-            acc1, loss, test_outputs, test_targets, total_mins = cls_validate(self.val_dataloader, self.model,
+            acc1, loss, test_outputs, test_targets, total_mins = cls_validate(data_loader.val_dataloader, self.model,
                                                                               self.criterion
                                                                               , time_begin=time_begin)
 
@@ -160,7 +160,7 @@ class import_and_train_model:
 
         plt.savefig('performance_curves_' + name + '.png')
 
-    def run_prediction(self, class_main, name):
+    def run_prediction(self, class_main, data_loader, name):
         classes = np.load(class_main.params.outpath + '/classes.npy')
         PATH = self.checkpoint_path + '/trained_model_' + name + '.pth'
 
@@ -168,7 +168,7 @@ class import_and_train_model:
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        avg_acc1, target, output, prob = cls_predict(self.val_dataloader, self.model, self.criterion, time_begin=None)
+        avg_acc1, target, output, prob = cls_predict(data_loader.val_dataloader, self.model, self.criterion, time_begin=None)
 
         target = torch.cat(target)
         output = torch.cat(output)
@@ -199,27 +199,27 @@ class import_and_train_model:
     def train_and_save(self, data_loader, class_main):
         self.import_deit_models(data_loader, class_main)
         if class_main.params.finetune == 0:
-            self.run_training(class_main, class_main.params.epochs, class_main.params.lr, 'original')
-            self.run_prediction(self, class_main, 'original')
+            self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, 'original')
+            self.run_prediction(self, class_main, data_loader, 'original')
 
         elif class_main.params.finetune == 1:
-            self.run_training(class_main, class_main.params.epochs, class_main.params.lr, 'original')
-            self.run_prediction(self, class_main, 'original')
+            self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, 'original')
+            self.run_prediction(self, class_main, data_loader, 'original')
 
-            self.run_training(class_main, class_main.params.finetune_epochs, class_main.params.lr/10, 'tuned')
-            self.run_prediction(self, class_main, 'tuned')
+            self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr/10, 'tuned')
+            self.run_prediction(self, class_main, data_loader, 'tuned')
             self.finetuning(data_loader, class_main, class_main.params.lr/10)
 
         elif class_main.params.finetune == 2:
-            self.run_training(class_main, class_main.params.epochs, class_main.params.lr, 'original')
+            self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, 'original')
             self.run_prediction(self, class_main, 'original')
 
             self.run_training(class_main, class_main.params.finetune_epochs, class_main.params.lr/10, 'tuned')
-            self.run_prediction(self, class_main, 'tuned')
+            self.run_prediction(self, class_main, data_loader, 'tuned')
             self.finetuning(data_loader, class_main, class_main.params.lr/10)
 
-            self.run_training(class_main, class_main.params.finetune_epochs, class_main.params.lr/100, 'finetuned')
-            self.run_prediction(self, class_main, 'finetuned')
+            self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr/100, 'finetuned')
+            self.run_prediction(self, class_main, data_loader, 'finetuned')
             self.finetuning(data_loader, class_main, class_main.params.lr / 100)
         else:
             print('Choose the correct finetune label')
