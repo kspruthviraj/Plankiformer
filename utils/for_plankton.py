@@ -164,12 +164,14 @@ class CreateDataForPlankton:
                     veX = Data[7]
                     veY = Data[8]
 
-        label_encoder = preprocessing.LabelEncoder()
+        # label_encoder = preprocessing.LabelEncoder()
+
+        classes_int = np.unique(np.argmax(trY, axis=1))
 
         if class_main.params.test_set == 'no':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
-            y_train_label = np.array([classes[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
-            self.y_train = label_encoder.fit_transform(y_train_label)
+            # y_train_label = np.array([classes[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
+            self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
 
             data_train = trX.astype(np.float64)
             data_train = 255 * data_train
@@ -177,13 +179,12 @@ class CreateDataForPlankton:
 
         elif class_main.params.test_set == 'yes' and class_main.params.valid_set == 'no':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
-            y_train_label = np.array([classes[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
+            # y_train_label = np.array([classes[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
+            self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
 
             y_test_max = teY.argmax(axis=1)  # The class that the classifier would bet on
-            y_test_label = np.array([classes[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
-
-            self.y_train = label_encoder.fit_transform(y_train_label)
-            self.y_test = label_encoder.fit_transform(y_test_label)
+            # y_test_label = np.array([classes[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
+            self.y_test = np.array([classes_int[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
 
             data_train = trX.astype(np.float64)
             data_train = 255 * data_train
@@ -195,17 +196,16 @@ class CreateDataForPlankton:
 
         elif class_main.params.test_set == 'yes' and class_main.params.valid_set == 'yes':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
-            y_train_label = np.array([classes[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
+            # y_train_label = np.array([classes[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
+            self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
 
             y_test_max = teY.argmax(axis=1)  # The class that the classifier would bet on
-            y_test_label = np.array([classes[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
+            # y_test_label = np.array([classes[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
+            self.y_test = np.array([classes_int[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
 
             y_val_max = veY.argmax(axis=1)  # The class that the classifier would bet on
-            y_val_label = np.array([classes[y_val_max[i]] for i in range(len(y_val_max))], dtype=object)
-
-            self.y_train = label_encoder.fit_transform(y_train_label)
-            self.y_test = label_encoder.fit_transform(y_test_label)
-            self.y_val = label_encoder.fit_transform(y_val_label)
+            # y_val_label = np.array([classes[y_val_max[i]] for i in range(len(y_val_max))], dtype=object)
+            self.y_val = np.array([classes_int[y_val_max[i]] for i in range(len(y_val_max))], dtype=object)
 
             data_train = trX.astype(np.float64)
             data_train = 255 * data_train
