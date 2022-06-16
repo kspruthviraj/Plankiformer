@@ -160,7 +160,7 @@ class import_and_train_model:
         plt.subplot(1, 2, 2)
         plt.plot(test_f1s, label='Validation F1')
 
-        plt.savefig('performance_curves_' + name + '.png')
+        plt.savefig(data_loader.checkpoint_path + '/performance_curves_' + name + '.png')
 
     def run_prediction(self, class_main, data_loader, name):
         classes = np.load(class_main.params.outpath + '/classes.npy')

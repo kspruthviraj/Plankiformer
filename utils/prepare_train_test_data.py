@@ -221,7 +221,7 @@ class CreateDataset:
             with open(class_main.params.outpath + '/class_weights.pickle', 'wb') as cw:
                 pickle.dump(self.tt.class_weights, cw)
 
-                # To Save classes and filenames
+        # To Save classes and filenames
         np.save(class_main.params.outpath + '/classes.npy', self.tt.lb.classes_)
 
         Filenames_for_Ensemble = [self.tt.trainFilenames, self.tt.testFilenames]
