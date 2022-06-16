@@ -1,10 +1,5 @@
 # Plankiformer
 
-# Zoofier
-Code for plankton dataset creation and classification based on Keras.
-
----
-
 ## Quick Summary
 
 Use `analyze_dataset.py` to analyze the datasets.
