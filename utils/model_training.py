@@ -100,8 +100,6 @@ class import_and_train_model:
             test_accuracy = accuracy_score(test_outputs, test_targets)
 
             best_acc1 = max(test_acc1, best_acc1)
-            print('This is the name: {}'.format(name))
-            print('This is the checkpoint_path: {}'.format(data_loader.checkpoint_path))
 
             if test_f1 > best_f1:
                 torch.save({'model_state_dict': self.model.state_dict(),
@@ -126,9 +124,9 @@ class import_and_train_model:
                                                                   np.round(total_mins, 3)))
 
             self.lr_scheduler(loss)
-            self.early_stopping(loss)
-            if self.early_stopping.early_stop:
-                break
+            # self.early_stopping(loss)
+            # if self.early_stopping.early_stop:
+            #     break
 
         total_mins = (time() - time_begin) / 60
 

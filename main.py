@@ -124,9 +124,9 @@ class LoadInputParameters:
         parser.add_argument('-gpu_id', type=int, default=0, help="select the gpu id ")
         parser.add_argument('-lr', type=float, default=1e-4, help="starting learning rate")
         parser.add_argument('-warmup', type=int, default=10, help="starting learning rate")
-        parser.add_argument('-weight_decay', type=float, default=1e-4, help="weight decay")
+        parser.add_argument('-weight_decay', type=float, default=3e-2, help="weight decay")
         parser.add_argument('-clip_grad_norm', type=float, default=0, help="clip gradient norm")
-        parser.add_argument('-disable_cos', choices=['yes', 'no'], default='yes',
+        parser.add_argument('-disable_cos', choices=[True, False], default=True,
                             help="Disable cos. Choose from Yes or No")
 
         # Superclass or not

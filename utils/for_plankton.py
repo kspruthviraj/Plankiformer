@@ -230,15 +230,15 @@ class CreateDataForPlankton:
         Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
         train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
-        self.train_dataloader = DataLoader(train_dataset, class_main.params.batch_size, shuffle=True, num_workers=1,
+        self.train_dataloader = DataLoader(train_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
                                            pin_memory=True)
 
         test_dataset = CreateDataset(X=self.X_test, y=self.y_test)
-        self.test_dataloader = DataLoader(test_dataset, class_main.params.batch_size, shuffle=True, num_workers=1,
+        self.test_dataloader = DataLoader(test_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
                                           pin_memory=True)
 
         val_dataset = CreateDataset(X=self.X_val, y=self.y_val)
-        self.val_dataloader = DataLoader(val_dataset, class_main.params.batch_size, shuffle=True, num_workers=1,
+        self.val_dataloader = DataLoader(val_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
                                          pin_memory=True)
 
 
