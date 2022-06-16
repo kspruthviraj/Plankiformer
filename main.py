@@ -104,6 +104,8 @@ class LoadInputParameters:
 
         parser.add_argument('-save_data', choices=['yes', 'no'], default=None,
                             help="Whether to save the data for later use or not")
+        parser.add_argument('-saved_data', choices=['yes', 'no'], default=None,
+                            help="Whether to use the saved data for training")
         parser.add_argument('-compute_extrafeat', choices=['yes', 'no'], default=None,
                             help="Whether to compute extra features or not")
         parser.add_argument('-valid_set', choices=['yes', 'no'], default='yes',
@@ -134,6 +136,8 @@ class LoadInputParameters:
         parser.add_argument('-finetune', type=int, default=0, help='Choose "0" or "1" or "2" for finetuning')
         parser.add_argument('-finetune_epochs', type=int, default=40,
                             help="Total number of epochs for the funetune training")
+        parser.add_argument('-init_name', default='Init_01',
+                            help="directory name where you want the Best models to be saved")
 
         args = parser.parse_args(string)
 
