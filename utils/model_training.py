@@ -101,6 +101,7 @@ class import_and_train_model:
 
             best_acc1 = max(acc1, best_acc1)
             print('This is the name: {}'.format(name))
+            print('This is the checkpoint_path: {}'.format(self.checkpoint_path ))
 
             if test_f1 > best_f1:
                 torch.save({'model_state_dict': self.model.state_dict(),
