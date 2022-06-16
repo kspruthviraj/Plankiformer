@@ -30,7 +30,7 @@ class import_and_train_model:
         return
 
     def import_deit_models(self, data_loader, class_main):
-        self.model = timm.create_model('deit_base_patch16_224', pretrained=True,
+        self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
                                        num_classes=len(np.unique(data_loader.y_train)))
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model)
@@ -89,7 +89,7 @@ class import_and_train_model:
                                                                              self.criterion,
                                                                              self.optimizer,
                                                                              class_main.params.clip_grad_norm)
-            acc1, loss, test_outputs, test_targets, total_mins = cls_validate(data_loader.val_dataloader, self.model,
+            test_acc1, loss, test_outputs, test_targets, total_mins = cls_validate(data_loader.val_dataloader, self.model,
                                                                               self.criterion,
                                                                               time_begin=time_begin)
 
@@ -99,7 +99,7 @@ class import_and_train_model:
             test_f1 = f1_score(test_outputs, test_targets, average='macro')
             test_accuracy = accuracy_score(test_outputs, test_targets)
 
-            best_acc1 = max(acc1, best_acc1)
+            best_acc1 = max(test_acc1, best_acc1)
             print('This is the name: {}'.format(name))
             print('This is the checkpoint_path: {}'.format(data_loader.checkpoint_path))
 
@@ -351,8 +351,8 @@ def cls_train(train_loader, model, criterion, optimizer, clip_grad_norm):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         images, target = images.to(device), target.to(device)
 
-        # output, x = model(images)
-        output = model(images)
+        output, x = model(images)
+        # output = model(images)
 
         loss = criterion(output, target.long())
 
