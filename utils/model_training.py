@@ -30,7 +30,7 @@ class import_and_train_model:
     def import_deit_models(self, data_loader, class_main):
         self.model = timm.create_model('deit_base_patch16_224', pretrained=True,
                                        num_classes=len(np.unique(data_loader.y_train)))
-        device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model)
         self.model.to(device)
 
@@ -59,7 +59,7 @@ class import_and_train_model:
         self.early_stopping = EarlyStopping()
 
     def finetuning(self, data_loader, class_main, lr):
-        device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
         self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
         torch.cuda.set_device(class_main.params.gpu_id)
@@ -339,7 +339,7 @@ def cls_train(train_loader, model, criterion, optimizer, clip_grad_norm):
 
     for i, (images, target) in enumerate(train_loader):
 
-        device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         images, target = images.to(device), target.to(device)
 
         # output, x = model(images)
@@ -384,7 +384,7 @@ def cls_validate(val_loader, model, criterion, time_begin=None):
 
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
 
             output = model(images)
@@ -420,7 +420,7 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
