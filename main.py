@@ -74,12 +74,6 @@ class LoadInputParameters:
         parser.add_argument('-datapaths', nargs='*',
                             default=['./data/1_zooplankton_0p5x/training/zooplankton_trainingset_2020.04.28/'],
                             help="Directories with the data.")
-        parser.add_argument('-trainpath', nargs='*',
-                            default=['./data/1_zooplankton_0p5x/training/zooplankton_trainingset_2020.04.28/'],
-                            help="Directories with the data.")
-        parser.add_argument('-testpath', nargs='*',
-                            default=['./data/1_zooplankton_0p5x/training/zooplankton_trainingset_2020.04.28/'],
-                            help="Directories with the data.")
         parser.add_argument('-outpath', default='./out/', help="directory where you want the output saved")
 
         parser.add_argument('-aug', action='store_true',
@@ -99,7 +93,7 @@ class LoadInputParameters:
                             help="Which data to load: features, images, or both")
         parser.add_argument('-ttkind', choices=['mixed', 'feat', 'image'], default=None,
                             help="Which data to use in the test and training sets: features, images, or both")
-        parser.add_argument('-training_data', choices=['True', 'False'], default='True',
+        parser.add_argument('-training_data', choices=['True', 'False'], default='False',
                             help="This is to cope with the different directory structures")
 
         # Preprocessing Images
