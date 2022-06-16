@@ -161,10 +161,6 @@ class LoadInputParameters:
         """ Create a unique output directory, and put inside it a file with the simulation parameters """
         pathlib.Path(self.params.outpath).mkdir(parents=True, exist_ok=True)
         self.WriteParams()
-        MainModelPath = self.params.outpath
-        checkpoint_path = MainModelPath + 'WILD_trap_FROM_PAPER_VER02_04/'
-        Path(checkpoint_path).mkdir(parents=True, exist_ok=True)
-
         return
 
     def WriteParams(self):
