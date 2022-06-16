@@ -127,7 +127,7 @@ class LoadInputParameters:
         parser.add_argument('-batch_size', type=int, default=16, help="Batch size for training")
         parser.add_argument('-image_size', type=int, default=224, help="Image size for training the model")
         parser.add_argument('-epochs', type=int, default=100, help="number of epochs for training the model")
-        parser.add_argument('-gpu_id', type=int, default=1, help="select the gpu id ")
+        parser.add_argument('-gpu_id', type=int, default=0, help="select the gpu id ")
         parser.add_argument('-lr', type=float, default=1e-4, help="starting learning rate")
         parser.add_argument('-warmup', type=int, default=10, help="starting learning rate")
         parser.add_argument('-weight_decay', type=float, default=1e-4, help="weight decay")
