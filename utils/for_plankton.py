@@ -1,8 +1,3 @@
-#
-# Script to prepare the data
-#
-#
-
 ###########
 # IMPORTS #
 ###########

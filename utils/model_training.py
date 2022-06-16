@@ -89,9 +89,9 @@ class import_and_train_model:
                                                                              self.criterion,
                                                                              self.optimizer,
                                                                              class_main.params.clip_grad_norm)
-            test_acc1, loss, test_outputs, test_targets, total_mins = cls_validate(data_loader.val_dataloader, self.model,
-                                                                              self.criterion,
-                                                                              time_begin=time_begin)
+            test_acc1, loss, test_outputs, test_targets, total_mins = cls_validate(data_loader.val_dataloader,
+                                                                                   self.model, self.criterion,
+                                                                                   time_begin=time_begin)
 
             train_f1 = f1_score(train_outputs, train_targets, average='macro')
             train_accuracy = accuracy_score(train_outputs, train_targets)

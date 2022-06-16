@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-#
-# Helper functions for data manipulation and training data creation
-#
-################################################
-
 import glob
 import math
 import os

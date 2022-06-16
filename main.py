@@ -1,8 +1,3 @@
-#
-# Script to prepare the data
-#
-#
-
 ###########
 # IMPORTS #
 ###########
@@ -17,11 +12,6 @@ import numpy as np
 from utils import for_plankton as fplankton
 from utils import model_training as mt
 from utils import prepare_train_test_data as pdata
-
-
-###############
-# TRAIN CLASS #
-###############
 
 def ArgsCheck(args):
     """ Consistency checks for command line arguments """
