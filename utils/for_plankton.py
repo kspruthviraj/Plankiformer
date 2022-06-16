@@ -7,15 +7,13 @@
 # IMPORTS #
 ###########
 
+from pathlib import Path
 import numpy as np
-
 import pandas as pd
 import torch
-from sklearn import preprocessing
+import torchvision.transforms as T
 from sklearn.utils import compute_class_weight
 from torch.utils.data import DataLoader, Dataset
-import torchvision.transforms as T
-from pathlib import Path
 
 
 class CreateDataForPlankton:
@@ -164,13 +162,10 @@ class CreateDataForPlankton:
                     veX = Data[7]
                     veY = Data[8]
 
-        # label_encoder = preprocessing.LabelEncoder()
-
         classes_int = np.unique(np.argmax(trY, axis=1))
 
         if class_main.params.test_set == 'no':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
-            # y_train_label = np.array([classes[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
             self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
 
             data_train = trX.astype(np.float64)
@@ -179,11 +174,9 @@ class CreateDataForPlankton:
 
         elif class_main.params.test_set == 'yes' and class_main.params.valid_set == 'no':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
-            # y_train_label = np.array([classes[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
             self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
 
             y_test_max = teY.argmax(axis=1)  # The class that the classifier would bet on
-            # y_test_label = np.array([classes[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
             self.y_test = np.array([classes_int[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
 
             data_train = trX.astype(np.float64)
@@ -196,15 +189,12 @@ class CreateDataForPlankton:
 
         elif class_main.params.test_set == 'yes' and class_main.params.valid_set == 'yes':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
-            # y_train_label = np.array([classes[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
             self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
 
             y_test_max = teY.argmax(axis=1)  # The class that the classifier would bet on
-            # y_test_label = np.array([classes[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
             self.y_test = np.array([classes_int[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
 
             y_val_max = veY.argmax(axis=1)  # The class that the classifier would bet on
-            # y_val_label = np.array([classes[y_val_max[i]] for i in range(len(y_val_max))], dtype=object)
             self.y_val = np.array([classes_int[y_val_max[i]] for i in range(len(y_val_max))], dtype=object)
 
             data_train = trX.astype(np.float64)
@@ -226,7 +216,7 @@ class CreateDataForPlankton:
         return
 
     def create_data_loaders(self, class_main):
-        self.checkpoint_path = class_main.params.outpath + 'trained_models/'
+        self.checkpoint_path = class_main.params.outpath + 'trained_models/' + class_main.params.init_name + '/'
         Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
         train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
