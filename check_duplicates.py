@@ -67,13 +67,13 @@ def check_for_duplicates(paths, outpath):
                 # the file access might've changed till the exec point got here
                 continue
 
+    outpath1 = ' '.join([str(elem) for elem in outpath])
+    f = open(outpath1 + "duplicate_report.txt", 'w')
+
     # For all files with the hash on the 1st 1024 bytes, get their hash on the full file - collisions will be duplicates
     for __, files_list in hashes_on_1k.items():
         if len(files_list) < 2:
             continue  # this hash of fist 1k file bytes is unique, no need to spend cpy cycles on it
-        outpath1 = ' '.join([str(elem) for elem in outpath])
-        print("outpath: {}".format(outpath1))
-        f = open(outpath1 + "duplicate_report_.txt", 'w')
 
         for filename in files_list:
             try:
@@ -88,7 +88,7 @@ def check_for_duplicates(paths, outpath):
                 # the file access might've changed till the exec point got here
                 continue
 
-        f.close()
+    f.close()
 
 
 if __name__ == "__main__":
