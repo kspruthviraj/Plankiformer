@@ -69,7 +69,6 @@ class LoadEnsembleParameters:
         args = parser.parse_args(string)
 
         args.outpath = args.outpath + '/'
-        args.training_data = True if args.training_data == 'True' else False
 
         ArgsCheck(args)
         self.params = args
