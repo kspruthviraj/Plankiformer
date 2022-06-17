@@ -11,21 +11,6 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 
 
-def ArgsCheck(args):
-    """ Consistency checks for command line arguments """
-
-    if args.ttkind != 'image' and args.aug == True:
-        print('User asked for data augmentation, but we set it to False, because we only do it for `image` models')
-        args.aug = False
-
-    if args.ttkind == 'image':
-        args.compute_extrafeat = 'no'
-        print(
-            'User asked for computing extra features, but we set it to False, because we only do it for `mixed` '
-            'models')
-    return
-
-
 class LoadEnsembleParameters:
     def __init__(self, initMode='default', verbose=True):
         self.fsummary = None
@@ -70,7 +55,6 @@ class LoadEnsembleParameters:
 
         args.outpath = args.outpath + '/'
 
-        ArgsCheck(args)
         self.params = args
 
         if self.verbose:
