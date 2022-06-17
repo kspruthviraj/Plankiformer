@@ -92,6 +92,6 @@ def check_for_duplicates(paths, outpath):
 
 if __name__ == "__main__":
     if sys.argv[1:]:
-        check_for_duplicates(sys.argv[1:])
+        check_for_duplicates(sys.argv[1:], sys.argv[2:])
     else:
         print("Please pass the paths to check as parameters to the script")
