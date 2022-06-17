@@ -140,15 +140,15 @@ class LoadEnsembleParameters:
         Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
         Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))], dtype=object)
 
-        print('Accuracy:  {}'.format(round(accuracy_score(Ens_DEIT_label, DEIT_03_GTLabel_03), 3)))
-        print('F1-score:  {}'.format(round(f1_score(Ens_DEIT_label, DEIT_03_GTLabel_03, average='macro'), 3)))
-        print(classification_report(Ens_DEIT_label, DEIT_03_GTLabel_03, digits=2))
+        print('Accuracy:  {}'.format(round(accuracy_score(DEIT_03_GTLabel_03, Ens_DEIT_label), 3)))
+        print('F1-score:  {}'.format(round(f1_score(DEIT_03_GTLabel_03, Ens_DEIT_label, average='macro'), 3)))
+        print(classification_report(DEIT_03_GTLabel_03, Ens_DEIT_label, digits=2))
 
-        accuracy_model = accuracy_score(Ens_DEIT_label, DEIT_03_GTLabel_03)
-        clf_report = classification_report(Ens_DEIT_label, DEIT_03_GTLabel_03)
-        f1 = f1_score(Ens_DEIT_label, DEIT_03_GTLabel_03, average='macro')
+        accuracy_model = accuracy_score(DEIT_03_GTLabel_03, Ens_DEIT_label)
+        clf_report = classification_report(DEIT_03_GTLabel_03, Ens_DEIT_label)
+        f1 = f1_score(DEIT_03_GTLabel_03, Ens_DEIT_label, average='macro')
 
-        f = open(self.params.outpath + 'Ensemble_test_report.txt', 'w')
+        f = open(self.params.outpath + 'Ensemble_test_report_2.txt', 'w')
         f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                               clf_report))
         f.close()
