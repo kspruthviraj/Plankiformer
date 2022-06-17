@@ -93,9 +93,9 @@ class LoadEnsembleParameters:
         print(self.params.main_model_dir)
         classes = np.load(self.params.main_model_dir + '/classes.npy')
 
-        DEIT_01Path = self.params.main_model_dir + 'trained_models/' + 'Init_01/'
-        DEIT_02Path = self.params.main_model_dir + 'trained_models/' + 'Init_02/'
-        DEIT_03Path = self.params.main_model_dir + 'trained_models/' + 'Init_03/'
+        DEIT_01Path = self.params.main_model_dir + 'trained_models/' + 'Init_0/'
+        DEIT_02Path = self.params.main_model_dir + 'trained_models/' + 'Init_1/'
+        DEIT_03Path = self.params.main_model_dir + 'trained_models/' + 'Init_2/'
 
         if self.params.finetune == 0:
             DEIT_01 = pd.read_pickle(DEIT_01Path + '/GT_Pred_GTLabel_PredLabel_prob_model_original.pickle')
