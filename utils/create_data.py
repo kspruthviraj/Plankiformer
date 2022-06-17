@@ -929,7 +929,7 @@ class CTrainTestSet:
                 if valid_set == 'no':
                     self.trainX, self.testX, self.trainY, self.testY, self.trainFilenames, self.testFilenames = \
                         train_test_split(self.X, self.y, self.filenames, test_size=test_size, random_state=random_state,
-                                         shuffle=True)
+                                         shuffle=True, stratify=self.y)
                 elif valid_set == 'yes':
                     train_ratio = 0.70
                     validation_ratio = 0.15
@@ -937,11 +937,11 @@ class CTrainTestSet:
                     self.trainX, test1X, self.trainY, test1Y, self.trainFilenames, test1Filenames = \
                         train_test_split(self.X, self.y, self.filenames, test_size=1 - train_ratio,
                                          random_state=random_state,
-                                         shuffle=True)
+                                         shuffle=True, stratify=self.y)
                     self.valX, self.testX, self.valY, self.testY, self.valFilenames, self.testFilenames = \
                         train_test_split(test1X, test1Y, test1Filenames,
                                          test_size=test_ratio / (test_ratio + validation_ratio),
-                                         random_state=random_state, shuffle=True)
+                                         random_state=random_state, shuffle=True, stratify=test1Y)
 
                 y_integers = np.argmax(self.trainY, axis=1)
                 if self.balance_weight == 'yes':
