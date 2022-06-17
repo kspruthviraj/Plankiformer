@@ -81,7 +81,7 @@ def check_for_duplicates(paths, outpath):
                 duplicate = hashes_full.get(full_hash)
                 if duplicate:
                     # print("Duplicate found: {} and {}".format(filename, duplicate))
-                    f.write("Duplicate found: {} and {}".format(filename, duplicate))
+                    f.write("\n Duplicate found: \n {} and \n {}\n\n ".format(filename, duplicate))
                 else:
                     hashes_full[full_hash] = filename
             except (OSError,):
