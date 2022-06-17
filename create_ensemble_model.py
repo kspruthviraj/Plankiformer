@@ -90,7 +90,7 @@ class LoadEnsembleParameters:
         return
 
     def get_ensemble_performance(self):
-        print('main_model_dir: {}'.format(self.params.main_model_dir))
+        print(self.params.main_model_dir)
         classes = np.load(self.params.main_model_dir + '/classes.npy')
 
         DEIT_01Path = self.params.main_model_dir + 'trained_models/' + 'Init_01/'
