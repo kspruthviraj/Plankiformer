@@ -44,7 +44,7 @@ class LoadEnsembleParameters:
 
         parser = argparse.ArgumentParser(description='Create Dataset')
 
-        parser.add_argument('-main_model_dir', nargs='*',
+        parser.add_argument('-main_model_dir',
                             default='/local/kyathasr/Plankiformer/out/phyto_super_class/',
                             help="Main directory where the model is stored")
         parser.add_argument('-outpath', default='./out/Ensemble/', help="directory where you want the output saved")
