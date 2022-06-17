@@ -72,7 +72,7 @@ def check_for_duplicates(paths, outpath):
         if len(files_list) < 2:
             continue  # this hash of fist 1k file bytes is unique, no need to spend cpy cycles on it
 
-        print("outpath: {}".format(outpath))
+        print("outpath: {}".format(type(outpath)))
         f = open(outpath + "duplicate_report_.txt", 'w')
 
         for filename in files_list:
