@@ -69,27 +69,13 @@ class LoadInputParameters:
         pathlib.Path(self.params.outpath).mkdir(parents=True, exist_ok=True)
         return
 
-    def read_train_param_file(self):
-        self.simPred = main.LoadInputParameters(verbose=False)
-        self.simPred.params = np.load(self.params.model_path + '/params.npy', allow_pickle=True).item()
-        return
-
-    def UpdateParams(self, **kwargs):
-        """ Updates the parameters given in kwargs, and updates params.txt"""
-        self.paramsDict = vars(self.params)
-        if kwargs is not None:
-            for key, value in kwargs.items():
-                self.paramsDict[key] = value
-        self.CreateOutDir()
-
-        return
-
 
 if __name__ == '__main__':
     print('\nRunning', sys.argv[0], sys.argv[1:])
 
     # Loading Testing Input parameters
     inp_params = LoadInputParameters(initMode='args')
+    print('model_path: {}'.format(inp_params.model_path))
     inp_params.CreateOutDir()
     print('Loaded testing input parameters')
     #
