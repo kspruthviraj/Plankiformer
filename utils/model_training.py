@@ -61,6 +61,38 @@ class import_and_train_model:
         self.lr_scheduler = LRScheduler(self.optimizer)
         self.early_stopping = EarlyStopping()
 
+    def import_deit_models_for_testing(self, train_main, test_main, data_loader):
+        classes = np.load(test_main.params.outpath + '/classes.npy')
+        self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
+                                       num_classes=len(np.unique(classes)))
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # model = nn.DataParallel(model)
+        self.model.to(device)
+
+        # total parameters and trainable parameters
+        total_params = sum(p.numel() for p in self.model.parameters())
+        print(f"{total_params:,} total parameters.")
+        total_trainable_params = sum(
+            p.numel() for p in self.model.parameters() if p.requires_grad)
+        print(f"{total_trainable_params:,} training parameters.")
+
+        self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
+
+        torch.cuda.set_device(train_main.params.gpu_id)
+        self.model.cuda(train_main.params.gpu_id)
+        self.criterion = self.criterion.cuda(train_main.params.gpu_id)
+
+        # Observe that all parameters are being optimized
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+                                           weight_decay=train_main.params.weight_decay)
+
+        # Decay LR by a factor of 0.1 every 7 epochs
+        # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+
+        # Early stopping and lr scheduler
+        self.lr_scheduler = LRScheduler(self.optimizer)
+        self.early_stopping = EarlyStopping()
+
     def run_training(self, class_main, data_loader, epochs, lr, name):
 
         best_acc1, best_f1 = 0, 0
@@ -222,8 +254,8 @@ class import_and_train_model:
         else:
             print('Choose the correct finetune label')
 
-    def run_prediction_on_unseen(self, class_main, data_loader, name):
-        classes = np.load(class_main.params.outpath + '/classes.npy')
+    def run_prediction_on_unseen(self, test_main, data_loader, name):
+        classes = np.load(test_main.params.model_path + '/classes.npy')
         PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
         im_names = data_loader.Filenames
 
@@ -244,35 +276,35 @@ class import_and_train_model:
         output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
 
         Pred_PredLabel_Prob = [output_max, output_label, prob]
-        with open(data_loader.checkpoint_path + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
+        with open(test_main.outpath + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
             pickle.dump(Pred_PredLabel_Prob, cw)
 
         To_write = [i + '------------------' + j for i, j in zip(im_names, output_label)]
-        np.savetxt(data_loader.checkpoint_path + '/Predictions_avg_ens.txt', To_write, fmt='%s')
+        np.savetxt(test_main.outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
 
-    def initialize_model(self, class_main, data_loader, lr):
+    def initialize_model(self, train_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
         self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
-        torch.cuda.set_device(class_main.params.gpu_id)
-        self.model.cuda(class_main.params.gpu_id)
-        self.criterion = self.criterion.cuda(class_main.params.gpu_id)
+        torch.cuda.set_device(train_main.params.gpu_id)
+        self.model.cuda(train_main.params.gpu_id)
+        self.criterion = self.criterion.cuda(train_main.params.gpu_id)
         # Observe that all parameters are being optimized
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=class_main.params.weight_decay)
 
-    def load_model_and_run_prediction(self, class_main, data_loader):
-        self.import_deit_models(class_main, data_loader)
-        if class_main.params.finetune == 0:
-            self.initialize_model(class_main, data_loader, class_main.params.lr)
-            self.run_prediction_on_unseen(class_main, data_loader, 'original')
+    def load_model_and_run_prediction(self, train_main, test_main, data_loader):
+        self.import_deit_models_for_testing(train_main, test_main, data_loader)
+        if train_main.params.finetune == 0:
+            self.initialize_model(train_main, data_loader, train_main.params.lr)
+            self.run_prediction_on_unseen(test_main, data_loader, 'original')
 
-        elif class_main.params.finetune == 1:
-            self.initialize_model(data_loader, class_main, class_main.params.lr)
-            self.run_prediction_on_unseen(class_main, data_loader, 'tuned')
+        elif train_main.params.finetune == 1:
+            self.initialize_model(data_loader, train_main, train_main.params.lr)
+            self.run_prediction_on_unseen(test_main, data_loader, 'tuned')
 
-        elif class_main.params.finetune == 2:
-            self.initialize_model(data_loader, class_main, class_main.params.lr)
-            self.run_prediction_on_unseen(class_main, data_loader, 'finetuned')
+        elif train_main.params.finetune == 2:
+            self.initialize_model(data_loader, train_main, train_main.params.lr)
+            self.run_prediction_on_unseen(test_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')
 

@@ -56,11 +56,11 @@ class CreateDataForPlankton:
 
         return
 
-    def create_data_loaders(self, class_main):
-        self.checkpoint_path = class_main.params.outpath + 'trained_models/' + class_main.params.init_name + '/'
+    def create_data_loaders(self, train_main, test_main):
+        self.checkpoint_path = test_main.params.model_path + 'trained_models/' + test_main.params.init_name + '/'
 
         test_dataset = CreateDataset(X=self.X_train)
-        self.test_dataloader = DataLoader(test_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+        self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                           pin_memory=True)
 
 

@@ -53,8 +53,6 @@ class LoadInputParameters:
         parser.add_argument('-test_path', default='./data/', help="directory where you want to predict")
         parser.add_argument('-model_path', default='./out/trained_models/', help="directory where you want to predict")
         parser.add_argument('-outpath', default='./out/', help="directory where you want to predict")
-        parser.add_argument('-init_name', default='Init_01',
-                            help="directory name where you want the Best models to be saved")
 
         args = parser.parse_args(string)
 
@@ -103,18 +101,13 @@ if __name__ == '__main__':
     prep_test_data.LoadData(inp_params, simPred.params)
     prep_test_data.CreateTrainTestSets(simPred.params)
 
-    # # For Plankton
-    # for_plankton = fplankton.CreateDataForPlankton()
-    # for_plankton.make_train_test_for_model(inp_params, prep_data)
-    # for_plankton.create_data_loaders(inp_params)
-
     # For Plankton testing
     for_plankton_test = fplankton_test.CreateDataForPlankton()
-    for_plankton_test.make_train_test_for_model(inp_params, prep_test_data)
-    for_plankton_test.create_data_loaders(inp_params)
+    for_plankton_test.make_train_test_for_model(simPred.params, prep_test_data)
+    for_plankton_test.create_data_loaders(simPred.params, inp_params)
 
     # Model Training
     model_training = mt.import_and_train_model()
 
     # Prediction
-    model_training.load_model_and_run_prediction(inp_params, for_plankton_test)
+    model_training.load_model_and_run_prediction(simPred.params, for_plankton_test)
