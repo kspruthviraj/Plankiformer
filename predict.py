@@ -53,6 +53,8 @@ class LoadInputParameters:
         parser.add_argument('-test_path', default='./data/', help="directory where you want to predict")
         parser.add_argument('-model_path', default='./out/trained_models/', help="directory where you want to predict")
         parser.add_argument('-outpath', default='./out/', help="directory where you want to predict")
+        parser.add_argument('-init_name', default='Init_1',
+                            help="directory name where you want the Best models to be saved")
 
         args = parser.parse_args(string)
 
