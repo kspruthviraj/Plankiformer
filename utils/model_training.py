@@ -29,7 +29,7 @@ class import_and_train_model:
         self.train_dataloader = None
         return
 
-    def import_deit_models(self, data_loader, class_main):
+    def import_deit_models(self, class_main, data_loader):
         classes = np.load(class_main.params.outpath + '/classes.npy')
         self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
                                        num_classes=len(np.unique(classes)))
@@ -191,7 +191,7 @@ class import_and_train_model:
                                                                                               clf_report))
         f.close()
 
-    def finetuning(self, data_loader, class_main, lr):
+    def finetuning(self, class_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
         self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
@@ -201,7 +201,7 @@ class import_and_train_model:
         # Observe that all parameters are being optimized
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=class_main.params.weight_decay)
 
-    def train_and_save(self, data_loader, class_main):
+    def train_and_save(self, class_main, data_loader):
         self.import_deit_models(data_loader, class_main)
         if class_main.params.finetune == 0:
             self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, "original")
@@ -232,7 +232,7 @@ class import_and_train_model:
         else:
             print('Choose the correct finetune label')
 
-    def run_prediction_on_unseen(self, class_main, im_names, data_loader, name):
+    def run_prediction_on_unseen(self, class_main, data_loader, im_names, name):
         classes = np.load(class_main.params.outpath + '/classes.npy')
         PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
 
@@ -259,10 +259,10 @@ class import_and_train_model:
         To_write = [i + '------------------' + j for i, j in zip(im_names, output_label)]
         np.savetxt(data_loader.checkpoint_path + '/Predictions_avg_ens.txt', To_write, fmt='%s')
 
-    def load_model_and_run_prediction(self, data_loader, class_main):
-        self.import_deit_models(data_loader, class_main)
+    def load_model_and_run_prediction(self, class_main, data_loader):
+        self.import_deit_models(class_main,data_loader)
         if class_main.params.finetune == 0:
-            self.finetuning(data_loader, class_main, class_main.params.lr)
+            self.finetuning(class_main, data_loader, class_main.params.lr)
             self.run_prediction_on_unseen(class_main, data_loader, 'original')
 
         elif class_main.params.finetune == 1:
