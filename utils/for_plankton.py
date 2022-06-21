@@ -30,12 +30,11 @@ class CreateDataForPlankton:
         self.params = None
         return
 
-    def make_train_test_for_model(self, class_main):
-        Data = pd.read_pickle(class_main.params.outpath + '/Data.pickle')
-        classes = np.load(class_main.params.outpath + '/classes.npy')
+    def make_train_test_for_model(self, class_main, prep_data):
+        Data = prep_data.Data
 
-        if class_main.params.balance_weight == 'yes':
-            self.class_weights = pd.read_pickle(class_main.params.outpath + '/class_weights.pickle')
+        # Data = pd.read_pickle(class_main.params.outpath + '/Data.pickle')
+        # classes = np.load(class_main.params.outpath + '/classes.npy')
 
         if class_main.params.test_set == 'no':
             if class_main.params.ttkind == 'mixed':
@@ -204,27 +203,36 @@ class CreateDataForPlankton:
             data_val = 255 * data_val
             self.X_val = data_val.astype(np.uint8)
 
-        y_integers = np.argmax(trY, axis=1)
-        class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_integers), y=y_integers)
-        self.class_weights = torch.Tensor(class_weights)
-
         return
 
     def create_data_loaders(self, class_main):
         self.checkpoint_path = class_main.params.outpath + 'trained_models/' + class_main.params.init_name + '/'
         Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
-        train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
-        self.train_dataloader = DataLoader(train_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
-                                           pin_memory=True)
+        if class_main.params.test_set == 'yes' and class_main.params.valid_set == 'yes':
+            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
+            self.train_dataloader = DataLoader(train_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+                                               pin_memory=True)
 
-        test_dataset = CreateDataset(X=self.X_test, y=self.y_test)
-        self.test_dataloader = DataLoader(test_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
-                                          pin_memory=True)
+            test_dataset = CreateDataset(X=self.X_test, y=self.y_test)
+            self.test_dataloader = DataLoader(test_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+                                              pin_memory=True)
 
-        val_dataset = CreateDataset(X=self.X_val, y=self.y_val)
-        self.val_dataloader = DataLoader(val_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
-                                         pin_memory=True)
+            val_dataset = CreateDataset(X=self.X_val, y=self.y_val)
+            self.val_dataloader = DataLoader(val_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+                                             pin_memory=True)
+        elif class_main.params.test_set == 'no':
+            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
+            self.train_dataloader = DataLoader(train_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+                                               pin_memory=True)
+        elif class_main.params.test_set == 'yes' and class_main.params.valid_set == 'no':
+            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
+            self.train_dataloader = DataLoader(train_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+                                               pin_memory=True)
+
+            test_dataset = CreateDataset(X=self.X_test, y=self.y_test)
+            self.test_dataloader = DataLoader(test_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+                                              pin_memory=True)
 
 
 class AugmentedDataset(Dataset):

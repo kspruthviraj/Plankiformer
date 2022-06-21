@@ -13,6 +13,8 @@ from utils import create_data as cdata
 
 class CreateDataset:
     def __init__(self, initMode='default', verbose=True):
+        self.classes = None
+        self.Data = None
         self.initMode = initMode
         self.fsummary = None
         self.tt = None
@@ -55,17 +57,10 @@ class CreateDataset:
             self.data.Load(datapaths, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
                            datakind, training_data=training_data)
 
-        # # Reset parameters
-        # self.params.datapaths = self.data.datapath
-        # self.params.L = self.data.L
-        # self.params.class_select = self.data.class_select
-        # self.params.datakind = self.data.kind
-        # self.params.classifier = self.data.classifier
-        # self.params.compute_extrafeat = self.data.compute_extrafeat
-        # self.params.balance_weight = self.data.balance_weight
         return
 
-    def CreateTrainTestSets(self, class_main, ttkind=None, classifier=None, save_data=None, balance_weight=None, testSplit=None,
+    def CreateTrainTestSets(self, class_main, ttkind=None, classifier=None, save_data=None, balance_weight=None,
+                            testSplit=None,
                             valid_set=None, test_set=None, compute_extrafeat=None, random_state=12345):
         """
         Creates train and test sets using the CtrainTestSet class
@@ -120,21 +115,21 @@ class CreateDataset:
                 self.tt.testXfeat = scaler.transform(self.tt.testXfeat)
                 if class_main.params.valid_set == 'yes':
                     self.tt.valXfeat = scaler.transform(self.tt.valXfeat)
-                    Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
-                            self.tt.testFilenames, self.tt.testXimage, self.tt.testY,
-                            self.tt.valFilenames, self.tt.valXimage, self.tt.valY,
-                            self.tt.trainXfeat, self.tt.testXfeat, self.tt.valXfeat]
+                    self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
+                                 self.tt.testFilenames, self.tt.testXimage, self.tt.testY,
+                                 self.tt.valFilenames, self.tt.valXimage, self.tt.valY,
+                                 self.tt.trainXfeat, self.tt.testXfeat, self.tt.valXfeat]
                 elif class_main.params.valid_set == 'no':
-                    Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
-                            self.tt.testFilenames, self.tt.testXimage, self.tt.testY,
-                            [], [], [],
-                            self.tt.trainXfeat, self.tt.testXfeat, []]
+                    self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
+                                 self.tt.testFilenames, self.tt.testXimage, self.tt.testY,
+                                 [], [], [],
+                                 self.tt.trainXfeat, self.tt.testXfeat, []]
             elif class_main.params.test_set == 'no':
                 self.tt.trainXfeat = scaler.transform(self.tt.trainXfeat)
-                Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
-                        [], [], [],
-                        [], [], [],
-                        self.tt.trainXfeat, [], []]
+                self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
+                             [], [], [],
+                             [], [], [],
+                             self.tt.trainXfeat, [], []]
 
         elif class_main.params.ttkind == 'feat':
             scaler = StandardScaler()
@@ -145,40 +140,40 @@ class CreateDataset:
                 self.tt.testX = scaler.transform(self.tt.testX)
                 if class_main.params.valid_set == 'yes':
                     self.tt.valXfeat = scaler.transform(self.tt.valXfeat)
-                    Data = [self.tt.trainFilenames, [], self.tt.trainY,
-                            self.tt.testFilenames, [], self.tt.testY,
-                            self.tt.valFilenames, [], self.tt.valY,
-                            self.tt.trainX, self.tt.testX, self.tt.valX]
+                    self.Data = [self.tt.trainFilenames, [], self.tt.trainY,
+                                 self.tt.testFilenames, [], self.tt.testY,
+                                 self.tt.valFilenames, [], self.tt.valY,
+                                 self.tt.trainX, self.tt.testX, self.tt.valX]
                 elif class_main.params.valid_set == 'no':
-                    Data = [self.tt.trainFilenames, [], self.tt.trainY,
-                            self.tt.testFilenames, [], self.tt.testY,
-                            [], [], [],
-                            self.tt.trainX, self.tt.testX, []]
+                    self.Data = [self.tt.trainFilenames, [], self.tt.trainY,
+                                 self.tt.testFilenames, [], self.tt.testY,
+                                 [], [], [],
+                                 self.tt.trainX, self.tt.testX, []]
 
             elif class_main.params.test_set == 'no':
                 self.tt.trainX = scaler.transform(self.tt.trainX)
-                Data = [self.tt.trainFilenames, [], self.tt.trainY,
-                        [], [], [],
-                        [], [], [],
-                        self.tt.trainX, [], []]
+                self.Data = [self.tt.trainFilenames, [], self.tt.trainY,
+                             [], [], [],
+                             [], [], [],
+                             self.tt.trainX, [], []]
 
         elif class_main.params.ttkind == 'image' and class_main.params.compute_extrafeat == 'no':
             if class_main.params.test_set == 'yes':
                 if class_main.params.valid_set == 'yes':
-                    Data = [self.tt.trainFilenames, self.tt.trainX, self.tt.trainY,
-                            self.tt.testFilenames, self.tt.testX, self.tt.testY,
-                            self.tt.valFilenames, self.tt.valX, self.tt.valY,
-                            [], [], []]
+                    self.Data = [self.tt.trainFilenames, self.tt.trainX, self.tt.trainY,
+                                 self.tt.testFilenames, self.tt.testX, self.tt.testY,
+                                 self.tt.valFilenames, self.tt.valX, self.tt.valY,
+                                 [], [], []]
                 elif class_main.params.valid_set == 'no':
-                    Data = [self.tt.trainFilenames, self.tt.trainX, self.tt.trainY,
-                            self.tt.testFilenames, self.tt.testX, self.tt.testY,
-                            [], [], [],
-                            [], [], []]
+                    self.Data = [self.tt.trainFilenames, self.tt.trainX, self.tt.trainY,
+                                 self.tt.testFilenames, self.tt.testX, self.tt.testY,
+                                 [], [], [],
+                                 [], [], []]
             elif class_main.params.test_set == 'no':
-                Data = [self.tt.trainFilenames, self.tt.trainX, self.tt.trainY,
-                        [], [], [],
-                        [], [], [],
-                        [], [], []]
+                self.Data = [self.tt.trainFilenames, self.tt.trainX, self.tt.trainY,
+                             [], [], [],
+                             [], [], [],
+                             [], [], []]
 
         elif class_main.params.ttkind == 'image' and class_main.params.compute_extrafeat == 'yes':
             scaler = StandardScaler()
@@ -190,27 +185,27 @@ class CreateDataset:
                 if self.params.valid_set == 'yes':
                     self.tt.valXfeat = scaler.transform(self.tt.valXfeat)
 
-                    Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
-                            self.tt.testFilenames, self.tt.testXimage, self.tt.testY,
-                            self.tt.valFilenames, self.tt.valXimage, self.tt.valY,
-                            self.tt.trainXfeat, self.tt.testXfeat, self.tt.valXfeat]
+                    self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
+                                 self.tt.testFilenames, self.tt.testXimage, self.tt.testY,
+                                 self.tt.valFilenames, self.tt.valXimage, self.tt.valY,
+                                 self.tt.trainXfeat, self.tt.testXfeat, self.tt.valXfeat]
                 elif class_main.params.valid_set == 'no':
-                    Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
-                            self.tt.testFilenames, self.tt.testXimage, self.tt.testY,
-                            [], [], [],
-                            self.tt.trainXfeat, self.tt.testXfeat, []]
+                    self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
+                                 self.tt.testFilenames, self.tt.testXimage, self.tt.testY,
+                                 [], [], [],
+                                 self.tt.trainXfeat, self.tt.testXfeat, []]
             elif class_main.params.test_set == 'no':
                 self.tt.trainXfeat = scaler.transform(self.tt.trainXfeat)
-                Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
-                        [], [], [],
-                        [], [], [],
-                        self.tt.trainXfeat, [], []]
+                self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
+                             [], [], [],
+                             [], [], [],
+                             self.tt.trainXfeat, [], []]
         else:
             print("Set the right data type")
 
         if class_main.params.save_data == 'yes':
             with open(class_main.params.outpath + '/Data.pickle', 'wb') as a:
-                pickle.dump(Data, a)
+                pickle.dump(self.Data, a)
 
         if class_main.params.balance_weight == 'yes':
             with open(class_main.params.outpath + '/class_weights.pickle', 'wb') as cw:
@@ -218,9 +213,17 @@ class CreateDataset:
 
         # To Save classes and filenames
         np.save(class_main.params.outpath + '/classes.npy', self.tt.lb.classes_)
+        # self.classes = self.tt.lb.classes_
 
-        Filenames_for_Ensemble = [self.tt.trainFilenames, self.tt.testFilenames]
-        with open(class_main.params.outpath + '/Filenames_for_Ensemble_training.pickle', 'wb') as b:
-            pickle.dump(Filenames_for_Ensemble, b)
+        if class_main.params.test_set == 'yes' and class_main.params.valid_set == 'yes':
+            Filenames = [self.tt.trainFilenames, self.tt.testFilenames, self.tt.valFilenames]
+        elif class_main.params.test_set == 'yes' and class_main.params.valid_set == 'no':
+            Filenames = [self.tt.trainFilenames, self.tt.testFilenames]
+        elif class_main.params.test_set == 'no':
+            Filenames = [self.tt.trainFilenames]
+        else:
+            Filenames = ['']
+        with open(class_main.params.outpath + '/Files_used_for_training_testing.pickle', 'wb') as b:
+            pickle.dump(Filenames, b)
 
         return

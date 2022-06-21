@@ -188,10 +188,18 @@ if __name__ == '__main__':
 
     # For Plankton
     for_plankton = fplankton.CreateDataForPlankton()
-    for_plankton.make_train_test_for_model(inp_params)
+    for_plankton.make_train_test_for_model(inp_params, prep_data)
     for_plankton.create_data_loaders(inp_params)
+
+    # For Plankton testing
+    for_plankton = fplankton.CreateDataForPlankton()
+    for_plankton.make_train_test_for_model(inp_params, prep_data)
+    for_plankton.create_data_loaders(inp_params)
+
 
     # Model Training
     model_training = mt.import_and_train_model()
     # Run training
     model_training.train_and_save(for_plankton, inp_params)
+
+    model_training.load_model_and_run_prediction(for_plankton, inp_params)

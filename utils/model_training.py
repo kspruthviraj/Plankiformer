@@ -30,8 +30,9 @@ class import_and_train_model:
         return
 
     def import_deit_models(self, data_loader, class_main):
+        classes = np.load(class_main.params.outpath + '/classes.npy')
         self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
-                                       num_classes=len(np.unique(data_loader.y_train)))
+                                       num_classes=len(np.unique(classes)))
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model)
         self.model.to(device)
@@ -59,16 +60,6 @@ class import_and_train_model:
         # Early stopping and lr scheduler
         self.lr_scheduler = LRScheduler(self.optimizer)
         self.early_stopping = EarlyStopping()
-
-    def finetuning(self, data_loader, class_main, lr):
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.model.to(device)
-        self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
-        torch.cuda.set_device(class_main.params.gpu_id)
-        self.model.cuda(class_main.params.gpu_id)
-        self.criterion = self.criterion.cuda(class_main.params.gpu_id)
-        # Observe that all parameters are being optimized
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=class_main.params.weight_decay)
 
     def run_training(self, class_main, data_loader, epochs, lr, name):
 
@@ -200,6 +191,16 @@ class import_and_train_model:
                                                                                               clf_report))
         f.close()
 
+    def finetuning(self, data_loader, class_main, lr):
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.model.to(device)
+        self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
+        torch.cuda.set_device(class_main.params.gpu_id)
+        self.model.cuda(class_main.params.gpu_id)
+        self.criterion = self.criterion.cuda(class_main.params.gpu_id)
+        # Observe that all parameters are being optimized
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=class_main.params.weight_decay)
+
     def train_and_save(self, data_loader, class_main):
         self.import_deit_models(data_loader, class_main)
         if class_main.params.finetune == 0:
@@ -210,24 +211,67 @@ class import_and_train_model:
             self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, "original")
             self.run_prediction(class_main, data_loader, 'original')
 
+            self.finetuning(data_loader, class_main, class_main.params.lr / 10)
             self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr / 10,
                               "tuned")
             self.run_prediction(class_main, data_loader, 'tuned')
-            self.finetuning(data_loader, class_main, class_main.params.lr / 10)
 
         elif class_main.params.finetune == 2:
             self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, "original")
             self.run_prediction(class_main, data_loader, 'original')
 
+            self.finetuning(data_loader, class_main, class_main.params.lr / 10)
             self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr / 10,
                               "tuned")
             self.run_prediction(class_main, data_loader, 'tuned')
-            self.finetuning(data_loader, class_main, class_main.params.lr / 10)
 
+            self.finetuning(data_loader, class_main, class_main.params.lr / 100)
             self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr / 100,
                               "finetuned")
             self.run_prediction(class_main, data_loader, 'finetuned')
-            self.finetuning(data_loader, class_main, class_main.params.lr / 100)
+        else:
+            print('Choose the correct finetune label')
+
+    def run_prediction_on_unseen(self, class_main, im_names, data_loader, name):
+        classes = np.load(class_main.params.outpath + '/classes.npy')
+        PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
+
+        checkpoint = torch.load(PATH)
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+        output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model, time_begin=None)
+
+        output = torch.cat(output)
+        prob = torch.cat(prob)
+
+        output = output.cpu().numpy()
+        prob = prob.cpu().numpy()
+
+        output_max = output.argmax(axis=1)
+
+        output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
+
+        Pred_PredLabel_Prob = [output_max, output_label, prob]
+        with open(data_loader.checkpoint_path + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
+            pickle.dump(Pred_PredLabel_Prob, cw)
+
+        To_write = [i + '------------------' + j for i, j in zip(im_names, output_label)]
+        np.savetxt(data_loader.checkpoint_path + '/Predictions_avg_ens.txt', To_write, fmt='%s')
+
+    def load_model_and_run_prediction(self, data_loader, class_main):
+        self.import_deit_models(data_loader, class_main)
+        if class_main.params.finetune == 0:
+            self.finetuning(data_loader, class_main, class_main.params.lr)
+            self.run_prediction_on_unseen(class_main, data_loader, 'original')
+
+        elif class_main.params.finetune == 1:
+            self.finetuning(data_loader, class_main, class_main.params.lr)
+            self.run_prediction_on_unseen(class_main, data_loader, 'tuned')
+
+        elif class_main.params.finetune == 2:
+            self.finetuning(data_loader, class_main, class_main.params.lr)
+            self.run_prediction_on_unseen(class_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')
 
@@ -447,3 +491,23 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
     print('Time taken for prediction (in mins): {}'.format(total_mins))
 
     return avg_acc1, targets, outputs, probs
+
+
+def cls_predict_on_unseen(test_loader, model, time_begin=None):
+    model.eval()
+    outputs = []
+    probs = []
+    with torch.no_grad():
+        for i, (images) in enumerate(test_loader):
+            device = torch.device("cpu")
+            images = images.to(device)
+
+            output = model(images)
+            outputs.append(output)
+            prob = torch.nn.functional.softmax(output, dim=1)
+            probs.append(prob)
+
+    total_mins = -1 if time_begin is None else (time() - time_begin) / 60
+    print('Time taken for prediction (in mins): {}'.format(total_mins))
+
+    return outputs, probs

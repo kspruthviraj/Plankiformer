@@ -101,7 +101,7 @@ class Cpred:
 
 
 class Censemble:
-    ''' Class for ensembling predictions from different models'''
+    """ Class for ensembling predictions from different models"""
 
     def __init__(self,
                  modelnames=['./trained-models/conv2/keras_model.h5'],
@@ -150,7 +150,7 @@ class Censemble:
             counti = counti + 1
 
     def InitPredictors(self):
-        ''' Initialize the predictors from the files '''
+        """ Initialize the predictors from the files """
 
         predictors = []
 
@@ -174,7 +174,7 @@ class Censemble:
             pred.PredictionBundle(npimagesL)
 
     def Abstain(self, predictions, confidences, pr, thres=0, metric='prob'):
-        ''' Apply abstention according to softmax probability or to participation ratio '''
+        """ Apply abstention according to softmax probability or to participation ratio """
 
         if metric == 'prob':
             filtro = list(filter(lambda i: confidences[i] > thres, range(self.nmodels)))
