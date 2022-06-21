@@ -191,16 +191,6 @@ class import_and_train_model:
                                                                                               clf_report))
         f.close()
 
-    def finetuning(self, class_main, data_loader, lr):
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.model.to(device)
-        self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
-        torch.cuda.set_device(class_main.params.gpu_id)
-        self.model.cuda(class_main.params.gpu_id)
-        self.criterion = self.criterion.cuda(class_main.params.gpu_id)
-        # Observe that all parameters are being optimized
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=class_main.params.weight_decay)
-
     def train_and_save(self, class_main, data_loader):
         self.import_deit_models(data_loader, class_main)
         if class_main.params.finetune == 0:
@@ -211,7 +201,7 @@ class import_and_train_model:
             self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, "original")
             self.run_prediction(class_main, data_loader, 'original')
 
-            self.finetuning(data_loader, class_main, class_main.params.lr / 10)
+            self.initialize_model(data_loader, class_main, class_main.params.lr / 10)
             self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr / 10,
                               "tuned")
             self.run_prediction(class_main, data_loader, 'tuned')
@@ -220,21 +210,22 @@ class import_and_train_model:
             self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, "original")
             self.run_prediction(class_main, data_loader, 'original')
 
-            self.finetuning(data_loader, class_main, class_main.params.lr / 10)
+            self.initialize_model(data_loader, class_main, class_main.params.lr / 10)
             self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr / 10,
                               "tuned")
             self.run_prediction(class_main, data_loader, 'tuned')
 
-            self.finetuning(data_loader, class_main, class_main.params.lr / 100)
+            self.initialize_model(data_loader, class_main, class_main.params.lr / 100)
             self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr / 100,
                               "finetuned")
             self.run_prediction(class_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')
 
-    def run_prediction_on_unseen(self, class_main, data_loader, im_names, name):
+    def run_prediction_on_unseen(self, class_main, data_loader, name):
         classes = np.load(class_main.params.outpath + '/classes.npy')
         PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
+        im_names = data_loader.Filenames
 
         checkpoint = torch.load(PATH)
         self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -259,18 +250,28 @@ class import_and_train_model:
         To_write = [i + '------------------' + j for i, j in zip(im_names, output_label)]
         np.savetxt(data_loader.checkpoint_path + '/Predictions_avg_ens.txt', To_write, fmt='%s')
 
+    def initialize_model(self, class_main, data_loader, lr):
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.model.to(device)
+        self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
+        torch.cuda.set_device(class_main.params.gpu_id)
+        self.model.cuda(class_main.params.gpu_id)
+        self.criterion = self.criterion.cuda(class_main.params.gpu_id)
+        # Observe that all parameters are being optimized
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=class_main.params.weight_decay)
+
     def load_model_and_run_prediction(self, class_main, data_loader):
-        self.import_deit_models(class_main,data_loader)
+        self.import_deit_models(class_main, data_loader)
         if class_main.params.finetune == 0:
-            self.finetuning(class_main, data_loader, class_main.params.lr)
+            self.initialize_model(class_main, data_loader, class_main.params.lr)
             self.run_prediction_on_unseen(class_main, data_loader, 'original')
 
         elif class_main.params.finetune == 1:
-            self.finetuning(data_loader, class_main, class_main.params.lr)
+            self.initialize_model(data_loader, class_main, class_main.params.lr)
             self.run_prediction_on_unseen(class_main, data_loader, 'tuned')
 
         elif class_main.params.finetune == 2:
-            self.finetuning(data_loader, class_main, class_main.params.lr)
+            self.initialize_model(data_loader, class_main, class_main.params.lr)
             self.run_prediction_on_unseen(class_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')

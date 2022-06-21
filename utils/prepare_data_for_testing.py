@@ -2,19 +2,14 @@
 # IMPORTS #
 ###########
 
-import pickle
-
 import joblib
-import numpy as np
-from joblib import dump
-from sklearn.preprocessing import StandardScaler
 
 from utils import create_data as cdata
-from utils.create_data import DropCols, RemoveUselessCols
 
 
 class CreateDataset:
     def __init__(self, initMode='default', verbose=True):
+        self.Filenames = None
         self.valid_set = None
         self.test_set = None
         self.Data = None
@@ -32,7 +27,7 @@ class CreateDataset:
 
         return
 
-    def LoadData(self, class_main, pred_main):
+    def LoadData(self, test_main, train_main):
         """
         Loads dataset using the function in the Cdata class.
         Acts differently in case it is the first time or not that the data is loaded
@@ -41,36 +36,36 @@ class CreateDataset:
         """
 
         # Default values
-        datapaths = pred_main.params.datapaths
-        L = class_main.params.L
-        class_select = class_main.params.class_select  # class_select==None has the explicit
+        testpath = test_main.params.testpath
+        L = train_main.params.L
+        class_select = train_main.params.class_select  # class_select==None has the explicit
         # meaning of selecting all the classes
-        classifier = class_main.params.classifier
-        compute_extrafeat = class_main.params.compute_extrafeat
-        resize_images = class_main.params.resize_images
-        balance_weight = class_main.params.balance_weight
-        datakind = class_main.params.datakind
-        training_data = class_main.params.training_data
+        classifier = train_main.params.classifier
+        compute_extrafeat = train_main.params.compute_extrafeat
+        resize_images = train_main.params.resize_images
+        balance_weight = train_main.params.balance_weight
+        datakind = train_main.params.datakind
+        training_data = train_main.params.training_data
 
         # Initialize or Load Data Structure
         if self.data is None:
-            self.data = cdata.Cdata(datapaths, L, class_select, classifier, compute_extrafeat, resize_images,
+            self.data = cdata.Cdata(testpath, L, class_select, classifier, compute_extrafeat, resize_images,
                                     balance_weight, datakind, training_data=training_data)
         else:
-            self.data.Load(datapaths, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
+            self.data.Load(testpath, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
                            datakind, training_data=training_data)
 
         return
 
-    def CreateTrainTestSets(self, class_main, ttkind=None, classifier=None, save_data=None, balance_weight=None,
-                            testSplit=None, valid_set=None, test_set=None, compute_extrafeat=None, random_state=12345):
+    def CreateTrainTestSets(self, train_main, ttkind=None, classifier=None, balance_weight=None,
+                            valid_set=None, compute_extrafeat=None, random_state=12345):
         """
         Creates train and test sets using the CtrainTestSet class
         """
 
         # Set default value for ttkind
         if ttkind is None:
-            ttkind = class_main.params.ttkind
+            ttkind = train_main.params.ttkind
         else:
             self.params.ttkind = ttkind
 
@@ -81,13 +76,13 @@ class CreateDataset:
         self.test_set = 'no'
 
         if classifier is None:
-            classifier = class_main.params.classifier
+            classifier = train_main.params.classifier
 
         if balance_weight is None:
-            balance_weight = class_main.params.balance_weight
+            balance_weight = train_main.params.balance_weight
 
         if compute_extrafeat is None:
-            compute_extrafeat = class_main.params.compute_extrafeat
+            compute_extrafeat = train_main.params.compute_extrafeat
 
         self.tt = cdata.CTrainTestSet(self.data.X, self.data.y, self.data.filenames,
                                       ttkind=ttkind, classifier=classifier, balance_weight=balance_weight,
@@ -95,30 +90,30 @@ class CreateDataset:
                                       compute_extrafeat=compute_extrafeat, random_state=random_state)
 
         # To store the data
-        if class_main.params.ttkind == 'mixed':
-            scaler = joblib.load(class_main.params.outpath + '/Features_scaler_used_for_MLP.joblib')
+        if train_main.params.ttkind == 'mixed':
+            scaler = joblib.load(train_main.params.outpath + '/Features_scaler_used_for_MLP.joblib')
             self.tt.trainXfeat = scaler.transform(self.tt.trainXfeat)
             self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
                          [], [], [],
                          [], [], [],
                          self.tt.trainXfeat, [], []]
 
-        elif class_main.params.ttkind == 'feat':
-            scaler = joblib.load(class_main.params.outpath + '/Features_scaler_used_for_MLP.joblib')
+        elif train_main.params.ttkind == 'feat':
+            scaler = joblib.load(train_main.params.outpath + '/Features_scaler_used_for_MLP.joblib')
             self.tt.trainX = scaler.transform(self.tt.trainX)
             self.Data = [self.tt.trainFilenames, [], self.tt.trainY,
                          [], [], [],
                          [], [], [],
                          self.tt.trainX, [], []]
 
-        elif class_main.params.ttkind == 'image' and class_main.params.compute_extrafeat == 'no':
+        elif train_main.params.ttkind == 'image' and train_main.params.compute_extrafeat == 'no':
             self.Data = [self.tt.trainFilenames, self.tt.trainX, self.tt.trainY,
                          [], [], [],
                          [], [], [],
                          [], [], []]
 
-        elif class_main.params.ttkind == 'image' and class_main.params.compute_extrafeat == 'yes':
-            scaler = joblib.load(class_main.params.outpath + '/Features_scaler_used_for_MLP.joblib')
+        elif train_main.params.ttkind == 'image' and train_main.params.compute_extrafeat == 'yes':
+            scaler = joblib.load(train_main.params.outpath + '/Features_scaler_used_for_MLP.joblib')
             self.tt.trainXfeat = scaler.transform(self.tt.trainXfeat)
             self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
                          [], [], [],
@@ -127,4 +122,6 @@ class CreateDataset:
         else:
             print("Set the right data type")
 
+        self.Filenames = [self.tt.trainFilenames]
+        
         return

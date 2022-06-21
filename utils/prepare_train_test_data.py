@@ -13,6 +13,7 @@ from utils import create_data as cdata
 
 class CreateDataset:
     def __init__(self, initMode='default', verbose=True):
+        self.Filenames = None
         self.classes = None
         self.Data = None
         self.initMode = initMode
@@ -216,14 +217,14 @@ class CreateDataset:
         # self.classes = self.tt.lb.classes_
 
         if class_main.params.test_set == 'yes' and class_main.params.valid_set == 'yes':
-            Filenames = [self.tt.trainFilenames, self.tt.testFilenames, self.tt.valFilenames]
+            self.Filenames = [self.tt.trainFilenames, self.tt.testFilenames, self.tt.valFilenames]
         elif class_main.params.test_set == 'yes' and class_main.params.valid_set == 'no':
-            Filenames = [self.tt.trainFilenames, self.tt.testFilenames]
+            self.Filenames = [self.tt.trainFilenames, self.tt.testFilenames]
         elif class_main.params.test_set == 'no':
-            Filenames = [self.tt.trainFilenames]
+            self.Filenames = [self.tt.trainFilenames]
         else:
-            Filenames = ['']
+            self.Filenames = ['']
         with open(class_main.params.outpath + '/Files_used_for_training_testing.pickle', 'wb') as b:
-            pickle.dump(Filenames, b)
+            pickle.dump(self.Filenames, b)
 
         return

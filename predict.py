@@ -1,378 +1,120 @@
+###########
+# IMPORTS #
+###########
 
 import argparse
-import glob
-import numpy as np
-import os
 import pathlib
-# from PIL import Image
-from collections import Counter
-from pathlib import Path
+import sys
 
-__UNCLASSIFIED__ = 'Unclassified'
+import numpy as np
 
-
-# Participation ratio
-def PR(vec):
-    """
-    if vec is:
-    - fully localized:   PR=1
-    - fully delocalized: PR=N
-    """
-    num = np.square(np.sum(vec))
-    den = np.square(vec).sum()
-    return num / den
+from utils import for_plankton_test as fplankton_test
+from utils import model_training as mt
+from utils import prepare_data_for_testing as pdata_test
+import main
 
 
-class Cpred:
-    """
-    This class loads a model and makes predictions.
-
-    Class initialization does everything. To obtain the predictions call the Predict() method
-
-    """
-
-    def __init__(self, modelname='Init_0/trained_model_finetuned.pth',
-                 modelpath='/local/kyathasr/Plankiformer/out/phyto_super_class/',
-                 verbose=False):
-
-        # Set class variables
-        self.modelname = modelname
+class LoadInputParameters:
+    def __init__(self, initMode='default', verbose=True):
+        self.fsummary = None
+        self.tt = None
         self.verbose = verbose
-        self.modelpath = modelpath
-
-        # Read parameters of the model that is loaded
-        # if modelpath is None: raise ValueError('CPred: modelpath cannot be None.')
-
-        self.classes = np.load(self.modelpath + '/classes.npy')
-        self.LoadModel()
-
+        self.params = None
+        self.paramsDict = None
+        self.data = None
+        self.trainSize = None
+        self.testSize = None
+        self.model = None
+        self.opt = None
+        self.SetParameters(mode=initMode)
+        self.test_path = None
+        self.model_path = None
+        self.outpath = None
+        self.init_name = None
         return
 
-    def Predict(self, npimages):
-        return self.simPred.model.predict(npimages)
-
-    def PredictionBundle(self, npimages):
-        ''' Calculates a bunch of quantities related to the predictions '''
-
-        nimages = len(npimages)
-        self.probs = self.Predict(npimages)
-
-        # Predictions
-        self.predictions = self.probs.argmax(axis=1)  # The class that the classifier would bet on
-        self.confidences = self.probs.max(
-            axis=1)  # equivalent to: [probs[i][predictions[i]] for i in range(len(probs))]
-        self.predictions_names = np.array([self.classes[self.predictions[i]] for i in range(nimages)], dtype=object)
-
-        # Classifier's second choice
-        self.predictions2 = self.probs.argsort(axis=1)[:, -2]  # The second most likely class
-        self.confidences2 = np.array([self.probs[i][self.predictions2[i]] for i in range(nimages)], dtype=float)
-        self.predictions2_names = np.array([self.classes[self.predictions2[i]] for i in range(nimages)], dtype=object)
-
-        # Participation Ratio
-        self.pr = np.array(list(map(PR, self.probs)), dtype=float)
-
+    def SetParameters(self, mode='default'):
+        """ default, from args"""
+        if mode == 'default':
+            self.ReadArgs(string=None)
+        elif mode == 'args':
+            self.ReadArgs(string=sys.argv[1:])
+        else:
+            print('Unknown parameter mode', mode)
+            raise NotImplementedError
         return
 
-    def LoadModel(self):
+    def ReadArgs(self, string=None):
+        if string is None:
+            string = ""
 
-        # Create a Ctrain object. Maybe it is not needed, and we could straight out load the model.
-        self.simPred = t.Ctrain(verbose=False)
+        parser = argparse.ArgumentParser(description='Create Dataset')
 
-        # 		try:
-        # 			self.simPred.params=np.load(self.modelpath+'/params.npy' , allow_pickle=True).item()
+        parser.add_argument('-test_path', default='./data/', help="directory where you want to predict")
+        parser.add_argument('-model_path', default='./out/trained_models/', help="directory where you want to predict")
+        parser.add_argument('-outpath', default='./out/', help="directory where you want to predict")
+        parser.add_argument('-init_name', default='Init_01',
+                            help="directory name where you want the Best models to be saved")
 
-        # 		except:
-        # 			print('WARNING: We were not able to load ',self.modelpath+'/params.npy')
-        # 		self.simPred.LoadModel(self.modelname, self.weightsname) # Loads models and updates weights
+        args = parser.parse_args(string)
 
-        try:
-            self.simPred.params = np.load(self.modelpath + '/params.npy', allow_pickle=True).item()
+        self.params = args
 
-        except:
-            print('WARNING: We were not able to load ', self.modelpath + '/params.npy')
-            try:
-                p = Path(self.modelpath).parents[4]
-                self.simPred.params = np.load(str(p) + '/params.npy', allow_pickle=True).item()
-                print('LOADED : ', str(p) + '/params.npy')
-            except:
-                print('WARNING: We were not able to load ', str(p) + '/params.npy')
+        if self.verbose:
+            print(args)
+        return
 
-        self.simPred.LoadModel(self.modelname, self.weightsname)  # Loads models and updates weights
+    def CreateOutDir(self):
+        """ Create a unique output directory, and put inside it a file with the simulation parameters """
+        pathlib.Path(self.params.outpath).mkdir(parents=True, exist_ok=True)
+        return
 
+    def read_train_param_file(self):
+        self.simPred = main.LoadInputParameters(verbose=False)
+        self.simPred.params = np.load(self.params.model_path + '/params.npy', allow_pickle=True).item()
+        return
 
-class Censemble:
-    """ Class for ensembling predictions from different models"""
-
-    def __init__(self,
-                 modelnames=['./trained-models/conv2/keras_model.h5'],
-                 weightnames=['./trained-models/conv2/bestweights.hdf5'],
-                 testdirs=['data/1_zooplankton_0p5x/validation/tommy_validation/images/dinobryon/'],
-                 labels=None, verbose=False,
-                 ensMethod='unanimity', absthres=0,
-                 absmetric='proba', screen=True,
-                 training_data=False):
-
-        self.modelnames = modelnames  # List with the model names
-        assert (len(self.modelnames) == len(set(self.modelnames)))  # No repeated models!
-        self.nmodels = len(modelnames)
-        self.weightnames = weightnames if (len(modelnames) == len(weightnames)) else np.full(len(modelnames),
-                                                                                             weightnames)  # Usually, the file with the best weights of the run
-        self.testdirs = testdirs  # Directories with the data we want to label
-        self.verbose = verbose  # Whether to display lots of text
-        self.ensMethod = ensMethod  # Ensembling method
-        self.absthres = absthres  # Abstention threshold
-        self.labels = labels
-        self.absmetric = absmetric  # use confidence or PR for abstention
-        self.screen = screen
-
-        # Initialize predictors
-        self.predictors, self.classnames = self.InitPredictors()
-
-        sizes = list(set([self.predictors[im].simPred.params.L for im in range(self.nmodels)]))
-
-        # 		resize_images = self.predictors[0].simPred.params.resize_images ## This needs to be written elegently later
-        # 		resize_image_list = list(set([self.predictors[im].simPred.params.resize_images  for im in range(self.nmodels)]) )
-
-        # Initialize data  to predict
-        self.im_names, self.im_labels = self.GetImageNames(training_data=training_data)
-        self.npimages = {}  # Models are tailored to specific image sizes
-
-        # 		for L in sizes:
-        # # 			self.npimages[L] = hd.LoadImageList(self.im_names, L, show=False) # Load images
-        # 			self.npimages[L] = hd.LoadImageList(self.im_names, L,resize_images, show=False) # Load
-
-        counti = 0
-        for L in sizes:
-            resize_image = self.predictors[counti].simPred.params.resize_images
-
-            # 			self.npimages[L] = hd.LoadImageList(self.im_names, L, show=False) # Load images
-            self.npimages[L] = hd.LoadImageList(self.im_names, L, resize_image, show=False)  # Load
-            counti = counti + 1
-
-    def InitPredictors(self):
-        """ Initialize the predictors from the files """
-
-        predictors = []
-
-        for imn, mname in enumerate(self.modelnames):
-
-            # modelpath,modelname=os.path.split(mname)
-            predictors.append(Cpred(modelname=mname, weightsname=self.weightnames[imn]))
-
-            # Check that all models use the same classes
-            if 0 == imn:
-                classnames = predictors[imn].classes
-            else:
-                assert np.all(classnames == predictors[imn].classes), "Class names for different models do not coincide"
-
-        return predictors, classnames
-
-    def MakePredictions(self):
-
-        for pred in self.predictors:
-            npimagesL = self.npimages[pred.simPred.params.L]
-            pred.PredictionBundle(npimagesL)
-
-    def Abstain(self, predictions, confidences, pr, thres=0, metric='prob'):
-        """ Apply abstention according to softmax probability or to participation ratio """
-
-        if metric == 'prob':
-            filtro = list(filter(lambda i: confidences[i] > thres, range(self.nmodels)))
-        elif metric == 'pr':
-            filtro = list(filter(lambda i: pr[i] > thres, range(nmodels)))
-
-        predictions = predictions[filtro]
-        confidences = confidences[filtro]
-        pr = pr 		[filtro]
-
-        return predictions, confidences, pr
-
-
-    def Unanimity(self, predictions):
-        ''' Applies unanimity rule to predictions '''
-        if len(set(prediction s) )==1:
-            return self.classnames[predictions[0]]
-        else:
-            return __UNCLASSIFIED__
-
-
-    def GetImageNames(self, training_data=False):
-        '''
-        training_data is an auxiliary variable introduced to solve inconsistencies in the data structure
-        '''
-
-        training_data_str i ng='/training_data' if training_data else ''
-
-        all_labels = []
-        all_na s  = []
-        for i td,td in enumerate(self.testdirs):
-
-            if not os.path.isdir(td):
-                print('You told me to read the images from a directory that does not exist:\n{}'.format(td))
-                raise IOError
-
-            im_names_here = np.array(glob.glob ( td+training_data_str i ng+'/*.jpeg '),dtype=object)
-            all_names.exted( im_names_here)
-
-            if self.labels is not None:
-                all_labels.extend([self.labels[itd] for i in range(len(im_names_here))])
-
-        # Check that the paths contained images
-        if len(all_nam e s)<1:
-            print('We found no .jpeg images')
-            print('Folders that should contain the images :',self.testdirs)
-            print('Content of the folders :',os.listdir(self.testdirs))
-            raise IOError()
-        else:
-            if self.verbose:
-                print('There are {} images in {}'.format(len(im_names), td))
-
-        return np.array(all_names), (None if self.lab el s==None else np.array(all_labels))
-
-
-    def Majority(self, predictions):
-
-        if len(set(prediction s) )==0:
-            return __UNCLASSIFIED__
-        elif len(set(prediction s) )==1:
-            return self.classnames[predictions[0]]
-        else:
-            coun t er=Counter(predictions)
-            # amax = np.argmax( list(counter.values()) )
-            a x  = np.argsort(list(counter.values()))[-  1] # Index (in counter) of the highest value
-            amax2 = np.argsort(list(counter.values()))[  -2] # Index of second highest value
-
-            if list(counter.values())[amax] == list(counter.values())[am  x2]: # there is a tie
-                return __UNCLASSIFIED__
-            else:
-                imaj = list(counter.keys())[amax]
-                return self.classnames[imaj]
-
-
-    def WeightedMajority(self, predictions, confidences, absthres):
-        if len(set(predicti o ns))>0:
-            cum_conf  = {} # For each iclass, stores the cumulative confidence
-            for ic in predictions:
-                cum_conf[ic] = 0
-                for imod in range(self.nmodels):
-                    if predictions[ im od]==ic:
-                        cum_con f[ ic]+=confidences[imod]
-            amax = np.argmax(list(cum_conf.values()))
-            imaj = list(cum_conf.keys())[amax]
-
-            if list(cum_conf.values())[ a max]>absthres:
-                return self.classnames[imaj]
-            else:
-                return __UNCLASSIFIED__
-        else:
-            return __UNCLASSIFIED__
-
-
-    def Leader(self, predictions, confidences):
-        if len(set(predicti o ns))>0:
-            ileader = np.argmax(confidences)
-            return self.classnames[predictions[ileader]]
-        else:
-            return __UNCLASSIFIED__
-
-
-    def Ensemble(self, method, absthres):
-        ''' 
-        Loop over the images
-        For each image, generates an ensemble prediction
-        ''' if   method == None:   method = self.ensMethod
-        if absthres == None: absthres = self.absthres
-
-        self.guesses = []
-        for iim,im _name in enumerate(self.im_names):
-            predictions = np.array([self.predictors[imod].predictions[iim] for imod in range(self.nmodels)])
-            confidences = np.array([self.predictors[imod].confidences[iim] for imod in range(self.nmodels)])
-            pr 			= np.array([self.predictors[imod].pr		 [iim] for imod in range(self.nmodels)])
-
-            # Abstention
-            if absthre s >0 and (metho d! ='weighted-majority'):
-                predictions, confidences, pr = self.Abstain(predictions, confidences, pr, thres=absthres, metric='prob')
-
-            if self.verbose:
-                print('\n' ,predictions, confidences, pr)
-
-            ## Different kinds of ensembling
-            if method == 'unanimity': # Predict only if all models agree
-                guess = (im_name, self.Unanimity(predictions) )
-
-            elif method == 'leader': # Follow-the-leader: only give credit to the most confident prediction
-                guess = (im_name, self.Leader(predictions, confidences) )
-
-            elif method == 'majority': # Predict with most popular selection
-                guess = (im_name, self.Majority(predictions))
-
-            elif method == 'weighted-majority': # Weighted Majority (like majority, but each is weighted by their confidence)
-                guess = (im_name, self.WeightedMajority(predictions, confidences, absthres))
-
-            if self.screen:
-                print("{} {}".format(guess[0], guess[1]) )
-            self.guesses.append(guess)
-
-        self.guesse s =np.array(self.guesses)
+    def UpdateParams(self, **kwargs):
+        """ Updates the parameters given in kwargs, and updates params.txt"""
+        self.paramsDict = vars(self.params)
+        if kwargs is not None:
+            for key, value in kwargs.items():
+                self.paramsDict[key] = value
+        self.CreateOutDir()
 
         return
 
 
-    def WriteGuesses(self, filename):
-        '''
-        Create output directory and save predictions
-            filename includes the path
-        '''
+if __name__ == '__main__':
+    print('\nRunning', sys.argv[0], sys.argv[1:])
 
-        outpath ,outnam e =os.path.split(filename)
-        pathlib.Path(outpath).mkdir(parents=True, exist_ok=True)
-        np.savetxt(filename, self.guesses, fmt='%s %s')
-        return
+    # Loading Testing Input parameters
+    inp_params = LoadInputParameters(initMode='args')
+    inp_params.CreateOutDir()
+    print('Loaded testing input parameters')
+    #
+    # Loading Trained Input parameters
+    simPred = main.LoadInputParameters(verbose=False)
+    simPred.params = np.load(inp_params.model_path + '/params.npy', allow_pickle=True).item()
+    #
 
+    print('Creating dataset using input parameters')
+    prep_test_data = pdata_test.CreateDataset()
+    prep_test_data.LoadData(inp_params, simPred.params)
+    prep_test_data.CreateTrainTestSets(simPred.params)
 
+    # # For Plankton
+    # for_plankton = fplankton.CreateDataForPlankton()
+    # for_plankton.make_train_test_for_model(inp_params, prep_data)
+    # for_plankton.create_data_loaders(inp_params)
 
+    # For Plankton testing
+    for_plankton_test = fplankton_test.CreateDataForPlankton()
+    for_plankton_test.make_train_test_for_model(inp_params, prep_test_data)
+    for_plankton_test.create_data_loaders(inp_params)
 
+    # Model Training
+    model_training = mt.import_and_train_model()
 
-if __name_ _= ='__main__':
-
-    parser = argparse.ArgumentParser(description='Load a model and use it to make predictions on images')
-    parser.add_argument('-modelfullnames', nargs='+', \
-                        default	= ['./trained-models/conv2/keras_model.h5'], \
-                        help 	= 'name of the model to be loaded, must include path')
-    parser.add_argument('-weightnames', nargs='+', default=['./trained-models/conv2/bestweights.hdf5'], help='Name of alternative weights for the model. Must include path')
-    parser.add_argument('-testdirs', nargs='+', default=['data/1_zooplankton_0p5x/validation/tommy_validation/images/dinobryon/'], help='directory of the test data')
-    parser.add_argument('-predname', default='./out/predictions/predict', help='Name of the file with the model predictions (without extension)')
-    parser.add_argument('-verbose', action='store_true', help='Print lots of useless tensorflow information')
-    parser.add_argument('-ensMethods', nargs='+', default=['unanimity'], help='Ensembling methods. Choose from: \'unanimity\',\'majority\', \'leader\', \'weighted-majority\'. Weighted Majority implements abstention in a different way (a good value is 1).')
-    parser.add_argument('-thresholds', nargs='+', default=[0], type=float, help='Abstention thresholds on the confidence (a good value is 0.8, except for weighted-majority, where it should be >=1).')
-    parser.add_argument('-nosuffix', action='store_true', help='If activated, no suffix is added to the output file')
-    arg s =parser.parse_args()
-
-
-    # 	ensembler=Censemble(modelnames=args.modelfullnames,
-    # 						testdirs=args.testdirs,
-    # 						weightnames=args.weightnames,
-    # 						verbose=args.verbose,
-    # 						)
-
-
-    ensemble r =Censemble(modelnames=args.modelfullnames,
-                        testdirs=args.testdirs,
-                        weightnames=args.weightnames,
-                        )
-
-
-
-    ensembler.MakePredictions()
-
-    for method in args.ensMethods:
-        for absthres in args.thresholds:
-            print('\nMethod:' ,method, '\tAbs-threshold:' ,absthres)
-            ensembler.Ensemble(method=method, absthres=absthres)
-
-
-            if args.nosuffix:
-                ensembler.WriteGuesses('{}.txt'.format(args.predname))
-            else:
-                ensembler.WriteGuesses('{}_{}abs{}.txt'.format(args.predname ,method ,absthres))
-
+    # Prediction
+    model_training.load_model_and_run_prediction(inp_params, for_plankton_test)

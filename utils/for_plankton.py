@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader, Dataset
 
 class CreateDataForPlankton:
     def __init__(self):
+        self.Filenames = None
         self.val_dataloader = None
         self.test_dataloader = None
         self.train_dataloader = None
@@ -32,6 +33,11 @@ class CreateDataForPlankton:
 
     def make_train_test_for_model(self, class_main, prep_data):
         Data = prep_data.Data
+        self.class_weights = prep_data.tt.class_weights
+        self.Filenames = prep_data.Filenames
+        Data = prep_data.Data
+        self.class_weights = prep_data.tt.class_weights
+        self.Filenames = prep_data.Filenames
 
         # Data = pd.read_pickle(class_main.params.outpath + '/Data.pickle')
         # classes = np.load(class_main.params.outpath + '/classes.npy')

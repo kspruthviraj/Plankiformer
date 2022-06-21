@@ -5,14 +5,16 @@
 import argparse
 import pathlib
 import sys
-from pathlib import Path
 
 import numpy as np
 
 from utils import for_plankton as fplankton
 from utils import model_training as mt
 from utils import prepare_train_test_data as pdata
-from utils import for_plankton_test as fplankton_test
+
+
+# from utils import for_plankton_test as fplankton_test
+
 
 def ArgsCheck(args):
     """ Consistency checks for command line arguments """
@@ -130,6 +132,8 @@ class LoadInputParameters:
         parser.add_argument('-init_name', default='Init_01',
                             help="directory name where you want the Best models to be saved")
 
+        parser.add_argument('-test_path', default='./out/', help="directory where you want to predict")
+
         args = parser.parse_args(string)
 
         for i, elem in enumerate(args.datapaths):
@@ -192,15 +196,15 @@ if __name__ == '__main__':
     for_plankton.make_train_test_for_model(inp_params, prep_data)
     for_plankton.create_data_loaders(inp_params)
 
-    # For Plankton testing
-    for_plankton_test = fplankton_test.CreateDataForPlankton()
-    for_plankton_test.make_train_test_for_model(inp_params, prep_data)
-    for_plankton_test.create_data_loaders(inp_params)
-
+    # # For Plankton testing
+    # for_plankton_test = fplankton_test.CreateDataForPlankton()
+    # for_plankton_test.make_train_test_for_model(inp_params, prep_data)
+    # for_plankton_test.create_data_loaders(inp_params)
 
     # Model Training
     model_training = mt.import_and_train_model()
     # Run training
     model_training.train_and_save(inp_params, for_plankton)
 
-    model_training.load_model_and_run_prediction(inp_params, for_plankton)
+    # # Prediction
+    # model_training.load_model_and_run_prediction(inp_params, for_plankton)
