@@ -290,7 +290,7 @@ class import_and_train_model:
         self.model.cuda(train_main.params.gpu_id)
         self.criterion = self.criterion.cuda(train_main.params.gpu_id)
         # Observe that all parameters are being optimized
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=class_main.params.weight_decay)
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=train_main.params.weight_decay)
 
     def load_model_and_run_prediction(self, train_main, test_main, data_loader):
         self.import_deit_models_for_testing(train_main, test_main, data_loader)
