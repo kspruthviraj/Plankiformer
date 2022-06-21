@@ -50,7 +50,7 @@ class LoadInputParameters:
 
         parser = argparse.ArgumentParser(description='Create Dataset')
 
-        parser.add_argument('-test_path', default='./data/', help="directory where you want to predict")
+        parser.add_argument('-test_path', default=['./data/'], help="directory where you want to predict")
         parser.add_argument('-model_path', default='./out/trained_models/', help="directory where you want to predict")
         parser.add_argument('-outpath', default='./out/', help="directory where you want to predict")
         parser.add_argument('-init_name', default='Init_1',
@@ -75,13 +75,13 @@ if __name__ == '__main__':
 
     # Loading Testing Input parameters
     inp_params = LoadInputParameters(initMode='args')
-    print('model_path: {}'.format(inp_params.model_path))
+    print('model_path: {}'.format(inp_params.params.model_path))
     inp_params.CreateOutDir()
     print('Loaded testing input parameters')
     #
     # Loading Trained Input parameters
-    simPred = main.LoadInputParameters(verbose=False)
-    simPred.params = np.load(inp_params.model_path + '/params.npy', allow_pickle=True).item()
+    simPred = main.LoadInputParameters(initMode='args')
+    simPred.params = np.load(inp_params.params.model_path + '/params.npy', allow_pickle=True).item()
     #
 
     print('Creating dataset using input parameters')
