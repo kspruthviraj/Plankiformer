@@ -267,10 +267,6 @@ def LoadImages(datapaths, L, resize_images=None, training_data=True):
     df 			 - a dataframe with classname, npimage, rescaled.
     """
 
-
-    print('IAM IN LOAD IMAGES')
-
-
     df = pd.DataFrame()
 
     # The following condition is because the taxonomists used different directory structures
@@ -279,8 +275,11 @@ def LoadImages(datapaths, L, resize_images=None, training_data=True):
     names3 = '/training_data/*.ti*f' if training_data == True else '/*.ti*f'
     classImages = []
     for idp in range(len(datapaths)):
-        classImages.extend(glob.glob(datapaths[idp] + '/' + '/' + names1) + glob.glob(
-            datapaths[idp] + '/' + '/' + names2) + glob.glob(datapaths[idp] + '/' + '/' + names3))
+        classImages.extend(glob.glob(datapaths[idp] + '/' + names1) + glob.glob(
+            datapaths[idp] + '/' + names2) + glob.glob(datapaths[idp] + '/' + names3))
+
+    print('CLASS IMAGES : {}'.format(classImages))
+
     # Create an empty dataframe for this class
     dfClass = pd.DataFrame(columns=['filename', 'classname', 'npimage'])
     print('test: ({})'.format(len(classImages)))
