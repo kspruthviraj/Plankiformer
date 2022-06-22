@@ -121,9 +121,11 @@ def ResizeWithProportions(im, desired_size):
         raise ValueError(
             'Images are too extreme rectangles to be reduced to this size. Try increasing the desired image size.')
 
-    rescaled = 0  # This flag tells us whether there was a rescaling of the image (besides the padding). We can use it as feature for training.
+    rescaled = 0  # This flag tells us whether there was a rescaling of the image (besides the padding). We can use
+    # it as feature for training.
 
-    # 0) If any dimension of the image is larger than the desired size, shrink until the image can fully fit in the desired size
+    # 0) If any dimension of the image is larger than the desired size, shrink until the image can fully fit in the
+    # desired size
     if max(im.size) > desired_size:
         ratio = float(desired_size) / max(old_size)
         new_size = tuple([int(x * ratio) for x in old_size])
@@ -228,9 +230,9 @@ def LoadMixed(datapaths, L, resize_images=None, alsoImages=True, training_data=T
 
 
 def LoadImage(filename, L=None, resize_images=None, show=False):
-    ''' Loads one image, and rescales it to size L.
+    """ Loads one image, and rescales it to size L.
     The pixel values are between 0 and 255, instead of between 0 and 1, so they should be normalized outside of the function
-    '''
+    """
 
     image = Image.open(filename)
     # Set image's largest dimension to target size, and fill the rest with black pixels
@@ -264,6 +266,10 @@ def LoadImages(datapaths, L, resize_images=None, training_data=True):
     Output:
     df 			 - a dataframe with classname, npimage, rescaled.
     """
+
+
+    print('IAM IN LOAD IMAGES')
+
 
     df = pd.DataFrame()
 
