@@ -614,8 +614,6 @@ class CTrainTestSet:
         self.compute_extrafeat = compute_extrafeat
 
         # Take care of the labels
-        self.y = y
-        self.VectorizeLabels()
         self.filenames = filenames
 
         # Now the features
@@ -646,22 +644,6 @@ class CTrainTestSet:
 
         return
 
-    def VectorizeLabels(self):
-        """
-        Transform labels in one-hot encoded vectors
-        This is where we will act if we decide to train with HYBRID LABELS
-        """
-        self.lb = LabelBinarizer()
-        self.y = self.lb.fit_transform(self.y.tolist())
-        if self.classifier == 'binary' or self.classifier == 'versusall':
-            self.y = np.hstack((1 - self.y, self.y))
-
-        return
-
-    def UnvectorizeLabels(self, y):
-        """ Recovers the original labels from the vectorized ones """
-
-        return self.lb.inverse_transform(y) if self.classifier == 'multi' else self.lb.inverse_transform(y[:, 1])
 
     def ImageNumpyFromMixedDataframe(self, X=None):
         """ Returns a numpy array of the shape (nexamples, L, L, channels)"""
