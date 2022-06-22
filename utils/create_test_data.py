@@ -280,7 +280,7 @@ def LoadImages(datapaths, L, resize_images=None, training_data=True):
             datapaths[idp] + '/' + names2) + glob.glob(datapaths[idp] + '/' + names3))
 
     # Create an empty dataframe for this class
-    dfClass = pd.DataFrame(columns=['filename', 'classname', 'npimage'])
+    dfClass = pd.DataFrame(columns=['filename', 'npimage'])
     print('test: ({})'.format(len(classImages)))
     for i, imageName in enumerate(classImages):
         npimage, rescaled, filename = LoadImage(imageName, L, resize_images)
@@ -365,10 +365,10 @@ class Cdata:
 
     def Load(self, datapaths, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
              kind='mixed', training_data=True):
-        '''
+        """
         Loads dataset
         For the moment, only mixed data. Later, also pure images or pure features.
-        '''
+        """
         self.L = L
         self.datapath = datapaths
         self.class_select = class_select
