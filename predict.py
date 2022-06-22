@@ -87,13 +87,13 @@ if __name__ == '__main__':
 
     print('Creating dataset using input parameters')
     prep_test_data = pdata_test.CreateDataset()
-    prep_test_data.LoadData(inp_params, simPred.params)
-    prep_test_data.CreateTrainTestSets(simPred.params)
+    prep_test_data.LoadData(inp_params, simPred)
+    prep_test_data.CreateTrainTestSets(simPred)
 
     # For Plankton testing
     for_plankton_test = fplankton_test.CreateDataForPlankton()
-    for_plankton_test.make_train_test_for_model(simPred.params, prep_test_data)
-    for_plankton_test.create_data_loaders(simPred.params, inp_params)
+    for_plankton_test.make_train_test_for_model(simPred, prep_test_data)
+    for_plankton_test.create_data_loaders(simPred, inp_params)
 
     # Model Training
     model_training = mt.import_and_train_model()
