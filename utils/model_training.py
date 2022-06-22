@@ -1,4 +1,5 @@
 import math
+import os
 import pickle
 from time import time
 
@@ -282,7 +283,8 @@ class import_and_train_model:
         with open(test_main.params.outpath + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
             pickle.dump(Pred_PredLabel_Prob, cw)
 
-        To_write = [i + '------------------' + j for i, j in zip(im_names, output_label)]
+        To_write = [i + '------------------' + j + '\n' for i, j in
+                    zip((os.path.basename(os.path.dirname(im_names)) + '/' + os.path.basename(im_names)), output_label)]
         np.savetxt(test_main.params.outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
 
     def initialize_model(self, train_main, test_main, data_loader, lr):
