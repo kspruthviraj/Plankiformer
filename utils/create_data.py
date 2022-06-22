@@ -143,8 +143,8 @@ def ResizeWithProportions(im, desired_size):
 def ReduceClasses(datapaths, class_select, classifier):
     print('datapaths:', datapaths)
     # allClasses = [ name for name in os.listdir(datapaths) if os.path.isdir(os.path.join(datapaths, name)) ]
-    allClasses = list(set([name for idata in range(len(datapaths)) for name in os.listdir(datapaths[idata]) if
-                           os.path.isdir(os.path.join(datapaths[idata], name))]))
+    print('datapaths:{}'.format(datapaths))
+    allClasses = list(set([name for idata in range(len(datapaths)) for name in os.listdir(datapaths[idata]) if os.path.isdir(os.path.join(datapaths[idata], name))]))
     print('classes from datapaths:', allClasses)
 
     if classifier == 'multi':
