@@ -99,4 +99,4 @@ if __name__ == '__main__':
     model_training = mt.import_and_train_model()
 
     # Prediction
-    model_training.load_model_and_run_prediction(simPred.params, for_plankton_test)
+    model_training.load_model_and_run_prediction(simPred, inp_params, for_plankton_test)
