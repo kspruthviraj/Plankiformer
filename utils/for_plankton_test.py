@@ -80,7 +80,7 @@ class CreateDataset(Dataset):
         # Select sample
         image = self.X[index]
         X = self.transform(image)
-        sample = [X]
+        sample = X
         return sample
 
     transform = T.Compose([
