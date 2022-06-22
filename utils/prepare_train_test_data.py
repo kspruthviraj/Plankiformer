@@ -212,7 +212,6 @@ class CreateDataset:
         if class_main.params.balance_weight == 'yes':
             with open(class_main.params.outpath + '/class_weights.pickle', 'wb') as cw:
                 pickle.dump(self.tt.class_weights, cw)
-            self.tt.class_weights_tensor
             torch.save(self.tt.class_weights_tensor, class_main.params.outpath + '/class_weights_tensor.pt')
 
         # To Save classes and filenames

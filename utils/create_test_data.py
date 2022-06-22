@@ -345,6 +345,9 @@ class Cdata:
 
     def __init__(self, datapath, L=None, class_select=None, classifier=None, compute_extrafeat=None, resize_images=None,
                  balance_weight=None, kind='mixed', training_data=True):
+        self.filenames = None
+        self.Xfeat = None
+        self.Ximage = None
         self.datapath = datapath
         if L is None and kind != 'feat':
             print('CData: image size needs to be set, unless kind is \'feat\'')
@@ -602,7 +605,7 @@ class CTrainTestSet:
         self.valX = None
         self.valFilenames = None
         self.testX = None
-        self.class_weights = None
+        self.class_weights_tensor = None
         self.lb = None
         self.ttkind = ttkind
         self.testSplit = testSplit
@@ -633,7 +636,7 @@ class CTrainTestSet:
             self.X = RemoveUselessCols(X)  # Note that with ttkind=mixed, X stays a dataframe
 
         # Split train and test data
-        self.Split(test_size=testSplit, valid_set=valid_set, test_set=test_set, random_state=random_state)
+        self.Split(valid_set=valid_set, test_set=test_set, random_state=random_state)
 
         # Rescale features
         if rescale is True:
@@ -655,45 +658,13 @@ class CTrainTestSet:
 
         return np.array([X.to_numpy()[i, im_col] for i in range(len(X.index))])
 
-    def Split(self, test_size=0.2, valid_set=None, test_set=None, random_state=12345):
+    def Split(self, valid_set=None, test_set=None, random_state=12345):
         """
         Splits train and test datasets.
         Allows to put all the data in the test set by choosing test_size=1. This is useful for evaluation.
         Handles differently the mixed case, because in that case  X is a dataframe.
         """
-        if test_set != 'no':
-            if test_size < 1:
-                if valid_set == 'no':
-                    self.trainX, self.testX, self.trainY, self.testY, self.trainFilenames, self.testFilenames = \
-                        train_test_split(self.X, self.y, self.filenames, test_size=test_size, random_state=random_state,
-                                         shuffle=True, stratify=self.y)
-                elif valid_set == 'yes':
-                    train_ratio = 0.70
-                    validation_ratio = 0.15
-                    test_ratio = 0.15
-                    self.trainX, test1X, self.trainY, test1Y, self.trainFilenames, test1Filenames = \
-                        train_test_split(self.X, self.y, self.filenames, test_size=1 - train_ratio,
-                                         random_state=random_state,
-                                         shuffle=True, stratify=self.y)
-                    self.valX, self.testX, self.valY, self.testY, self.valFilenames, self.testFilenames = \
-                        train_test_split(test1X, test1Y, test1Filenames,
-                                         test_size=test_ratio / (test_ratio + validation_ratio),
-                                         random_state=random_state, shuffle=True, stratify=test1Y)
-
-                y_integers = np.argmax(self.trainY, axis=1)
-                if self.balance_weight == 'yes':
-                    class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_integers),
-                                                         y=y_integers)
-                else:
-                    class_weights = compute_class_weight(class_weight=None, classes=np.unique(y_integers), y=y_integers)
-                self.class_weights = dict(enumerate(class_weights))
-
-            else:  # This allows us to pack everything into the test set
-                self.trainX, self.testX, self.trainY, self.testY, self.trainFilenames, self.testFilenames = \
-                    self.X, None, self.y, None, self.filenames, None
-
-        elif test_set == 'no':
-            self.trainX, self.trainFilenames = self.X, self.filenames
+        self.trainX, self.trainFilenames = self.X, self.filenames
 
         if self.ttkind == 'mixed':
             # Images
