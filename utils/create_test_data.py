@@ -693,15 +693,7 @@ class CTrainTestSet:
                     self.X, None, self.y, None, self.filenames, None
 
         elif test_set == 'no':
-            self.trainX, self.trainY, self.trainFilenames = self.X, self.y, self.filenames
-            y_integers = np.argmax(self.trainY, axis=1)
-
-            if self.balance_weight == 'yes':
-                class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_integers),
-                                                     y=y_integers)
-            else:
-                class_weights = compute_class_weight(class_weight=None, classes=np.unique(y_integers), y=y_integers)
-            self.class_weights = dict(enumerate(class_weights))
+            self.trainX, self.trainFilenames = self.X, self.filenames
 
         if self.ttkind == 'mixed':
             # Images
