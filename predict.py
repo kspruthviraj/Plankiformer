@@ -50,7 +50,7 @@ class LoadInputParameters:
 
         parser = argparse.ArgumentParser(description='Create Dataset')
 
-        parser.add_argument('-test_path', default=['./data/'], help="directory where you want to predict")
+        parser.add_argument('-test_path', nargs='*', default=['./data/'], help="directory where you want to predict")
         parser.add_argument('-model_path', default='./out/trained_models/', help="directory where you want to predict")
         parser.add_argument('-outpath', default='./out/', help="directory where you want to predict")
         parser.add_argument('-init_name', default='Init_1',
