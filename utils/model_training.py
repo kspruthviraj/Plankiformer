@@ -4,6 +4,7 @@ from time import time
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import timm
 import torch
 import torch.nn as nn
@@ -16,6 +17,7 @@ from torchvision.utils import make_grid
 
 class import_and_train_model:
     def __init__(self, initMode='default', verbose=True):
+        self.class_weights = None
         self.initMode = initMode
         self.verbose = verbose
         self.model = None
@@ -282,10 +284,15 @@ class import_and_train_model:
         To_write = [i + '------------------' + j for i, j in zip(im_names, output_label)]
         np.savetxt(test_main.outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
 
-    def initialize_model(self, train_main, test_main, lr):
+    def initialize_model(self, train_main, test_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
-        self.criterion = nn.CrossEntropyLoss(test_main.class_weights)
+        if data_loader.class_weights is not None:
+            self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
+        else:
+            self.class_weights = pd.read_pickle(test_main.params.model_path + '/class_weights.pickle')
+            self.criterion = nn.CrossEntropyLoss(self.class_weights)
+
         torch.cuda.set_device(train_main.params.gpu_id)
         self.model.cuda(train_main.params.gpu_id)
         self.criterion = self.criterion.cuda(train_main.params.gpu_id)
@@ -295,15 +302,15 @@ class import_and_train_model:
     def load_model_and_run_prediction(self, train_main, test_main, data_loader):
         self.import_deit_models_for_testing(train_main, test_main, data_loader)
         if train_main.params.finetune == 0:
-            self.initialize_model(train_main, test_main, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             self.run_prediction_on_unseen(test_main, data_loader, 'original')
 
         elif train_main.params.finetune == 1:
-            self.initialize_model(train_main, test_main, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             self.run_prediction_on_unseen(test_main, data_loader, 'tuned')
 
         elif train_main.params.finetune == 2:
-            self.initialize_model(train_main, test_main, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             self.run_prediction_on_unseen(test_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')
