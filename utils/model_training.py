@@ -539,9 +539,9 @@ def cls_predict_on_unseen(test_loader, model, time_begin=None):
     outputs = []
     probs = []
     with torch.no_grad():
-        for i, (images) in enumerate(test_loader):
-            device = torch.device("cuda")
-            images = torch.from_numpy(np.asarray(images))
+        for i, images in enumerate(test_loader):
+            device = torch.device("cpu")
+            # images = torch.from_numpy(np.asarray(images))
             images = images.to(device)
 
             output = model(images)
