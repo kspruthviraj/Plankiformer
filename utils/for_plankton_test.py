@@ -23,13 +23,13 @@ class CreateDataForPlankton:
         self.X_val = None
         self.X_test = None
         self.X_train = None
-        self.class_weights = None
+        self.class_weights_tensor = None
         self.params = None
         return
 
     def make_train_test_for_model(self, class_main, prep_data):
         Data = prep_data.Data
-        self.class_weights = prep_data.tt.class_weights
+        self.class_weights_tensor = prep_data.tt.class_weights_tensor
         self.Filenames = prep_data.Filenames
 
         if class_main.params.ttkind == 'mixed':

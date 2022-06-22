@@ -31,6 +31,7 @@ class LoadInputParameters:
         self.model_path = None
         self.outpath = None
         self.init_name = None
+        self.classes = None
         return
 
     def SetParameters(self, mode='default'):
