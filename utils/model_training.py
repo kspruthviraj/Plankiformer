@@ -62,7 +62,7 @@ class import_and_train_model:
         self.early_stopping = EarlyStopping()
 
     def import_deit_models_for_testing(self, train_main, test_main, data_loader):
-        classes = np.load(test_main.params.outpath + '/classes.npy')
+        classes = np.load(test_main.params.model_path + '/classes.npy')
         self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
                                        num_classes=len(np.unique(classes)))
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
