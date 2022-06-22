@@ -217,7 +217,7 @@ class CreateDataset:
 
         # To Save classes and filenames
         np.save(class_main.params.outpath + '/classes.npy', self.tt.lb.classes_)
-        # self.classes = self.tt.lb.classes_
+        self.classes = self.tt.lb.classes_
 
         if class_main.params.test_set == 'yes' and class_main.params.valid_set == 'yes':
             self.Filenames = [self.tt.trainFilenames, self.tt.testFilenames, self.tt.valFilenames]

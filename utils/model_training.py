@@ -32,7 +32,10 @@ class import_and_train_model:
         return
 
     def import_deit_models(self, class_main, data_loader):
-        classes = np.load(class_main.params.outpath + '/classes.npy')
+        if self.classes is None:
+            classes = self.classes
+        else:
+            classes = np.load(class_main.params.outpath + '/classes.npy')
         self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
                                        num_classes=len(np.unique(classes)))
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -63,7 +66,7 @@ class import_and_train_model:
         self.lr_scheduler = LRScheduler(self.optimizer)
         self.early_stopping = EarlyStopping()
 
-    def import_deit_models_for_testing(self, train_main, test_main, data_loader):
+    def import_deit_models_for_testing(self, train_main, test_main):
         classes = np.load(test_main.params.model_path + '/classes.npy')
         self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
                                        num_classes=len(np.unique(classes)))
@@ -300,7 +303,7 @@ class import_and_train_model:
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=train_main.params.weight_decay)
 
     def load_model_and_run_prediction(self, train_main, test_main, data_loader):
-        self.import_deit_models_for_testing(train_main, test_main, data_loader)
+        self.import_deit_models_for_testing(train_main, test_main)
         if train_main.params.finetune == 0:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             self.run_prediction_on_unseen(test_main, data_loader, 'original')
