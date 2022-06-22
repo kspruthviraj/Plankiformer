@@ -29,11 +29,12 @@ class import_and_train_model:
         self.val_dataloader = None
         self.test_dataloader = None
         self.train_dataloader = None
+        self.classes = None
         return
 
     def import_deit_models(self, class_main, data_loader):
-        if self.classes is None:
-            classes = self.classes
+        if data_loader.classes is None:
+            classes = data_loader.classes
         else:
             classes = np.load(class_main.params.outpath + '/classes.npy')
         self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
