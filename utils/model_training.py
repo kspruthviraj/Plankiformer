@@ -33,10 +33,7 @@ class import_and_train_model:
         return
 
     def import_deit_models(self, class_main, data_loader):
-        if data_loader.classes is not None:
-            classes = data_loader.classes
-        else:
-            classes = np.load(class_main.params.outpath + '/classes.npy')
+        classes = data_loader.classes
         self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
                                        num_classes=len(np.unique(classes)))
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
