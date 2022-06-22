@@ -405,16 +405,7 @@ class Cdata:
         """ Basic checks on the dataset """
 
         # Number of different classes
-        classes = self.classes
         classifier = self.classifier
-        if classifier == 'multi':
-            if len(classes) < 2:
-                print('There are less than 2 classes ({})'.format(len(classes)))
-                raise ValueError
-        elif classifier == 'binary':
-            if len(classes) > 2:
-                print('There are more than 2 classes for binary classifier ({})'.format(len(classes)))
-                raise ValueError
 
         # Columns potentially useful for classification
         ucols = self.df.drop(columns=['classname', 'url', 'filename', 'file_size', 'timestamp'],
@@ -435,7 +426,6 @@ class Cdata:
                 print(
                     'Cdata Check(): Images were not reshaped correctly: {} instead of {}'.format(self.npimage[0].shape,
                                                                                                  (self.L, self.L, 3)))
-
         return
 
     def CreateXy(self):
