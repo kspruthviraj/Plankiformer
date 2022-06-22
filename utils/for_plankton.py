@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader, Dataset
 
 class CreateDataForPlankton:
     def __init__(self):
+        self.classes_int = None
         self.classes = None
         self.Filenames = None
         self.val_dataloader = None
@@ -33,7 +34,7 @@ class CreateDataForPlankton:
     def make_train_test_for_model(self, class_main, prep_data):
         self.class_weights_tensor = prep_data.tt.class_weights_tensor
         self.Filenames = prep_data.Filenames
-        self.classes = prep_data.classes
+        classes = prep_data.classes
         Data = prep_data.Data
 
         # Data = pd.read_pickle(class_main.params.outpath + '/Data.pickle')
@@ -160,7 +161,9 @@ class CreateDataForPlankton:
                     veY = Data[8]
 
         classes_int = np.unique(np.argmax(trY, axis=1))
-
+        self.classes = classes
+        self.classes_int = classes_int
+        
         if class_main.params.test_set == 'no':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
             self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
