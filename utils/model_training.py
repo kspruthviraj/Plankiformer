@@ -33,7 +33,7 @@ class import_and_train_model:
         return
 
     def import_deit_models(self, class_main, data_loader):
-        if data_loader.classes is None:
+        if data_loader.classes is not None:
             classes = data_loader.classes
         else:
             classes = np.load(class_main.params.outpath + '/classes.npy')

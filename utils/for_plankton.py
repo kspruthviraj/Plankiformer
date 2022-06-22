@@ -3,16 +3,15 @@
 ###########
 
 from pathlib import Path
+
 import numpy as np
-import pandas as pd
-import torch
 import torchvision.transforms as T
-from sklearn.utils import compute_class_weight
 from torch.utils.data import DataLoader, Dataset
 
 
 class CreateDataForPlankton:
     def __init__(self):
+        self.classes = None
         self.Filenames = None
         self.val_dataloader = None
         self.test_dataloader = None
@@ -34,6 +33,7 @@ class CreateDataForPlankton:
     def make_train_test_for_model(self, class_main, prep_data):
         self.class_weights_tensor = prep_data.tt.class_weights_tensor
         self.Filenames = prep_data.Filenames
+        self.classes = prep_data.classes
         Data = prep_data.Data
 
         # Data = pd.read_pickle(class_main.params.outpath + '/Data.pickle')
