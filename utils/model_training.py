@@ -545,7 +545,7 @@ def cls_predict_on_unseen(test_loader, model, time_begin=None):
             # images = torch.from_numpy(np.asarray(images))
             # images = images.to(device)
 
-            output, x = model(images)
+            output = model(images)
             outputs.append(output)
             prob = torch.nn.functional.softmax(output, dim=1)
             probs.append(prob)
