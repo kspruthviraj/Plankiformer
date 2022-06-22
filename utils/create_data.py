@@ -8,6 +8,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import pandas as pd
+import torch
 from PIL import Image
 # import the necessary packages
 from sklearn.model_selection import train_test_split
@@ -832,6 +833,7 @@ class CTrainTestSet:
         X and y are dataframes with features and labels
         """
 
+        self.class_weights_tensor = None
         self.valXfeat = None
         self.testXfeat = None
         self.trainXfeat = None
@@ -950,6 +952,7 @@ class CTrainTestSet:
                 else:
                     class_weights = compute_class_weight(class_weight=None, classes=np.unique(y_integers), y=y_integers)
                 self.class_weights = dict(enumerate(class_weights))
+                self.class_weights_tensor = torch.Tensor(class_weights)
 
             else:  # This allows us to pack everything into the test set
                 self.trainX, self.testX, self.trainY, self.testY, self.trainFilenames, self.testFilenames = \
@@ -965,6 +968,7 @@ class CTrainTestSet:
             else:
                 class_weights = compute_class_weight(class_weight=None, classes=np.unique(y_integers), y=y_integers)
             self.class_weights = dict(enumerate(class_weights))
+            self.class_weights_tensor = torch.Tensor(class_weights)
 
         if self.ttkind == 'mixed':
             # Images

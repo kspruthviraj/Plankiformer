@@ -17,7 +17,7 @@ from torchvision.utils import make_grid
 
 class import_and_train_model:
     def __init__(self, initMode='default', verbose=True):
-        self.class_weights = None
+        self.class_weights_tensor = None
         self.initMode = initMode
         self.verbose = verbose
         self.model = None
@@ -46,7 +46,7 @@ class import_and_train_model:
             p.numel() for p in self.model.parameters() if p.requires_grad)
         print(f"{total_trainable_params:,} training parameters.")
 
-        self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
+        self.criterion = nn.CrossEntropyLoss(data_loader.class_weights_tensor)
 
         torch.cuda.set_device(class_main.params.gpu_id)
         self.model.cuda(class_main.params.gpu_id)
@@ -77,8 +77,8 @@ class import_and_train_model:
         total_trainable_params = sum(
             p.numel() for p in self.model.parameters() if p.requires_grad)
         print(f"{total_trainable_params:,} training parameters.")
-
-        self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
+        class_weights_tensor = torch.load(test_main.params.model_path + '/class_weights_tensor.pt')
+        self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
         torch.cuda.set_device(train_main.params.gpu_id)
         self.model.cuda(train_main.params.gpu_id)
@@ -287,11 +287,11 @@ class import_and_train_model:
     def initialize_model(self, train_main, test_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
-        if data_loader.class_weights is not None:
-            self.criterion = nn.CrossEntropyLoss(data_loader.class_weights)
+        if data_loader.class_weights_tensor is not None:
+            self.criterion = nn.CrossEntropyLoss(data_loader.class_weights_tensor)
         else:
-            self.class_weights = pd.read_pickle(test_main.params.model_path + '/class_weights.pickle')
-            self.criterion = nn.CrossEntropyLoss(self.class_weights)
+            class_weights_tensor = torch.load(test_main.params.model_path + '/class_weights_tensor.pt')
+            self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
         torch.cuda.set_device(train_main.params.gpu_id)
         self.model.cuda(train_main.params.gpu_id)
