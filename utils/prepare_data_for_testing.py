@@ -4,7 +4,7 @@
 
 import joblib
 
-from utils import create_data as cdata
+from utils import create_test_data as cdata
 
 
 class CreateDataset:
