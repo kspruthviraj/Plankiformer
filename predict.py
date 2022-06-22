@@ -81,6 +81,7 @@ if __name__ == '__main__':
     #
     # Loading Trained Input parameters
     simPred = main.LoadInputParameters(initMode='args')
+    print('model_path:{}'.format(inp_params.params.model_path))
     simPred.params = np.load(inp_params.params.model_path + '/params.npy', allow_pickle=True).item()
     #
 
