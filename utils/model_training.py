@@ -279,11 +279,11 @@ class import_and_train_model:
         output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
 
         Pred_PredLabel_Prob = [output_max, output_label, prob]
-        with open(test_main.outpath + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
+        with open(test_main.params.outpath + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
             pickle.dump(Pred_PredLabel_Prob, cw)
 
         To_write = [i + '------------------' + j for i, j in zip(im_names, output_label)]
-        np.savetxt(test_main.outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
+        np.savetxt(test_main.params.outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
 
     def initialize_model(self, train_main, test_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
