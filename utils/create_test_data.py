@@ -268,11 +268,15 @@ def LoadImages(datapaths, L, resize_images=None, training_data=True):
     """
 
     df = pd.DataFrame()
+    print('DATA PATHS : {}'.format(datapaths))
 
     # The following condition is because the taxonomists used different directory structures
     names1 = '/training_data/*.jp*g' if training_data == True else '/*.jp*g'
     names2 = '/training_data/*.png' if training_data == True else '/*.png'
     names3 = '/training_data/*.ti*f' if training_data == True else '/*.ti*f'
+
+    print('JPEG NAMES : {}'.format(names1))
+
     classImages = []
     for idp in range(len(datapaths)):
         classImages.extend(glob.glob(datapaths[idp] + '/' + names1) + glob.glob(
