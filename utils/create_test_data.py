@@ -433,13 +433,12 @@ class Cdata:
         return
 
     def CreateXy(self):
-        '''
+        """
         Creates features and target
         - removing the evidently junk columns.
         - allowing to access images and features separately and confortably
-        '''
+        """
 
-        self.y = self.df.classname
         self.filenames = self.df.filename
         self.X = self.df.drop(columns=['classname', 'url', 'filename', 'file_size', 'timestamp'], errors='ignore')
         # 		self.X = self.df.drop(columns=['classname','url','file_size','timestamp'], errors='ignore')
