@@ -27,7 +27,7 @@ class CreateDataset:
 
         return
 
-    def LoadData(self, test_main, train_main):
+    def LoadData(self, train_main, test_main):
         """
         Loads dataset using the function in the Cdata class.
         Acts differently in case it is the first time or not that the data is loaded

@@ -87,8 +87,8 @@ if __name__ == '__main__':
 
     print('Creating test data')
     prep_test_data = pdata_test.CreateDataset()
-    prep_test_data.LoadData(test_params, train_params)
-    prep_test_data.CreateTrainTestSets(test_params)
+    prep_test_data.LoadData(train_params, test_params)
+    prep_test_data.CreateTrainTestSets(train_params, test_params)
 
     # For Plankton testing
     for_plankton_test = fplankton_test.CreateDataForPlankton()
