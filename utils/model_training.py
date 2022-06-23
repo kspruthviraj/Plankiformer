@@ -260,35 +260,39 @@ class import_and_train_model:
 
     def run_prediction_on_unseen(self, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
-        checkpoint_path = test_main.params.model_path[0]
-        PATH = checkpoint_path + '/trained_model_' + name + '.pth'
-        # PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
-        im_names = data_loader.Filenames
+        if len(test_main.params.model_path) > 1:
+            print("Do you want to predict using ensemble model ? If so then set the ensemble parameter to 1 and run "
+                  "again")
+        else:
+            checkpoint_path = test_main.params.model_path[0]
+            PATH = checkpoint_path + '/trained_model_' + name + '.pth'
+            # PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
+            im_names = data_loader.Filenames
 
-        checkpoint = torch.load(PATH)
-        self.model.load_state_dict(checkpoint['model_state_dict'])
-        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            checkpoint = torch.load(PATH)
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model, time_begin=None)
+            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model, time_begin=None)
 
-        output = torch.cat(output)
-        prob = torch.cat(prob)
+            output = torch.cat(output)
+            prob = torch.cat(prob)
 
-        output = output.cpu().numpy()
-        prob = prob.cpu().numpy()
+            output = output.cpu().numpy()
+            prob = prob.cpu().numpy()
 
-        output_max = output.argmax(axis=1)
+            output_max = output.argmax(axis=1)
 
-        output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
+            output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
 
-        Pred_PredLabel_Prob = [output_max, output_label, prob]
-        with open(test_main.params.test_outpath + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
-            pickle.dump(Pred_PredLabel_Prob, cw)
+            Pred_PredLabel_Prob = [output_max, output_label, prob]
+            with open(test_main.params.test_outpath + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
+                pickle.dump(Pred_PredLabel_Prob, cw)
 
-        # im_names1 = os.path.basename(os.path.dirname(im_names)) + '/' + os.path.basename(im_names)
+            # im_names1 = os.path.basename(os.path.dirname(im_names)) + '/' + os.path.basename(im_names)
 
-        To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names, output_label)]
-        np.savetxt(test_main.params.test_outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
+            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names, output_label)]
+            np.savetxt(test_main.params.test_outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
 
     def run_ensemble_prediction_on_unseen(self, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
