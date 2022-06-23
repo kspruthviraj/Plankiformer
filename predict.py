@@ -30,7 +30,7 @@ class LoadInputParameters:
         self.test_path = None
         self.main_model_path = None
         self.test_outpath = None
-        self.init_name = None
+        self.ensemble = None
         self.classes = None
         return
 
