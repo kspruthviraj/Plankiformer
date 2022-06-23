@@ -11,7 +11,7 @@ import numpy as np
 from utils import for_plankton_test as fplankton_test
 from utils import model_training as mt
 from utils import prepare_data_for_testing as pdata_test
-import main as main_train
+import main as train_main
 
 
 class LoadInputParameters:
@@ -75,27 +75,26 @@ if __name__ == '__main__':
     print('\nRunning', sys.argv[0], sys.argv[1:])
 
     # Loading Testing Input parameters
-    test_params = LoadInputParameters(initMode='args')
-    print('model_path: {}'.format(test_params.params.model_path))
-    test_params.CreateOutDir()
+    inp_params = LoadInputParameters(initMode='args')
+    print('model_path: {}'.format(inp_params.params.model_path))
+    inp_params.CreateOutDir()
     print('Loaded testing input parameters')
-
+    #
     # Loading Trained Input parameters
-    train_params = main_train.LoadInputParameters(initMode='args')
-    print('model_path:{}'.format(test_params.params.model_path))
-    train_params.params = np.load(test_params.params.model_path + '/params.npy', allow_pickle=True).item()
+    train_params = train_main.LoadInputParameters(initMode='args')
+    print('model_path:{}'.format(inp_params.params.model_path))
+    train_params.params = np.load(inp_params.params.model_path + '/params.npy', allow_pickle=True).item()
+    #
 
-    print('Creating test data')
+    print('Creating dataset using input parameters')
     prep_test_data = pdata_test.CreateDataset()
-    prep_test_data.LoadData(test_params, train_params)
+    prep_test_data.LoadData(inp_params, train_params)
     prep_test_data.CreateTrainTestSets(train_params)
 
     # For Plankton testing
     for_plankton_test = fplankton_test.CreateDataForPlankton()
     for_plankton_test.make_train_test_for_model(train_params, prep_test_data)
-    for_plankton_test.create_data_loaders(train_params, test_params)
+    for_plankton_test.create_data_loaders(train_params, inp_params)
 
-    # initialize model training
+    # Model Training
     model_training = mt.import_and_train_model()
-    # Do Predictions
-    model_training.load_model_and_run_prediction(train_params, test_params, for_plankton_test)
