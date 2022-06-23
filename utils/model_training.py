@@ -346,15 +346,24 @@ class import_and_train_model:
         self.import_deit_models_for_testing(train_main, test_main)
         if train_main.params.finetune == 0:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
-            self.run_prediction_on_unseen(test_main, data_loader, 'original')
+            if test_main.params.ensemble == 0:
+                self.run_prediction_on_unseen(test_main, data_loader, 'original')
+            else:
+                self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'original')
 
         elif train_main.params.finetune == 1:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
-            self.run_prediction_on_unseen(test_main, data_loader, 'tuned')
+            if test_main.params.ensemble == 0:
+                self.run_prediction_on_unseen(test_main, data_loader, 'tuned')
+            else:
+                self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'tuned')
 
         elif train_main.params.finetune == 2:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
-            self.run_prediction_on_unseen(test_main, data_loader, 'finetuned')
+            if test_main.params.ensemble == 0:
+                self.run_prediction_on_unseen(test_main, data_loader, 'finetuned')
+            else:
+                self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')
 

@@ -139,6 +139,10 @@ class LoadInputParameters:
                             default=['./out/trained_models/Init_0/',
                                      './out/trained_models/Init_1/'],
                             help='path of the saved models')
+        parser.add_argument('-ensemble', type=int, default=0,
+                            help="Set this to one if you want to ensemble multiple models else set it to zero")
+
+
         args = parser.parse_args(string)
 
         for i, elem in enumerate(args.datapaths):
