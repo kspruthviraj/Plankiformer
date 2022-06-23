@@ -344,6 +344,7 @@ class import_and_train_model:
 
     def load_model_and_run_prediction(self, train_main, test_main, data_loader):
         self.import_deit_models_for_testing(train_main, test_main)
+        print('IAM HERE')
         if train_main.params.finetune == 0:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
