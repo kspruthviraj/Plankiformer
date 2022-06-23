@@ -7,11 +7,12 @@ import pathlib
 import sys
 
 import numpy as np
-
 from utils import prepare_data_for_testing as pdata_test
 from utils import for_plankton_test as fplankton_test
 from utils import model_training as mt
 import main as main_train
+
+import predict
 
 
 class LoadInputParameters:
@@ -55,7 +56,7 @@ class LoadInputParameters:
         parser.add_argument('-main_param_path', default='./out/trained_models/', help="main directory where the "
                                                                                       "training parameters are saved")
         parser.add_argument('-test_outpath', default='./out/', help="directory where you want to save the predictions")
-        parser.add_argument('-model_path', default='./out/trained_models/Init_0/',
+        parser.add_argument('-model_paths', nargs='*', default=['./out/trained_models/Init_0/', './out/trained_models/Init_1/'],
                             help="path where the model is saved")
 
         args = parser.parse_args(string)

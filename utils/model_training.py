@@ -260,7 +260,9 @@ class import_and_train_model:
 
     def run_prediction_on_unseen(self, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
-        PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
+        checkpoint_path = test_main.params.model_path[0]
+        PATH = checkpoint_path + '/trained_model_' + name + '.pth'
+        # PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
         im_names = data_loader.Filenames
 
         checkpoint = torch.load(PATH)
@@ -286,6 +288,39 @@ class import_and_train_model:
         # im_names1 = os.path.basename(os.path.dirname(im_names)) + '/' + os.path.basename(im_names)
 
         To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names, output_label)]
+        np.savetxt(test_main.params.test_outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
+
+    def run_ensemble_prediction_on_unseen(self, test_main, data_loader, name):
+        classes = np.load(test_main.params.main_param_path + '/classes.npy')
+        Ensemble_prob = []
+        im_names = data_loader.Filenames
+
+        for i in range(len(test_main.params.model_path)):
+            checkpoint_path = test_main.params.model_path[i]
+            PATH = checkpoint_path + '/trained_model_' + name + '.pth'
+
+            checkpoint = torch.load(PATH)
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model, time_begin=None)
+
+            prob = torch.cat(prob)
+            prob = prob.cpu().numpy()
+
+            Ensemble_prob.append(prob)
+
+        Ensemble_prob_sum = np.sum(Ensemble_prob, axis=0)
+
+        Ensemble_prob_normalized = Ensemble_prob_sum / len(Ensemble_prob)
+        Ens_prob_max = Ensemble_prob_normalized.argmax(axis=1)  # The class that the classifier would bet on
+        Ens_label = np.array([classes[Ens_prob_max[i]] for i in range(len(Ens_prob_max))], dtype=object)
+
+        Pred_PredLabel_Prob = [Ens_prob_max, Ens_label, Ensemble_prob_normalized]
+        with open(test_main.params.test_outpath + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
+            pickle.dump(Pred_PredLabel_Prob, cw)
+
+        To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names, Ens_label)]
         np.savetxt(test_main.params.test_outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
 
     def initialize_model(self, train_main, test_main, data_loader, lr):

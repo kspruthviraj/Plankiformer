@@ -55,7 +55,7 @@ class LoadInputParameters:
         parser.add_argument('-main_param_path', default='./out/trained_models/', help="main directory where the "
                                                                                       "training parameters are saved")
         parser.add_argument('-test_outpath', default='./out/', help="directory where you want to save the predictions")
-        parser.add_argument('-model_path', default='./out/trained_models/Init_0/',
+        parser.add_argument('-model_path', default=['./out/trained_models/Init_0/', './out/trained_models/Init_1/'],
                             help="path where the model is saved")
 
         args = parser.parse_args(string)
