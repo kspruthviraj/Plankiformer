@@ -8,7 +8,10 @@ import sys
 
 import numpy as np
 
-import predict
+from utils import prepare_data_for_testing as pdata_test
+from utils import for_plankton_test as fplankton_test
+from utils import model_training as mt
+import main as main_train
 
 
 class LoadInputParameters:
@@ -25,8 +28,8 @@ class LoadInputParameters:
         self.opt = None
         self.SetParameters(mode=initMode)
         self.test_path = None
-        self.model_path = None
-        self.outpath = None
+        self.main_model_path = None
+        self.test_outpath = None
         self.init_name = None
         self.classes = None
         return
@@ -49,9 +52,11 @@ class LoadInputParameters:
         parser = argparse.ArgumentParser(description='Create Dataset')
 
         parser.add_argument('-test_path', nargs='*', default=['./data/'], help="directory where you want to predict")
-        parser.add_argument('-main_model_path', default='./out/trained_models/', help="directory where you want to predict")
-        parser.add_argument('-outpath', default='./out/', help="directory where you want to predict")
-        parser.add_argument('-init_names', nargs='*', default=['Init_0', 'Init_1'], help="directory name where you want the Best models to be saved")
+        parser.add_argument('-main_param_path', default='./out/trained_models/', help="main directory where the "
+                                                                                      "training parameters are saved")
+        parser.add_argument('-test_outpath', default='./out/', help="directory where you want to save the predictions")
+        parser.add_argument('-model_path', default='./out/trained_models/Init_0/',
+                            help="path where the model is saved")
 
         args = parser.parse_args(string)
 
@@ -63,7 +68,7 @@ class LoadInputParameters:
 
     def CreateOutDir(self):
         """ Create a unique output directory, and put inside it a file with the simulation parameters """
-        pathlib.Path(self.params.outpath).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self.params.test_outpath).mkdir(parents=True, exist_ok=True)
         return
 
 
@@ -72,19 +77,18 @@ if __name__ == '__main__':
 
     # Loading Testing Input parameters
     test_params = LoadInputParameters(initMode='args')
-    print('model_path: {}'.format(test_params.params.model_path))
+    print('main_param_path: {}'.format(test_params.params.main_param_path))
     test_params.CreateOutDir()
     print('Loaded testing input parameters')
 
     # Loading Trained Input parameters
     train_params = main_train.LoadInputParameters(initMode='args')
-    print('model_path:{}'.format(test_params.params.model_path))
-    train_params.params = np.load(test_params.params.model_path + '/params.npy', allow_pickle=True).item()
+    train_params.params = np.load(test_params.params.main_param_path + '/params.npy', allow_pickle=True).item()
 
     print('Creating test data')
     prep_test_data = pdata_test.CreateDataset()
     prep_test_data.LoadData(test_params, train_params)
-    prep_test_data.CreateTrainTestSets(train_params)
+    prep_test_data.CreateTrainTestSets(test_params)
 
     # For Plankton testing
     for_plankton_test = fplankton_test.CreateDataForPlankton()
