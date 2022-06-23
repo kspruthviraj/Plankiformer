@@ -131,12 +131,12 @@ class LoadInputParameters:
                             help="Total number of epochs for the funetune training")
         parser.add_argument('-init_name', default='Init_01',
                             help="directory name where you want the Best models to be saved")
-
-        parser.add_argument('-test_path', nargs='*', default=['./out/'], help="directory where you want to "
-                                                                              "save the predictions")
-        parser.add_argument('-main_param_path', default='./out/trained_models/', help="directory where the training "
-                                                                                      "params are saved")
-
+        parser.add_argument('-test_path', nargs='*', default=['./data/'], help="directory where you want to predict")
+        parser.add_argument('-main_param_path', default='./out/trained_models/', help="main directory where the "
+                                                                                      "training parameters are saved")
+        parser.add_argument('-test_outpath', default='./out/', help="directory where you want to save the predictions")
+        parser.add_argument('-model_path', default='./out/trained_models/Init_0/',
+                            help="path where the model is saved")
         args = parser.parse_args(string)
 
         for i, elem in enumerate(args.datapaths):
