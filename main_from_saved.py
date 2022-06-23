@@ -175,17 +175,17 @@ if __name__ == '__main__':
     print('\nRunning', sys.argv[0], sys.argv[1:])
 
     # Loading Input parameters
-    inp_params = LoadInputParameters(initMode='args')
-    inp_params.CreateOutDir()
+    train_params = LoadInputParameters(initMode='args')
+    train_params.CreateOutDir()
     print('Loaded input parameters')
     #
 
     # For Plankton -- use saved data
     for_plankton = fplankton.CreateDataForPlankton()
-    for_plankton.make_train_test_for_model(inp_params)
-    for_plankton.create_data_loaders(inp_params)
+    for_plankton.make_train_test_for_model(train_params)
+    for_plankton.create_data_loaders(train_params)
 
     # Model Training
     model_training = mt.import_and_train_model()
     # Run training
-    model_training.train_and_save(for_plankton, inp_params)
+    model_training.train_and_save(for_plankton, train_params)

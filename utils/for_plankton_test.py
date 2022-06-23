@@ -27,22 +27,22 @@ class CreateDataForPlankton:
         self.params = None
         return
 
-    def make_train_test_for_model(self, class_main, prep_data):
+    def make_train_test_for_model(self, train_main, prep_data):
         Data = prep_data.Data
         self.class_weights_tensor = prep_data.tt.class_weights_tensor
         self.Filenames = prep_data.Filenames
 
-        if class_main.params.ttkind == 'mixed':
+        if train_main.params.ttkind == 'mixed':
             self.trainFilenames = Data[0]
             trainXimage = Data[1]
             trainXfeat = Data[9]
             trX = [trainXimage, trainXfeat]
-        elif class_main.params.ttkind == 'image' and class_main.params.compute_extrafeat == 'yes':
+        elif train_main.params.ttkind == 'image' and train_main.params.compute_extrafeat == 'yes':
             self.trainFilenames = Data[0]
             trainXimage = Data[1]
             trainXfeat = Data[9]
             trX = [trainXimage, trainXfeat]
-        elif class_main.params.ttkind == 'feat':
+        elif train_main.params.ttkind == 'feat':
             self.trainFilenames = Data[0]
             trainXfeat = Data[9]
             trX = [trainXfeat]
@@ -57,7 +57,7 @@ class CreateDataForPlankton:
         return
 
     def create_data_loaders(self, train_main, test_main):
-        self.checkpoint_path = test_main.params.model_path + 'trained_models/' + test_main.params.init_name + '/'
+        self.checkpoint_path = test_main.params.main_param_path + 'trained_models/' + test_main.params.init_name + '/'
 
         test_dataset = CreateDataset(X=self.X_train)
         self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,

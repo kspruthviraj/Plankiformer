@@ -33,7 +33,7 @@ class import_and_train_model:
         self.classes = None
         return
 
-    def import_deit_models(self, class_main, data_loader):
+    def import_deit_models(self, train_main, data_loader):
         classes = data_loader.classes
         self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
                                        num_classes=len(np.unique(classes)))
@@ -50,13 +50,13 @@ class import_and_train_model:
 
         self.criterion = nn.CrossEntropyLoss(data_loader.class_weights_tensor)
 
-        torch.cuda.set_device(class_main.params.gpu_id)
-        self.model.cuda(class_main.params.gpu_id)
-        self.criterion = self.criterion.cuda(class_main.params.gpu_id)
+        torch.cuda.set_device(train_main.params.gpu_id)
+        self.model.cuda(train_main.params.gpu_id)
+        self.criterion = self.criterion.cuda(train_main.params.gpu_id)
 
         # Observe that all parameters are being optimized
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=class_main.params.lr,
-                                           weight_decay=class_main.params.weight_decay)
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+                                           weight_decay=train_main.params.weight_decay)
 
         # Decay LR by a factor of 0.1 every 7 epochs
         # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
@@ -66,7 +66,7 @@ class import_and_train_model:
         self.early_stopping = EarlyStopping()
 
     def import_deit_models_for_testing(self, train_main, test_main):
-        classes = np.load(test_main.params.model_path + '/classes.npy')
+        classes = np.load(test_main.params.main_param_path + '/classes.npy')
         self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
                                        num_classes=len(np.unique(classes)))
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -79,7 +79,7 @@ class import_and_train_model:
         total_trainable_params = sum(
             p.numel() for p in self.model.parameters() if p.requires_grad)
         print(f"{total_trainable_params:,} training parameters.")
-        class_weights_tensor = torch.load(test_main.params.model_path + '/class_weights_tensor.pt')
+        class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
         self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
         torch.cuda.set_device(train_main.params.gpu_id)
@@ -97,7 +97,7 @@ class import_and_train_model:
         self.lr_scheduler = LRScheduler(self.optimizer)
         self.early_stopping = EarlyStopping()
 
-    def run_training(self, class_main, data_loader, epochs, lr, name):
+    def run_training(self, train_main, data_loader, epochs, lr, name):
 
         best_acc1, best_f1 = 0, 0
         train_losses, test_losses, train_accuracies, test_accuracies, train_f1s, test_f1s = [], [], [], [], [], []
@@ -105,17 +105,17 @@ class import_and_train_model:
         print("Beginning training")
         time_begin = time()
 
-        for epoch in range(class_main.params.epochs):
+        for epoch in range(train_main.params.epochs):
             print('EPOCH : {} / {}'.format(epoch + 1, epochs))
 
-            adjust_learning_rate(self.optimizer, epoch, lr, class_main.params.warmup,
-                                 class_main.params.disable_cos,
-                                 class_main.params.epochs)
+            adjust_learning_rate(self.optimizer, epoch, lr, train_main.params.warmup,
+                                 train_main.params.disable_cos,
+                                 train_main.params.epochs)
 
             train_acc1, train_loss, train_outputs, train_targets = cls_train(data_loader.train_dataloader, self.model,
                                                                              self.criterion,
                                                                              self.optimizer,
-                                                                             class_main.params.clip_grad_norm)
+                                                                             train_main.params.clip_grad_norm)
             test_acc1, loss, test_outputs, test_targets, total_mins = cls_validate(data_loader.val_dataloader,
                                                                                    self.model, self.criterion,
                                                                                    time_begin=time_begin)
@@ -189,8 +189,8 @@ class import_and_train_model:
 
         plt.savefig(data_loader.checkpoint_path + '/performance_curves_' + name + '.png')
 
-    def run_prediction(self, class_main, data_loader, name):
-        classes = np.load(class_main.params.outpath + '/classes.npy')
+    def run_prediction(self, train_main, data_loader, name):
+        classes = np.load(train_main.params.outpath + '/classes.npy')
         PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
 
         checkpoint = torch.load(PATH)
@@ -227,39 +227,39 @@ class import_and_train_model:
                                                                                               clf_report))
         f.close()
 
-    def train_and_save(self, class_main, data_loader):
-        self.import_deit_models(data_loader, class_main)
-        if class_main.params.finetune == 0:
-            self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, "original")
-            self.run_prediction(class_main, data_loader, 'original')
+    def train_and_save(self, train_main, data_loader):
+        self.import_deit_models(data_loader, train_main)
+        if train_main.params.finetune == 0:
+            self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
+            self.run_prediction(train_main, data_loader, 'original')
 
-        elif class_main.params.finetune == 1:
-            self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, "original")
-            self.run_prediction(class_main, data_loader, 'original')
+        elif train_main.params.finetune == 1:
+            self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
+            self.run_prediction(train_main, data_loader, 'original')
 
-            self.initialize_model(data_loader, class_main, class_main.params.lr / 10)
-            self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr / 10,
+            self.initialize_model(data_loader, train_main, train_main.params.lr / 10)
+            self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
                               "tuned")
-            self.run_prediction(class_main, data_loader, 'tuned')
+            self.run_prediction(train_main, data_loader, 'tuned')
 
-        elif class_main.params.finetune == 2:
-            self.run_training(class_main, data_loader, class_main.params.epochs, class_main.params.lr, "original")
-            self.run_prediction(class_main, data_loader, 'original')
+        elif train_main.params.finetune == 2:
+            self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
+            self.run_prediction(train_main, data_loader, 'original')
 
-            self.initialize_model(data_loader, class_main, class_main.params.lr / 10)
-            self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr / 10,
+            self.initialize_model(data_loader, train_main, train_main.params.lr / 10)
+            self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
                               "tuned")
-            self.run_prediction(class_main, data_loader, 'tuned')
+            self.run_prediction(train_main, data_loader, 'tuned')
 
-            self.initialize_model(data_loader, class_main, class_main.params.lr / 100)
-            self.run_training(class_main, data_loader, class_main.params.finetune_epochs, class_main.params.lr / 100,
+            self.initialize_model(data_loader, train_main, train_main.params.lr / 100)
+            self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 100,
                               "finetuned")
-            self.run_prediction(class_main, data_loader, 'finetuned')
+            self.run_prediction(train_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')
 
     def run_prediction_on_unseen(self, test_main, data_loader, name):
-        classes = np.load(test_main.params.model_path + '/classes.npy')
+        classes = np.load(test_main.params.main_param_path + '/classes.npy')
         PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
         im_names = data_loader.Filenames
 
@@ -280,13 +280,13 @@ class import_and_train_model:
         output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
 
         Pred_PredLabel_Prob = [output_max, output_label, prob]
-        with open(test_main.params.outpath + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
+        with open(test_main.params.test_outpath + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
             pickle.dump(Pred_PredLabel_Prob, cw)
 
         # im_names1 = os.path.basename(os.path.dirname(im_names)) + '/' + os.path.basename(im_names)
 
         To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names, output_label)]
-        np.savetxt(test_main.params.outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
+        np.savetxt(test_main.params.test_outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
 
     def initialize_model(self, train_main, test_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -294,7 +294,7 @@ class import_and_train_model:
         if data_loader.class_weights_tensor is not None:
             self.criterion = nn.CrossEntropyLoss(data_loader.class_weights_tensor)
         else:
-            class_weights_tensor = torch.load(test_main.params.model_path + '/class_weights_tensor.pt')
+            class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
             self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
         torch.cuda.set_device(train_main.params.gpu_id)

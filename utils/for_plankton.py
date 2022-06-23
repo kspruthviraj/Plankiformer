@@ -31,29 +31,29 @@ class CreateDataForPlankton:
         self.params = None
         return
 
-    def make_train_test_for_model(self, class_main, prep_data):
+    def make_train_test_for_model(self, train_main, prep_data):
         self.class_weights_tensor = prep_data.tt.class_weights_tensor
         self.Filenames = prep_data.Filenames
         classes = prep_data.classes
         Data = prep_data.Data
 
-        # Data = pd.read_pickle(class_main.params.outpath + '/Data.pickle')
-        # classes = np.load(class_main.params.outpath + '/classes.npy')
+        # Data = pd.read_pickle(train_main.params.outpath + '/Data.pickle')
+        # classes = np.load(train_main.params.outpath + '/classes.npy')
 
-        if class_main.params.test_set == 'no':
-            if class_main.params.ttkind == 'mixed':
+        if train_main.params.test_set == 'no':
+            if train_main.params.ttkind == 'mixed':
                 self.trainFilenames = Data[0]
                 trainXimage = Data[1]
                 trY = Data[2]
                 trainXfeat = Data[9]
                 trX = [trainXimage, trainXfeat]
-            elif class_main.params.ttkind == 'image' and class_main.params.compute_extrafeat == 'yes':
+            elif train_main.params.ttkind == 'image' and train_main.params.compute_extrafeat == 'yes':
                 self.trainFilenames = Data[0]
                 trainXimage = Data[1]
                 trY = Data[2]
                 trainXfeat = Data[9]
                 trX = [trainXimage, trainXfeat]
-            elif class_main.params.ttkind == 'feat':
+            elif train_main.params.ttkind == 'feat':
                 self.trainFilenames = Data[0]
                 trY = Data[2]
                 trainXfeat = Data[9]
@@ -63,9 +63,9 @@ class CreateDataForPlankton:
                 trX = Data[1]
                 trY = Data[2]
 
-        elif class_main.params.test_set == 'yes':
-            if class_main.params.valid_set == 'no':
-                if class_main.params.ttkind == 'mixed':
+        elif train_main.params.test_set == 'yes':
+            if train_main.params.valid_set == 'no':
+                if train_main.params.ttkind == 'mixed':
                     self.trainFilenames = Data[0]
                     trainXimage = Data[1]
                     trY = Data[2]
@@ -76,7 +76,7 @@ class CreateDataForPlankton:
                     testXfeat = Data[10]
                     trX = [trainXimage, trainXfeat]
                     teX = [testXimage, testXfeat]
-                elif class_main.params.ttkind == 'image' and class_main.params.compute_extrafeat == 'yes':
+                elif train_main.params.ttkind == 'image' and train_main.params.compute_extrafeat == 'yes':
                     self.trainFilenames = Data[0]
                     trainXimage = Data[1]
                     trY = Data[2]
@@ -87,7 +87,7 @@ class CreateDataForPlankton:
                     testXfeat = Data[10]
                     trX = [trainXimage, trainXfeat]
                     teX = [testXimage, testXfeat]
-                elif class_main.params.ttkind == 'feat':
+                elif train_main.params.ttkind == 'feat':
                     self.trainFilenames = Data[0]
                     trainXfeat = Data[9]
                     trY = Data[2]
@@ -103,8 +103,8 @@ class CreateDataForPlankton:
                     teX = Data[4]
                     teY = Data[5]
 
-            elif class_main.params.valid_set == 'yes':
-                if class_main.params.ttkind == 'mixed':
+            elif train_main.params.valid_set == 'yes':
+                if train_main.params.ttkind == 'mixed':
                     self.trainFilenames = Data[0]
                     trainXimage = Data[1]
                     trY = Data[2]
@@ -120,7 +120,7 @@ class CreateDataForPlankton:
                     trX = [trainXimage, trainXfeat]
                     teX = [testXimage, testXfeat]
                     veX = [valXimage, valXfeat]
-                elif class_main.params.ttkind == 'image' and class_main.params.compute_extrafeat == 'yes':
+                elif train_main.params.ttkind == 'image' and train_main.params.compute_extrafeat == 'yes':
                     self.trainFilenames = Data[0]
                     trainXimage = Data[1]
                     trY = Data[2]
@@ -136,7 +136,7 @@ class CreateDataForPlankton:
                     trX = [trainXimage, trainXfeat]
                     teX = [testXimage, testXfeat]
                     veX = [valXimage, valXfeat]
-                elif class_main.params.ttkind == 'feat':
+                elif train_main.params.ttkind == 'feat':
                     self.trainFilenames = Data[0]
                     self.testFilenames = Data[3]
                     self.valFilenames = Data[6]
@@ -164,7 +164,7 @@ class CreateDataForPlankton:
         self.classes = classes
         self.classes_int = classes_int
         
-        if class_main.params.test_set == 'no':
+        if train_main.params.test_set == 'no':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
             self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
 
@@ -172,7 +172,7 @@ class CreateDataForPlankton:
             data_train = 255 * data_train
             self.X_train = data_train.astype(np.uint8)
 
-        elif class_main.params.test_set == 'yes' and class_main.params.valid_set == 'no':
+        elif train_main.params.test_set == 'yes' and train_main.params.valid_set == 'no':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
             self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
 
@@ -187,7 +187,7 @@ class CreateDataForPlankton:
             data_test = 255 * data_test
             self.X_test = data_test.astype(np.uint8)
 
-        elif class_main.params.test_set == 'yes' and class_main.params.valid_set == 'yes':
+        elif train_main.params.test_set == 'yes' and train_main.params.valid_set == 'yes':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
             self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
 
@@ -211,33 +211,33 @@ class CreateDataForPlankton:
 
         return
 
-    def create_data_loaders(self, class_main):
-        self.checkpoint_path = class_main.params.outpath + 'trained_models/' + class_main.params.init_name + '/'
+    def create_data_loaders(self, train_main):
+        self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
         Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
-        if class_main.params.test_set == 'yes' and class_main.params.valid_set == 'yes':
+        if train_main.params.test_set == 'yes' and train_main.params.valid_set == 'yes':
             train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
-            self.train_dataloader = DataLoader(train_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+            self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                                pin_memory=True)
 
             test_dataset = CreateDataset(X=self.X_test, y=self.y_test)
-            self.test_dataloader = DataLoader(test_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+            self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                               pin_memory=True)
 
             val_dataset = CreateDataset(X=self.X_val, y=self.y_val)
-            self.val_dataloader = DataLoader(val_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+            self.val_dataloader = DataLoader(val_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                              pin_memory=True)
-        elif class_main.params.test_set == 'no':
+        elif train_main.params.test_set == 'no':
             train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
-            self.train_dataloader = DataLoader(train_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+            self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                                pin_memory=True)
-        elif class_main.params.test_set == 'yes' and class_main.params.valid_set == 'no':
+        elif train_main.params.test_set == 'yes' and train_main.params.valid_set == 'no':
             train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
-            self.train_dataloader = DataLoader(train_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+            self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                                pin_memory=True)
 
             test_dataset = CreateDataset(X=self.X_test, y=self.y_test)
-            self.test_dataloader = DataLoader(test_dataset, class_main.params.batch_size, shuffle=True, num_workers=4,
+            self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                               pin_memory=True)
 
 

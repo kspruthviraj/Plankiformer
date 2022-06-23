@@ -64,19 +64,19 @@ class CreateDataForPlankton:
         self.params = None
         return
 
-    def make_train_test_for_model(self, class_main):
-        train_path = class_main.params.datapaths + 'Train/'
-        AA = pd.read_csv(class_main.params.datapaths + 'train0.txt', header=None)
-        copy_data(AA, class_main.params.datapaths, train_path)
-        test_path = class_main.params.datapaths + 'Test/'
-        AA = pd.read_csv(class_main.params.datapaths + 'test0.txt', header=None)
-        copy_data(AA, class_main.params.datapaths, test_path)
+    def make_train_test_for_model(self, train_main):
+        train_path = train_main.params.datapaths + 'Train/'
+        AA = pd.read_csv(train_main.params.datapaths + 'train0.txt', header=None)
+        copy_data(AA, train_main.params.datapaths, train_path)
+        test_path = train_main.params.datapaths + 'Test/'
+        AA = pd.read_csv(train_main.params.datapaths + 'test0.txt', header=None)
+        copy_data(AA, train_main.params.datapaths, test_path)
 
         train_set = datasets.ImageFolder(train_path)
         test_set = datasets.ImageFolder(test_path)
         # class_labels = train_set.classes
 
-        torch.save(train_set.classes, class_main.params.outpath + '/class_labels.pt')
+        torch.save(train_set.classes, train_main.params.outpath + '/class_labels.pt')
 
         train_set, val_set = torch.utils.data.random_split(train_set, [int(np.round(0.8 * len(train_set), 0)),
                                                                        int(np.round(0.2 * len(train_set), 0))])
@@ -116,7 +116,7 @@ class CreateDataForPlankton:
         print(len(Counter(classes_all)))
         class_weights_all = compute_class_weight(class_weight='balanced', classes=np.unique(classes_all), y=classes_all)
         class_weights_all = torch.Tensor(class_weights_all)
-        torch.save(class_weights_all, class_main.params.datapaths + '/class_weights_all.pt')
+        torch.save(class_weights_all, train_main.params.datapaths + '/class_weights_all.pt')
 
 
 def copy_data(AA, data_root, path_out):

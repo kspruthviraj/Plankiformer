@@ -57,7 +57,7 @@ class CreateDataset:
 
         return
 
-    def CreateTrainTestSets(self, train_main, ttkind=None, classifier=None, balance_weight=None,
+    def CreateTrainTestSets(self, train_main, test_main, ttkind=None, classifier=None, balance_weight=None,
                             valid_set=None, compute_extrafeat=None, random_state=12345):
         """
         Creates train and test sets using the CtrainTestSet class
@@ -91,7 +91,7 @@ class CreateDataset:
 
         # To store the data
         if train_main.params.ttkind == 'mixed':
-            scaler = joblib.load(train_main.params.outpath + '/Features_scaler_used_for_MLP.joblib')
+            scaler = joblib.load(test_main.params.main_param_path + '/Features_scaler_used_for_MLP.joblib')
             self.tt.trainXfeat = scaler.transform(self.tt.trainXfeat)
             self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
                          [], [], [],
@@ -99,7 +99,7 @@ class CreateDataset:
                          self.tt.trainXfeat, [], []]
 
         elif train_main.params.ttkind == 'feat':
-            scaler = joblib.load(train_main.params.outpath + '/Features_scaler_used_for_MLP.joblib')
+            scaler = joblib.load(test_main.params.main_param_path + '/Features_scaler_used_for_MLP.joblib')
             self.tt.trainX = scaler.transform(self.tt.trainX)
             self.Data = [self.tt.trainFilenames, [], self.tt.trainY,
                          [], [], [],
@@ -113,7 +113,7 @@ class CreateDataset:
                          [], [], []]
 
         elif train_main.params.ttkind == 'image' and train_main.params.compute_extrafeat == 'yes':
-            scaler = joblib.load(train_main.params.outpath + '/Features_scaler_used_for_MLP.joblib')
+            scaler = joblib.load(test_main.params.main_param_path + '/Features_scaler_used_for_MLP.joblib')
             self.tt.trainXfeat = scaler.transform(self.tt.trainXfeat)
             self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
                          [], [], [],

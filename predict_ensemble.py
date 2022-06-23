@@ -8,10 +8,7 @@ import sys
 
 import numpy as np
 
-from utils import for_plankton_test as fplankton_test
-from utils import model_training as mt
-from utils import prepare_data_for_testing as pdata_test
-import main as train_main
+import predict
 
 
 class LoadInputParameters:
@@ -52,10 +49,9 @@ class LoadInputParameters:
         parser = argparse.ArgumentParser(description='Create Dataset')
 
         parser.add_argument('-test_path', nargs='*', default=['./data/'], help="directory where you want to predict")
-        parser.add_argument('-model_path', default='./out/trained_models/', help="directory where you want to predict")
+        parser.add_argument('-main_model_path', default='./out/trained_models/', help="directory where you want to predict")
         parser.add_argument('-outpath', default='./out/', help="directory where you want to predict")
-        parser.add_argument('-init_name', default='Init_1',
-                            help="directory name where you want the Best models to be saved")
+        parser.add_argument('-init_names', nargs='*', default=['Init_0', 'Init_1'], help="directory name where you want the Best models to be saved")
 
         args = parser.parse_args(string)
 
@@ -75,26 +71,27 @@ if __name__ == '__main__':
     print('\nRunning', sys.argv[0], sys.argv[1:])
 
     # Loading Testing Input parameters
-    inp_params = LoadInputParameters(initMode='args')
-    print('model_path: {}'.format(inp_params.params.model_path))
-    inp_params.CreateOutDir()
+    test_params = LoadInputParameters(initMode='args')
+    print('model_path: {}'.format(test_params.params.model_path))
+    test_params.CreateOutDir()
     print('Loaded testing input parameters')
-    #
-    # Loading Trained Input parameters
-    train_params = train_main.LoadInputParameters(initMode='args')
-    print('model_path:{}'.format(inp_params.params.model_path))
-    train_params.params = np.load(inp_params.params.model_path + '/params.npy', allow_pickle=True).item()
-    #
 
-    print('Creating dataset using input parameters')
+    # Loading Trained Input parameters
+    train_params = main_train.LoadInputParameters(initMode='args')
+    print('model_path:{}'.format(test_params.params.model_path))
+    train_params.params = np.load(test_params.params.model_path + '/params.npy', allow_pickle=True).item()
+
+    print('Creating test data')
     prep_test_data = pdata_test.CreateDataset()
-    prep_test_data.LoadData(inp_params, train_params)
+    prep_test_data.LoadData(test_params, train_params)
     prep_test_data.CreateTrainTestSets(train_params)
 
     # For Plankton testing
     for_plankton_test = fplankton_test.CreateDataForPlankton()
     for_plankton_test.make_train_test_for_model(train_params, prep_test_data)
-    for_plankton_test.create_data_loaders(train_params, inp_params)
+    for_plankton_test.create_data_loaders(train_params, test_params)
 
-    # Model Training
+    # initialize model training
     model_training = mt.import_and_train_model()
+    # Do Predictions
+    model_training.load_model_and_run_prediction(train_params, test_params, for_plankton_test)

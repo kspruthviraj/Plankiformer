@@ -158,6 +158,6 @@ if __name__ == '__main__':
     print('\n Running Ensemble', sys.argv[0], sys.argv[1:])
 
     # Loading Input parameters
-    inp_params = LoadEnsembleParameters(initMode='args')
-    inp_params.CreateOutDir()
-    inp_params.get_ensemble_performance()
+    train_params = LoadEnsembleParameters(initMode='args')
+    train_params.CreateOutDir()
+    train_params.get_ensemble_performance()
