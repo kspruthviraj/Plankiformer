@@ -58,13 +58,15 @@ class CreateDataForWildtrap:
         self.test_dataloader = torch.utils.data.DataLoader(testset, batch_size=train_main.params.batch_size,
                                                            shuffle=False, num_workers=4, pin_memory=True)
 
-        classes_train = [label for _, label in trainset]
-        classes_val = [label for _, label in valset]
-        classes_all = classes_train + classes_val
-        print(len(Counter(classes_all)))
-        class_weights_all = compute_class_weight(class_weight='balanced', classes=np.unique(classes_all), y=classes_all)
-        self.class_weights_tensor = torch.Tensor(class_weights_all)
-        torch.save(self.class_weights_tensor, train_main.params.outpath + '/class_weights.pt')
+        # classes_train = [label for _, label in trainset]
+        # classes_val = [label for _, label in valset]
+        # classes_all = classes_train + classes_val
+        # print(len(Counter(classes_all)))
+        # class_weights_all = compute_class_weight(class_weight='balanced',classes=np.unique(classes_all),y=classes_all)
+        # self.class_weights_tensor = torch.Tensor(class_weights_all)
+        # torch.save(self.class_weights_tensor, train_main.params.outpath + '/class_weights.pt')
+
+        self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights.pt')
 
         return
 
