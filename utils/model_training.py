@@ -195,7 +195,7 @@ class import_and_train_model:
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        avg_acc1, target, output, prob = cls_predict(data_loader.val_dataloader, self.model, self.criterion,
+        avg_acc1, target, output, prob = cls_predict(data_loader.test_dataloader, self.model, self.criterion,
                                                      time_begin=None)
 
         target = torch.cat(target)

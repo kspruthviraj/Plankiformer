@@ -1,6 +1,9 @@
+from collections import Counter
+
 import numpy as np
 import torch
 import torchvision.transforms as transforms
+from sklearn.utils import compute_class_weight
 from torch.utils.data import Dataset
 from torchvision import datasets
 import torchvision.transforms as T
@@ -27,11 +30,9 @@ class CreateDataForWildtrap:
         train_set = datasets.ImageFolder(train_PATH)
         test_set = datasets.ImageFolder(test_PATH)
 
-        class_labels = torch.save(train_set.classes,'class_labels.pt')
+        class_labels = torch.save(train_set.classes, train_main.params.outpath + '/class_labels.pt')
 
         self.classes = train_set.classes
-
-
 
         train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
                                      T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
@@ -56,6 +57,14 @@ class CreateDataForWildtrap:
                                                           shuffle=True, num_workers=4, pin_memory=True)
         self.test_dataloader = torch.utils.data.DataLoader(testset, batch_size=train_main.params.batch_size,
                                                            shuffle=False, num_workers=4, pin_memory=True)
+
+        classes_train = [label for _, label in trainset]
+        classes_val = [label for _, label in valset]
+        classes_all = classes_train + classes_val
+        print(len(Counter(classes_all)))
+        class_weights_all = compute_class_weight(class_weight='balanced', classes=np.unique(classes_all), y=classes_all)
+        self.class_weights_tensor = torch.Tensor(class_weights_all)
+        torch.save(self.class_weights_tensor, train_main.params.outpath + '/class_weights.pt')
 
         return
 
