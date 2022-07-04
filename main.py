@@ -206,6 +206,8 @@ if __name__ == '__main__':
         loaded_data.create_data_loaders(train_params)
     elif train_params.params.dataset_name == 'cifar10':
         loaded_data = pdata.CreateTrainTestDataloader()
+    else:
+        print(' Error')
 
     # Model Training
     model_training = mt.import_and_train_model()
