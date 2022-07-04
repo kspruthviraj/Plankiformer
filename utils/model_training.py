@@ -236,8 +236,8 @@ class import_and_train_model:
         elif train_main.params.finetune == 1:
             self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
             self.run_prediction(train_main, data_loader, 'original')
-
-            self.initialize_model(data_loader, train_main, train_main.params.lr / 10)
+            self.initialize_model(train_main=train_main, test_main=None,
+                                  data_loader=data_loader, lr=train_main.params.lr / 10)
             self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
                               "tuned")
             self.run_prediction(train_main, data_loader, 'tuned')
@@ -246,12 +246,14 @@ class import_and_train_model:
             self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
             self.run_prediction(train_main, data_loader, 'original')
 
-            self.initialize_model(data_loader, train_main, train_main.params.lr / 10)
+            self.initialize_model(train_main=train_main, test_main=None,
+                                  data_loader=data_loader, lr=train_main.params.lr / 10)
             self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
                               "tuned")
             self.run_prediction(train_main, data_loader, 'tuned')
 
-            self.initialize_model(data_loader, train_main, train_main.params.lr / 100)
+            self.initialize_model(train_main=train_main, test_main=None,
+                                  data_loader=data_loader, lr=train_main.params.lr / 100)
             self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 100,
                               "finetuned")
             self.run_prediction(train_main, data_loader, 'finetuned')
