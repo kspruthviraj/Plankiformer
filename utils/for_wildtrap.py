@@ -27,12 +27,12 @@ class CreateDataForWildtrap:
         train_PATH = train_main.params.datapaths
         test_PATH = train_main.params.test_path
 
-        train_set = datasets.ImageFolder(train_PATH)
-        test_set = datasets.ImageFolder(test_PATH)
+        trainset = datasets.ImageFolder(train_PATH)
+        testset = datasets.ImageFolder(test_PATH)
 
-        class_labels = torch.save(train_set.classes, train_main.params.outpath + '/class_labels.pt')
+        torch.save(trainset.classes, train_main.params.outpath + '/class_labels.pt')
 
-        self.classes = train_set.classes
+        self.classes = trainset.classes
 
         train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
                                      T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
@@ -40,15 +40,12 @@ class CreateDataForWildtrap:
 
         test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
 
-        trainset = datasets.CIFAR10('../data/CIFAR10/', download=True, train=True)
-
         train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
                                                                       int(np.round(0.2 * len(trainset), 0))])
 
         trainset = ApplyTransform(trainset, transform=train_transform)
         valset = ApplyTransform(val_set, transform=train_transform)
 
-        testset = datasets.CIFAR10('../data/CIFAR10/', download=True, train=False)
         testset = ApplyTransform(testset, transform=test_transform)
 
         self.train_dataloader = torch.utils.data.DataLoader(trainset, batch_size=train_main.params.batch_size,
