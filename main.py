@@ -109,7 +109,7 @@ class LoadInputParameters:
         # Choose dataset name
         parser.add_argument('-dataset_name', choices=['zoolake', 'zooscan', 'whoi', 'kaggle',
                                                       'eilat', 'rsmas', 'nabirds', 'dogs', 'beetle', 'wildtrap'],
-                            default='multi', help='Choose between different datasets "zoolake", "zooscan", "whoi", '
+                            default='zoolake', help='Choose between different datasets "zoolake", "zooscan", "whoi", '
                                                   '"kaggle", "eilat", "rsmas", "nabirds", "dogs", "beetle", "wildtrap"')
 
         # For model training
@@ -204,10 +204,15 @@ if __name__ == '__main__':
         loaded_data = fplankton.CreateDataForPlankton()
         loaded_data.make_train_test_for_model(train_params, prep_data)
         loaded_data.create_data_loaders(train_params)
+        # Model Training
+        model_training = mt.import_and_train_model()
+        # Run training
+        model_training.train_and_save(train_params, loaded_data)
     elif train_params.params.dataset_name == 'cifar10':
         loaded_data = fplankton.CreateDataForPlankton()
+        # Model Training
+        model_training = mt.import_and_train_model()
+        # Run training
+        model_training.train_and_save(train_params, loaded_data)
 
-    # Model Training
-    model_training = mt.import_and_train_model()
-    # Run training
-    model_training.train_and_save(train_params, loaded_data)
+
