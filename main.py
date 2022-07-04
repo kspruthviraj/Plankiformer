@@ -109,9 +109,10 @@ class LoadInputParameters:
 
         # Choose dataset name
         parser.add_argument('-dataset_name', choices=['zoolake', 'zooscan', 'whoi', 'kaggle',
-                                                      'eilat', 'rsmas', 'nabirds', 'dogs', 'beetle', 'wildtrap', 'cifar10'],
+                                                      'eilat', 'rsmas', 'nabirds', 'dogs', 'beetle', 'wildtrap',
+                                                      'cifar10'],
                             default='zoolake', help='Choose between different datasets "zoolake", "zooscan", "whoi", '
-                                                  '"kaggle", "eilat", "rsmas", "nabirds", "dogs", "beetle", "wildtrap"')
+                                                    '"kaggle", "eilat", "rsmas", "nabirds", "dogs", "beetle", "wildtrap"')
 
         # For model training
         parser.add_argument('-batch_size', type=int, default=16, help="Batch size for training")
@@ -218,4 +219,10 @@ if __name__ == '__main__':
         # Run training
         model_training.train_and_save(train_params, loaded_data)
 
-
+    elif train_params.params.dataset_name == 'wildtrap':
+        loaded_data = cifar10.CreateDataForCifar10()
+        loaded_data.make_train_test_for_cifar(train_params)
+        # Model Training
+        model_training = mt.import_and_train_model()
+        # Run training
+        model_training.train_and_save(train_params, loaded_data)

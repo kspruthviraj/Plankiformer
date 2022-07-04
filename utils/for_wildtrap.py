@@ -1,14 +1,14 @@
 import numpy as np
 import torch
-import torchvision.transforms as T
-from torch.utils.data import Dataset
+import torchvision.transforms as transforms
 from torch.utils.data import Dataset
 from torchvision import datasets
+import torchvision.transforms as T
+from torch.utils.data import Dataset
 
 
-class CreateDataForCifar10:
+class CreateDataForWildtrap:
     def __init__(self):
-        self.checkpoint_path = None
         self.classes = None
         self.test_dataloader = None
         self.train_dataloader = None
@@ -20,9 +20,18 @@ class CreateDataForCifar10:
         self.params = None
         return
 
-    def make_train_test_for_cifar(self, train_main):
-        self.classes = ('airplane', 'automobile', 'bird', 'cat',
-                        'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+    def make_train_test_for_wildtrap(self, train_main):
+        train_PATH = train_main.params.datapaths
+        test_PATH = train_main.params.test_path
+
+        train_set = datasets.ImageFolder(train_PATH)
+        test_set = datasets.ImageFolder(test_PATH)
+
+        class_labels = torch.save(train_set.classes,'class_labels.pt')
+
+        self.classes = train_set.classes
+
+
 
         train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
                                      T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
@@ -40,8 +49,6 @@ class CreateDataForCifar10:
 
         testset = datasets.CIFAR10('../data/CIFAR10/', download=True, train=False)
         testset = ApplyTransform(testset, transform=test_transform)
-
-        self.checkpoint_path = train_main.params.outpath
 
         self.train_dataloader = torch.utils.data.DataLoader(trainset, batch_size=train_main.params.batch_size,
                                                             shuffle=True, num_workers=4, pin_memory=True)
