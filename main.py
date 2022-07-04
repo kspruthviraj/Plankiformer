@@ -109,7 +109,7 @@ class LoadInputParameters:
 
         # Choose dataset name
         parser.add_argument('-dataset_name', choices=['zoolake', 'zooscan', 'whoi', 'kaggle',
-                                                      'eilat', 'rsmas', 'nabirds', 'dogs', 'beetle', 'wildtrap'],
+                                                      'eilat', 'rsmas', 'nabirds', 'dogs', 'beetle', 'wildtrap', 'cifar10'],
                             default='zoolake', help='Choose between different datasets "zoolake", "zooscan", "whoi", '
                                                   '"kaggle", "eilat", "rsmas", "nabirds", "dogs", "beetle", "wildtrap"')
 
