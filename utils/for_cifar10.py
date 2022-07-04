@@ -21,7 +21,7 @@ class CreateDataForCifar10:
         return
 
     def make_train_test_for_cifar(self, train_main):
-        self.classes = ('plane', 'car', 'bird', 'cat',
+        self.classes = ('airplane', 'automobile', 'bird', 'cat',
                         'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
         train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
