@@ -19,14 +19,13 @@ from torch.utils.data import DataLoader, Dataset
 
 
 class CreateDataset:
-    def __init__(self, initMode='default', verbose=True):
+    def __init__(self, initMode='default'):
         self.Filenames = None
         self.classes = None
         self.Data = None
         self.initMode = initMode
         self.fsummary = None
         self = None
-        self.verbose = verbose
         self.params = None
         self.paramsDict = None
         self.data = None
