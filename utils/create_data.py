@@ -833,6 +833,7 @@ class CTrainTestSet:
         X and y are dataframes with features and labels
         """
 
+        self.testX = None
         self.class_weights_tensor = None
         self.valXfeat = None
         self.testXfeat = None
