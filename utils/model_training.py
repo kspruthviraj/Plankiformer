@@ -228,7 +228,7 @@ class import_and_train_model:
         f.close()
 
     def train_and_save(self, train_main, data_loader):
-        self.import_deit_models(data_loader, train_main)
+        self.import_deit_models(train_main, data_loader)
         if train_main.params.finetune == 0:
             self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
             self.run_prediction(train_main, data_loader, 'original')
