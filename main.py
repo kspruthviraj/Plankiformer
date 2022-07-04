@@ -11,6 +11,7 @@ import numpy as np
 from utils import for_plankton as fplankton
 from utils import model_training as mt
 from utils import prepare_train_test_data as pdata
+from utils import for_cifar10 as cifar10
 
 
 # from utils import for_plankton_test as fplankton_test
@@ -194,12 +195,12 @@ if __name__ == '__main__':
     train_params.CreateOutDir()
     print('Loaded input parameters')
     #
-    print('Creating dataset using input parameters')
-    prep_data = pdata.CreateDataset()
-    prep_data.LoadData(train_params)
-    prep_data.CreateTrainTestSets(train_params)
 
     if train_params.params.dataset_name == 'zoolake':
+        print('Creating dataset using input parameters')
+        prep_data = pdata.CreateDataset()
+        prep_data.LoadData(train_params)
+        prep_data.CreateTrainTestSets(train_params)
         # For Plankton
         loaded_data = fplankton.CreateDataForPlankton()
         loaded_data.make_train_test_for_model(train_params, prep_data)
@@ -208,8 +209,9 @@ if __name__ == '__main__':
         model_training = mt.import_and_train_model()
         # Run training
         model_training.train_and_save(train_params, loaded_data)
+
     elif train_params.params.dataset_name == 'cifar10':
-        loaded_data = fplankton.CreateDataForPlankton()
+        loaded_data = cifar10.CreateDataForCifar10()
         # Model Training
         model_training = mt.import_and_train_model()
         # Run training
