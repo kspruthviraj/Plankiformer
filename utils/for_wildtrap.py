@@ -24,8 +24,8 @@ class CreateDataForWildtrap:
         return
 
     def make_train_test_for_wildtrap(self, train_main):
-        train_PATH = train_main.params.datapaths
-        test_PATH = train_main.params.test_path
+        train_PATH = str(train_main.params.datapaths)
+        test_PATH = str(train_main.params.test_path)
 
         trainset = datasets.ImageFolder(train_PATH)
         testset = datasets.ImageFolder(test_PATH)
