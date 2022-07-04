@@ -199,12 +199,15 @@ if __name__ == '__main__':
     prep_data.LoadData(train_params)
     prep_data.CreateTrainTestSets(train_params)
 
-    # For Plankton
-    for_plankton = fplankton.CreateDataForPlankton()
-    for_plankton.make_train_test_for_model(train_params, prep_data)
-    for_plankton.create_data_loaders(train_params)
+    if train_params.params.dataset_name == 'zoolake':
+        # For Plankton
+        loaded_data = pdata.CreateTrainTestDataloader()
+        loaded_data.make_train_test_for_model(train_params)
+        loaded_data.create_data_loaders(train_params)
+    elif train_params.params.dataset_name == 'cifar10':
+        loaded_data = pdata.CreateTrainTestDataloader()
 
     # Model Training
     model_training = mt.import_and_train_model()
     # Run training
-    model_training.train_and_save(train_params, for_plankton)
+    model_training.train_and_save(train_params, loaded_data)
