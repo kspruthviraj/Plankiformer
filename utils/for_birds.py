@@ -17,6 +17,7 @@ from torchvision.datasets.folder import default_loader
 
 class CreateDataForBirds:
     def __init__(self):
+        self.label_map = None
         self.class_names = None
         self.checkpoint_path = None
         self.classes = None
@@ -58,11 +59,17 @@ class CreateDataForBirds:
         self.test_dataloader = torch.utils.data.DataLoader(test_set, batch_size=train_main.params.batch_size,
                                                            shuffle=False, num_workers=4, pin_memory=True)
         self.checkpoint_path = train_main.params.outpath
-        dataset_path = os.path.join(train_PATH, 'nabirds')
-        self.class_names = load_class_names(dataset_path)
-        classes = list(self.class_names.keys())
-        self.classes = classes
 
+        image_class_labels = pd.read_csv(os.path.join(train_PATH, 'image_class_labels.txt'), sep=' ',
+                                         names=['img_id', 'target'])
+        label_set = list(set(image_class_labels['target']))
+        class_names = load_class_names(train_PATH)
+
+        classes = []
+        for i in label_set:
+            classes.append(list(class_names.values())[list(class_names.keys()).index(str(i))])
+
+        self.classes = classes
         self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights.pt')
 
 
