@@ -99,7 +99,9 @@ class NABirds(Dataset):
             self.data = self.data[self.data.is_training_img == 0]
 
         # Load in the class data
-        self.classes = load_class_names(dataset_path)
+        self.class_names = load_class_names(dataset_path)
+        classes = list(self.class_names.values())
+        self.classes = classes
         self.class_hierarchy = load_hierarchy(dataset_path)
 
     def __len__(self):
