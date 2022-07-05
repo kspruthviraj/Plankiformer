@@ -188,7 +188,8 @@ class import_and_train_model:
         plt.savefig(data_loader.checkpoint_path + '/performance_curves_' + name + '.png')
 
     def run_prediction(self, train_main, data_loader, name):
-        classes = np.load(train_main.params.outpath + '/classes.npy')
+        # classes = np.load(train_main.params.outpath + '/classes.npy')
+        classes = data_loader.classes
         PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
 
         checkpoint = torch.load(PATH)
