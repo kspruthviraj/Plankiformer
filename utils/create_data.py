@@ -579,6 +579,7 @@ class Cdata:
 
     def __init__(self, datapath, L=None, class_select=None, classifier=None, compute_extrafeat=None, resize_images=None,
                  balance_weight=None, kind='mixed', training_data=True):
+        self.classes = None
         self.datapath = datapath
         if L is None and kind != 'feat':
             print('CData: image size needs to be set, unless kind is \'feat\'')
@@ -635,13 +636,14 @@ class Cdata:
         # 		print(self.df['classname'].unique())
         self.classes = self.df['classname'].unique()
 
-        self.kind = kind  # Now the data kind is kind. In most cases, we had already kind=self.kind, but if the user tested another kind, it must be changed
+        self.kind = kind  # Now the data kind is kind. In most cases, we had already kind=self.kind, but if the user
+        # tested another kind, it must be changed
         self.Check()  # Some sanity checks on the dataset
         self.CreateXy()  # Creates X and y, i.e. features and labels
         return
 
     def Check(self):
-        ''' Basic checks on the dataset '''
+        """ Basic checks on the dataset """
 
         # Number of different classes
         classes = self.classes
@@ -678,11 +680,11 @@ class Cdata:
         return
 
     def CreateXy(self):
-        '''
+        """
         Creates features and target
         - removing the evidently junk columns.
         - allowing to access images and features separately and confortably
-        '''
+        """
 
         self.y = self.df.classname
         self.filenames = self.df.filename
@@ -696,16 +698,13 @@ class Cdata:
 
 
 def ReadArgsTxt(modelpath, verbose=False):
-    '''
+    """
     Looks with what arguments the model was trained, and makes a series of consistency checks.
     Reads the following two files:
     - params.txt  (txt file with the simulation parameters -- parameter names are reconstructed through regex)
     - classes.npy (numpy file with the list of classes)
 
-    '''
-
-    print(
-        'NOTIMPLEMENTED WARNING: ReadArgsTxt only reads some of the input parameters (those that were useful when I wrote the function, which may have changed)')
+    """
 
     argsname = modelpath + '/params.txt'
     params = {'L': None,
@@ -758,17 +757,6 @@ def ReadArgsTxt(modelpath, verbose=False):
             print('We retrieve this subset of parameters:\n', params)
             print('-----------------------------------------------------------')
 
-    # def OutputClassPaths():
-    #     ''' Auxiliary function for error messages '''
-    #     print('\nclasses1 are the subdirectories in the following folders: ', datapaths)
-    #     print('classes1:', classes1)
-    #     print('\nclasses2 full filename: ', modelpath + 'classes2.npy')
-    #     print('classes2:', classes2)
-    #     print('')
-
-    # Now we extract the classes. Typically, they should be written in the classes.npy file.
-    # Since sometimes we reduce the number of classes, these might be fewer than those contained in the dataset.
-
     # Extract classes from npy file in output directory
     try:
         classes = np.load(modelpath + '/classes.npy', allow_pickle=True)
@@ -787,21 +775,21 @@ def ReadArgsTxt(modelpath, verbose=False):
 
 
 def unique_cols(df):
-    ''' Returns one value per column, stating whether all the values are the same'''
+    """ Returns one value per column, stating whether all the values are the same"""
     a = df.to_numpy()  # df.values (pandas<0.24)
     return (a[0] == a[1:]).all(0)
 
 
 def DropCols(X, cols):
-    '''
+    """
     Gets rid of the columns cols from the dataframe X.
     cols is a list with the columns names
-    '''
+    """
     return X.drop(columns=cols, errors='ignore')
 
 
 def RemoveUselessCols(df):
-    ''' Removes columns with no information from dataframe '''
+    """ Removes columns with no information from dataframe """
     # Select all columns except image
     morecols = []
     cols = df.columns.tolist()

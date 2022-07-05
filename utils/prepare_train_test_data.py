@@ -112,7 +112,7 @@ class CreateDataset:
             scaler = StandardScaler()
             scaler.fit(self.tt.trainXfeat)
             dump(scaler, train_main.params.outpath + '/Features_scaler_used_for_MLP.joblib')
-            if train_main.params.test_set == 'yes':
+            if test_set == 'yes':
                 self.tt.trainXfeat = scaler.transform(self.tt.trainXfeat)
                 self.tt.testXfeat = scaler.transform(self.tt.testXfeat)
                 if train_main.params.valid_set == 'yes':
@@ -126,7 +126,7 @@ class CreateDataset:
                                  self.tt.testFilenames, self.tt.testXimage, self.tt.testY,
                                  [], [], [],
                                  self.tt.trainXfeat, self.tt.testXfeat, []]
-            elif train_main.params.test_set == 'no':
+            elif test_set == 'no':
                 self.tt.trainXfeat = scaler.transform(self.tt.trainXfeat)
                 self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
                              [], [], [],
@@ -137,7 +137,7 @@ class CreateDataset:
             scaler = StandardScaler()
             scaler.fit(self.tt.trainX)
             dump(scaler, self.params.outpath + '/Features_scaler_used_for_MLP.joblib')
-            if train_main.params.test_set == 'yes':
+            if test_set == 'yes':
                 self.tt.trainX = scaler.transform(self.tt.trainX)
                 self.tt.testX = scaler.transform(self.tt.testX)
                 if train_main.params.valid_set == 'yes':
@@ -152,7 +152,7 @@ class CreateDataset:
                                  [], [], [],
                                  self.tt.trainX, self.tt.testX, []]
 
-            elif train_main.params.test_set == 'no':
+            elif test_set == 'no':
                 self.tt.trainX = scaler.transform(self.tt.trainX)
                 self.Data = [self.tt.trainFilenames, [], self.tt.trainY,
                              [], [], [],
@@ -160,7 +160,7 @@ class CreateDataset:
                              self.tt.trainX, [], []]
 
         elif train_main.params.ttkind == 'image' and train_main.params.compute_extrafeat == 'no':
-            if train_main.params.test_set == 'yes':
+            if test_set == 'yes':
                 if train_main.params.valid_set == 'yes':
                     self.Data = [self.tt.trainFilenames, self.tt.trainX, self.tt.trainY,
                                  self.tt.testFilenames, self.tt.testX, self.tt.testY,
@@ -171,7 +171,7 @@ class CreateDataset:
                                  self.tt.testFilenames, self.tt.testX, self.tt.testY,
                                  [], [], [],
                                  [], [], []]
-            elif train_main.params.test_set == 'no':
+            elif test_set == 'no':
                 self.Data = [self.tt.trainFilenames, self.tt.trainX, self.tt.trainY,
                              [], [], [],
                              [], [], [],
@@ -181,7 +181,7 @@ class CreateDataset:
             scaler = StandardScaler()
             scaler.fit(self.tt.trainXfeat)
             dump(scaler, self.params.outpath + '/Aqua_Features_scaler_used_for_MLP.joblib')
-            if train_main.params.test_set == 'yes':
+            if test_set == 'yes':
                 self.tt.trainXfeat = scaler.transform(self.tt.trainXfeat)
                 self.tt.testXfeat = scaler.transform(self.tt.testXfeat)
                 if self.params.valid_set == 'yes':
@@ -196,7 +196,7 @@ class CreateDataset:
                                  self.tt.testFilenames, self.tt.testXimage, self.tt.testY,
                                  [], [], [],
                                  self.tt.trainXfeat, self.tt.testXfeat, []]
-            elif train_main.params.test_set == 'no':
+            elif test_set == 'no':
                 self.tt.trainXfeat = scaler.transform(self.tt.trainXfeat)
                 self.Data = [self.tt.trainFilenames, self.tt.trainXimage, self.tt.trainY,
                              [], [], [],
@@ -219,11 +219,11 @@ class CreateDataset:
         classes = self.tt.lb.classes_
         self.classes = classes
 
-        if train_main.params.test_set == 'yes' and train_main.params.valid_set == 'yes':
+        if test_set == 'yes' and train_main.params.valid_set == 'yes':
             self.Filenames = [self.tt.trainFilenames, self.tt.testFilenames, self.tt.valFilenames]
-        elif train_main.params.test_set == 'yes' and train_main.params.valid_set == 'no':
+        elif test_set == 'yes' and train_main.params.valid_set == 'no':
             self.Filenames = [self.tt.trainFilenames, self.tt.testFilenames]
-        elif train_main.params.test_set == 'no':
+        elif test_set == 'no':
             self.Filenames = [self.tt.trainFilenames]
         else:
             self.Filenames = ['']

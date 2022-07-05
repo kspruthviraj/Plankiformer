@@ -35,10 +35,6 @@ class CreateDataForBirds:
         train_transform = T.Compose([T.Resize((224, 224)),
                                      T.RandomHorizontalFlip(),
                                      T.RandomVerticalFlip(),
-                                     T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
-                                     T.RandomRotation(degrees=(0, 180)),
-                                     T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3),
-                                                    scale=(0.7, 0.9)),
                                      T.ToTensor()])
 
         test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
