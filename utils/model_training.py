@@ -149,9 +149,11 @@ class import_and_train_model:
                                                                   np.round(total_mins, 3)))
 
             self.lr_scheduler(loss)
-            # self.early_stopping(loss)
-            # if self.early_stopping.early_stop:
-            #     break
+
+            if train_main.params.run_early_stopping == 'yes':
+                self.early_stopping(loss)
+                if self.early_stopping.early_stop:
+                    break
 
         total_mins = (time() - time_begin) / 60
 
