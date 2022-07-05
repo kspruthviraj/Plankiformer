@@ -179,56 +179,6 @@ def step_decay(epoch):
     return lrate
 
 
-def LoadMixed(datapaths, L, resize_images=None, alsoImages=True, training_data=True):
-    """
-    Uses the data in datapath to create a DataFrame with images and features.
-    For each class, we read a tsv file with the features. This file also contains the name of the corresponding image, which we fetch and resize.
-    For each line in the tsv file, we then have all the features in the tsv, plus class name, image (as numpy array), and a binary variable stating whether the image was resized or not.
-    Assumes a well-defined directory structure.
-
-    Arguments:
-    datapaths 	  - list with the paths where the data is stored. Inside each datapath, we expect to find directories with the names of the classes
-    L 			  - images are rescaled to a square of size LxL (maintaining proportions)
-    class_select  - a list of the classes to load. If None (default), loads all classes
-    alsoImages    - flag that tells whether to only load features, or features+images
-    training_data - flag for adding a subdirectory called training_data
-    Output:
-    df 		 	  - a dataframe with classname, npimage, rescaled, and all the columns contained in features.tsv
-    """
-    training_data_dir = '/training_data/' if training_data == True else '/'
-
-    df = pd.DataFrame()
-    dfA = pd.DataFrame()
-    dfB = pd.DataFrame()
-
-    dfFeat = pd.DataFrame()
-
-    for idp in range(len(datapaths)):
-        try:  # It could happen that a class is contained in one datapath but not in the others
-            dftemp = pd.read_csv(datapaths[idp] + '/features.tsv', sep='\t')
-            dftemp['filename'] = [datapaths[idp] + training_data_dir + os.path.basename(dftemp.url[ii])
-                                  for ii in range(len(dftemp))]
-            dfFeat = pd.concat([dfFeat, dftemp], axis=0, sort=True)
-        except:
-            pass
-    # Each line in features.tsv should be associated with classname (and image, if the options say it's true)
-    for index, row in dfFeat.iterrows():
-        if alsoImages:
-            npimage, rescaled, filename = LoadImage(row.filename, L, resize_images)
-
-            dftemp = pd.DataFrame([[npimage, rescaled] + row.to_list()],
-                                  columns=['npimage', 'rescaled'] + dfFeat.columns.to_list())
-        else:  # alsoImages is False here
-            dftemp = pd.DataFrame([row.to_list()] + dfFeat.columns.to_list())
-        df = pd.concat([df, dftemp], axis=0, sort=True)
-        # If images were loaded, scale the raw pixel intensities to the range [0, 1]
-    if alsoImages:
-        df.npimage = df.npimage / 255.0
-
-    df = df.sample(frac=1).reset_index(drop=True)
-    return df
-
-
 def LoadImage(filename, L=None, resize_images=None, show=False):
     """ Loads one image, and rescales it to size L.
     The pixel values are between 0 and 255, instead of between 0 and 1, so they should be normalized outside of the function
@@ -380,59 +330,13 @@ class Cdata:
         self.compute_extrafeat = compute_extrafeat
         self.resize_images = resize_images
 
-        if kind == 'mixed':
-            self.df = LoadMixed(datapaths, L, resize_images, alsoImages=True)
-            if compute_extrafeat == 'yes':
-                dfExtraFeat = compute_extrafeat_function(self.df)
-                self.df = pd.concat([self.df, dfExtraFeat], axis=1)
+        self.df = LoadImages(datapaths, L, resize_images, training_data=training_data)
+        if compute_extrafeat == 'yes':
+            dfExtraFeat = compute_extrafeat_function(self.df)
+            self.df = pd.concat([self.df, dfExtraFeat], axis=1)
 
-        elif kind == 'feat':
-            self.df = LoadMixed(datapaths, L, resize_images, alsoImages=False)
-            if compute_extrafeat == 'yes':
-                dfExtraFeat = compute_extrafeat_function(self.df)
-                self.df = pd.concat([self.df, dfExtraFeat], axis=1)
-
-        elif kind == 'image':
-            self.df = LoadImages(datapaths, L, resize_images, training_data=training_data)
-            if compute_extrafeat == 'yes':
-                dfExtraFeat = compute_extrafeat_function(self.df)
-                self.df = pd.concat([self.df, dfExtraFeat], axis=1)
-
-        else:
-            raise NotImplementedError('Only mixed, image or feat data-loading')
-
-        # 		print(self.df['classname'].unique())
-
-        self.kind = kind  # Now the data kind is kind. In most cases, we had already kind=self.kind, but if the user tested another kind, it must be changed
-        self.Check()  # Some sanity checks on the dataset
+        self.kind = kind
         self.CreateXy()  # Creates X and y, i.e. features and labels
-        return
-
-    def Check(self):
-        """ Basic checks on the dataset """
-
-        # Number of different classes
-        classifier = self.classifier
-
-        # Columns potentially useful for classification
-        ucols = self.df.drop(columns=['classname', 'url', 'filename', 'file_size', 'timestamp'],
-                             errors='ignore').columns
-        if len(ucols) < 1:
-            print('Columns: {}'.format(self.df.columns))
-            raise ValueError('The dataset has no useful columns.')
-
-        # Check for NaNs
-        if self.df.isnull().any().any():
-            print('There are NaN values in the data.')
-            print(self.df)
-            raise ValueError
-
-        # Check that the images have the expected size
-        if 'npimage' in self.df.columns:
-            if self.df.npimage[0].shape != (self.L, self.L, 3):
-                print(
-                    'Cdata Check(): Images were not reshaped correctly: {} instead of {}'.format(self.npimage[0].shape,
-                                                                                                 (self.L, self.L, 3)))
         return
 
     def CreateXy(self):
@@ -555,7 +459,6 @@ class CTrainTestSet:
             self.rescale = False
 
         return
-
 
     def ImageNumpyFromMixedDataframe(self, X=None):
         """ Returns a numpy array of the shape (nexamples, L, L, channels)"""
