@@ -12,6 +12,7 @@ from torch.utils.data import Dataset
 
 class CreateDataForWildtrap:
     def __init__(self):
+        self.checkpoint_path = None
         self.classes = None
         self.test_dataloader = None
         self.train_dataloader = None
@@ -67,6 +68,7 @@ class CreateDataForWildtrap:
         # torch.save(self.class_weights_tensor, train_main.params.outpath + '/class_weights.pt')
 
         self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights.pt')
+        self.checkpoint_path = train_main.params.outpath
 
         return
 
