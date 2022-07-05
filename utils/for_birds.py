@@ -58,6 +58,8 @@ class CreateDataForBirds:
         self.test_dataloader = torch.utils.data.DataLoader(test_set, batch_size=train_main.params.batch_size,
                                                            shuffle=False, num_workers=4, pin_memory=True)
         self.checkpoint_path = train_main.params.outpath
+        dataset_path = os.path.join(train_PATH, 'nabirds')
+        self.class_names = load_class_names(dataset_path)
         classes = list(self.class_names.keys())
         self.classes = classes
 
