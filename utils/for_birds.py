@@ -42,13 +42,10 @@ class CreateDataForBirds:
         test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
 
         train_PATH = train_main.params.datapaths
-        test_PATH = train_main.params.test_path
-
         train_PATH = ' '.join(map(str, train_PATH))
-        test_PATH = ' '.join(map(str, test_PATH))
 
         trainset = NABirds(root=train_PATH, train=True, transform=train_transform)
-        test_set = NABirds(root=test_PATH, train=False, transform=test_transform)
+        test_set = NABirds(root=train_PATH, train=False, transform=test_transform)
 
         train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
                                                                       int(np.round(0.2 * len(trainset), 0))])
