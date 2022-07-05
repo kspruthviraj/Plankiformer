@@ -17,6 +17,7 @@ from torchvision.datasets.folder import default_loader
 
 class CreateDataForBirds:
     def __init__(self):
+        self.class_names = None
         self.checkpoint_path = None
         self.classes = None
         self.test_dataloader = None
@@ -57,6 +58,8 @@ class CreateDataForBirds:
         self.test_dataloader = torch.utils.data.DataLoader(test_set, batch_size=train_main.params.batch_size,
                                                            shuffle=False, num_workers=4, pin_memory=True)
         self.checkpoint_path = train_main.params.outpath
+        classes = list(self.class_names.keys())
+        self.classes = classes
 
 
 class NABirds(Dataset):
@@ -100,8 +103,6 @@ class NABirds(Dataset):
 
         # Load in the class data
         self.class_names = load_class_names(dataset_path)
-        classes = list(self.class_names.values())
-        self.classes = classes
         self.class_hierarchy = load_hierarchy(dataset_path)
 
     def __len__(self):
