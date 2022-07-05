@@ -1,17 +1,16 @@
 from __future__ import print_function
 
-import numpy as np
-import torch
-from PIL import Image
-from os.path import join
 import os
-import scipy.io
+from os.path import join
 
+import numpy as np
+import scipy.io
+import torch
 import torch.utils.data as data
-from torchvision.datasets.utils import download_url, list_dir, list_files
-from torchvision import transforms, datasets
 import torchvision.transforms as T
+from PIL import Image
 from torch.utils.data import Dataset
+from torchvision.datasets.utils import download_url, list_dir
 
 
 class CreateDataForDogs:
@@ -45,13 +44,6 @@ class CreateDataForDogs:
         train_set = ApplyTransform(train_set, transform=train_transform)
         val_set = ApplyTransform(val_set, transform=train_transform)
         test_set = ApplyTransform(testset, transform=test_transform)
-
-        print("Training set stats:")
-        train_set.stats()
-        print("Validation set stats:")
-        val_set.stats()
-        print("Testing set stats:")
-        testset.stats()
 
         self.train_dataloader = torch.utils.data.DataLoader(train_set, batch_size=train_main.params.batch_size,
                                                             shuffle=True, num_workers=4, pin_memory=True)

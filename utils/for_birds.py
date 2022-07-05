@@ -1,0 +1,168 @@
+from __future__ import print_function
+
+import os
+from os.path import join
+
+import numpy as np
+import scipy.io
+import torch
+import torch.utils.data as data
+import torchvision.transforms as T
+from PIL import Image
+from torch.utils.data import Dataset
+from torchvision.datasets.utils import download_url, list_dir
+
+
+class CreateDataForBirds:
+    def __init__(self):
+        self.checkpoint_path = None
+        self.classes = None
+        self.test_dataloader = None
+        self.train_dataloader = None
+        self.val_dataloader = None
+        self.X_val = None
+        self.X_test = None
+        self.X_train = None
+        self.class_weights_tensor = None
+        self.params = None
+        return
+
+    def make_train_test_for_birds(self, train_main):
+        train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
+                                     T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
+                                     T.RandomRotation(degrees=(0, 180)), T.ToTensor()])
+
+        test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
+
+        trainset = dogs(root='./data/', train=True, cropped=True, download=True)
+        testset = dogs(root='./data/', train=False, cropped=True, download=True)
+        self.classes = trainset.classes
+
+        train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
+                                                                      int(np.round(0.2 * len(trainset), 0))])
+
+        train_set = ApplyTransform(train_set, transform=train_transform)
+        val_set = ApplyTransform(val_set, transform=train_transform)
+        test_set = ApplyTransform(testset, transform=test_transform)
+
+        self.train_dataloader = torch.utils.data.DataLoader(train_set, batch_size=train_main.params.batch_size,
+                                                            shuffle=True, num_workers=4, pin_memory=True)
+        self.val_dataloader = torch.utils.data.DataLoader(val_set, batch_size=train_main.params.batch_size,
+                                                          shuffle=True, num_workers=4, pin_memory=True)
+        self.test_dataloader = torch.utils.data.DataLoader(test_set, batch_size=train_main.params.batch_size,
+                                                           shuffle=False, num_workers=4, pin_memory=True)
+        self.checkpoint_path = train_main.params.outpath
+
+
+class NABirds(Dataset):
+    """`NABirds <https://dl.allaboutbirds.org/nabirds>`_ Dataset.
+        Args:
+            root (string): Root directory of the dataset.
+            train (bool, optional): If True, creates dataset from training set, otherwise
+               creates from test set.
+            transform (callable, optional): A function/transform that  takes in an PIL image
+               and returns a transformed version. E.g, ``transforms.RandomCrop``
+            target_transform (callable, optional): A function/transform that takes in the
+               target and transforms it.
+            download (bool, optional): If true, downloads the dataset from the internet and
+               puts it in root directory. If dataset is already downloaded, it is not
+               downloaded again.
+    """
+    base_folder = 'nabirds/images'
+
+    def __init__(self, root, train=True, transform=None):
+        dataset_path = os.path.join(root, 'nabirds')
+        self.root = root
+        self.loader = default_loader
+        self.train = train
+        self.transform = transform
+
+        image_paths = pd.read_csv(os.path.join(dataset_path, 'images.txt'),
+                                  sep=' ', names=['img_id', 'filepath'])
+        image_class_labels = pd.read_csv(os.path.join(dataset_path, 'image_class_labels.txt'),
+                                         sep=' ', names=['img_id', 'target'])
+        # Since the raw labels are non-continuous, map them to new ones
+        self.label_map = get_continuous_class_map(image_class_labels['target'])
+        train_test_split = pd.read_csv(os.path.join(dataset_path, 'train_test_split.txt'),
+                                       sep=' ', names=['img_id', 'is_training_img'])
+        data = image_paths.merge(image_class_labels, on='img_id')
+        self.data = data.merge(train_test_split, on='img_id')
+        # Load in the train / test split
+        if self.train:
+            self.data = self.data[self.data.is_training_img == 1]
+        else:
+            self.data = self.data[self.data.is_training_img == 0]
+
+        # Load in the class data
+        self.class_names = load_class_names(dataset_path)
+        self.class_hierarchy = load_hierarchy(dataset_path)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        sample = self.data.iloc[idx]
+        path = os.path.join(self.root, self.base_folder, sample.filepath)
+        target = self.label_map[sample.target]
+        img = self.loader(path)
+
+        if self.transform is not None:
+            img = self.transform(img)
+        return img, target
+
+
+def get_continuous_class_map(class_labels):
+    label_set = set(class_labels)
+    return {k: i for i, k in enumerate(label_set)}
+
+
+def load_class_names(dataset_path=''):
+    names = {}
+
+    with open(os.path.join(dataset_path, 'classes.txt')) as f:
+        for line in f:
+            pieces = line.strip().split()
+            class_id = pieces[0]
+            names[class_id] = ' '.join(pieces[1:])
+
+    return names
+
+
+def load_hierarchy(dataset_path=''):
+    parents = {}
+
+    with open(os.path.join(dataset_path, 'hierarchy.txt')) as f:
+        for line in f:
+            pieces = line.strip().split()
+            child_id, parent_id = pieces
+            parents[child_id] = parent_id
+
+    return parents
+
+
+class ApplyTransform(Dataset):
+    """
+    Apply transformations to a Dataset
+
+    Arguments:
+        dataset (Dataset): A Dataset that returns (sample, target)
+        transform (callable, optional): A function/transform to be applied on the sample
+        target_transform (callable, optional): A function/transform to be applied on the target
+
+    """
+
+    def __init__(self, dataset, transform=None, target_transform=None):
+        self.dataset = dataset
+        self.transform = transform
+        self.target_transform = target_transform
+
+    def __getitem__(self, idx):
+        sample, target = self.dataset[idx]
+        if self.transform is not None:
+            sample = self.transform(sample)
+        if self.target_transform is not None:
+            target = self.target_transform(target)
+        return sample, target
+
+    def __len__(self):
+        return len(self.dataset)
