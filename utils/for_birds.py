@@ -60,10 +60,11 @@ class CreateDataForBirds:
                                                            shuffle=False, num_workers=4, pin_memory=True)
         self.checkpoint_path = train_main.params.outpath
 
-        image_class_labels = pd.read_csv(os.path.join(train_PATH, 'image_class_labels.txt'), sep=' ',
+        dataset_path = os.path.join(train_PATH, 'nabirds')
+        image_class_labels = pd.read_csv(os.path.join(dataset_path, 'image_class_labels.txt'), sep=' ',
                                          names=['img_id', 'target'])
         label_set = list(set(image_class_labels['target']))
-        class_names = load_class_names(train_PATH)
+        class_names = load_class_names(dataset_path)
 
         classes = []
         for i in label_set:
