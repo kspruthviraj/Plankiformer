@@ -146,7 +146,7 @@ class LoadInputParameters:
                             help='path of the saved models')
         parser.add_argument('-ensemble', type=int, default=0,
                             help="Set this to one if you want to ensemble multiple models else set it to zero")
-        parser.add_argument('-run_early_stopping', choices=['yes', 'no'], default='yes', )
+        parser.add_argument('-run_early_stopping', choices=['yes', 'no'], default='no', )
 
         args = parser.parse_args(string)
 
