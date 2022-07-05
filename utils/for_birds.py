@@ -30,7 +30,6 @@ class CreateDataForBirds:
         return
 
     def make_train_test_for_birds(self, train_main):
-
         train_transform = T.Compose([T.Resize((224, 224)),
                                      T.RandomHorizontalFlip(),
                                      T.RandomVerticalFlip(),
@@ -42,8 +41,14 @@ class CreateDataForBirds:
 
         test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
 
-        trainset = NABirds(root=train_main.params.datapaths, train=True, transform=train_transform)
-        test_set = NABirds(root=train_main.params.datapaths, train=False, transform=test_transform)
+        train_PATH = train_main.params.datapaths
+        test_PATH = train_main.params.test_path
+
+        train_PATH = ' '.join(map(str, train_PATH))
+        test_PATH = ' '.join(map(str, test_PATH))
+
+        trainset = NABirds(root=train_PATH, train=True, transform=train_transform)
+        test_set = NABirds(root=test_PATH, train=False, transform=test_transform)
 
         train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
                                                                       int(np.round(0.2 * len(trainset), 0))])
