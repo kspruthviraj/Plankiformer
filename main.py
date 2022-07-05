@@ -14,6 +14,7 @@ from utils import prepare_train_test_data as pdata
 from utils import for_cifar10 as cifar10
 from utils import for_wildtrap as wildtrap
 from utils import for_dogs as dogs
+from utils import for_birds as birds
 
 
 # from utils import for_plankton_test as fplankton_test
@@ -233,6 +234,14 @@ if __name__ == '__main__':
     elif train_params.params.dataset_name == 'dogs':
         loaded_data = dogs.CreateDataForDogs()
         loaded_data.make_train_test_for_dogs(train_params)
+        # Model Training
+        model_training = mt.import_and_train_model()
+        # Run training
+        model_training.train_and_save(train_params, loaded_data)
+
+    elif train_params.params.dataset_name == 'birds':
+        loaded_data = birds.CreateDataForBirds()
+        loaded_data.make_train_test_for_birds(train_params)
         # Model Training
         model_training = mt.import_and_train_model()
         # Run training

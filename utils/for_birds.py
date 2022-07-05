@@ -4,6 +4,7 @@ import os
 from os.path import join
 
 import numpy as np
+import pandas as pd
 import scipy.io
 import torch
 import torch.utils.data as data
@@ -11,6 +12,7 @@ import torchvision.transforms as T
 from PIL import Image
 from torch.utils.data import Dataset
 from torchvision.datasets.utils import download_url, list_dir
+from torchvision.datasets.folder import default_loader
 
 
 class CreateDataForBirds:
@@ -28,22 +30,23 @@ class CreateDataForBirds:
         return
 
     def make_train_test_for_birds(self, train_main):
-        train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
+
+        train_transform = T.Compose([T.Resize((224, 224)),
+                                     T.RandomHorizontalFlip(),
+                                     T.RandomVerticalFlip(),
                                      T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
-                                     T.RandomRotation(degrees=(0, 180)), T.ToTensor()])
+                                     T.RandomRotation(degrees=(0, 180)),
+                                     T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3),
+                                                    scale=(0.7, 0.9)),
+                                     T.ToTensor()])
 
         test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
 
-        trainset = dogs(root='./data/', train=True, cropped=True, download=True)
-        testset = dogs(root='./data/', train=False, cropped=True, download=True)
-        self.classes = trainset.classes
+        trainset = NABirds(root=train_main.params.datapaths, train=True, transform=train_transform)
+        test_set = NABirds(root=train_main.params.datapaths, train=False, transform=test_transform)
 
         train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
                                                                       int(np.round(0.2 * len(trainset), 0))])
-
-        train_set = ApplyTransform(train_set, transform=train_transform)
-        val_set = ApplyTransform(val_set, transform=train_transform)
-        test_set = ApplyTransform(testset, transform=test_transform)
 
         self.train_dataloader = torch.utils.data.DataLoader(train_set, batch_size=train_main.params.batch_size,
                                                             shuffle=True, num_workers=4, pin_memory=True)
@@ -94,7 +97,7 @@ class NABirds(Dataset):
             self.data = self.data[self.data.is_training_img == 0]
 
         # Load in the class data
-        self.class_names = load_class_names(dataset_path)
+        self.classes = load_class_names(dataset_path)
         self.class_hierarchy = load_hierarchy(dataset_path)
 
     def __len__(self):
@@ -138,31 +141,3 @@ def load_hierarchy(dataset_path=''):
             parents[child_id] = parent_id
 
     return parents
-
-
-class ApplyTransform(Dataset):
-    """
-    Apply transformations to a Dataset
-
-    Arguments:
-        dataset (Dataset): A Dataset that returns (sample, target)
-        transform (callable, optional): A function/transform to be applied on the sample
-        target_transform (callable, optional): A function/transform to be applied on the target
-
-    """
-
-    def __init__(self, dataset, transform=None, target_transform=None):
-        self.dataset = dataset
-        self.transform = transform
-        self.target_transform = target_transform
-
-    def __getitem__(self, idx):
-        sample, target = self.dataset[idx]
-        if self.transform is not None:
-            sample = self.transform(sample)
-        if self.target_transform is not None:
-            target = self.target_transform(target)
-        return sample, target
-
-    def __len__(self):
-        return len(self.dataset)
