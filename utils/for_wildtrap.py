@@ -47,16 +47,16 @@ class CreateDataForWildtrap:
         train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
                                                                       int(np.round(0.2 * len(trainset), 0))])
 
-        trainset = ApplyTransform(trainset, transform=train_transform)
-        valset = ApplyTransform(val_set, transform=train_transform)
+        train_set = ApplyTransform(train_set, transform=train_transform)
+        val_set = ApplyTransform(val_set, transform=train_transform)
 
-        testset = ApplyTransform(testset, transform=test_transform)
+        test_set = ApplyTransform(testset, transform=test_transform)
 
-        self.train_dataloader = torch.utils.data.DataLoader(trainset, batch_size=train_main.params.batch_size,
+        self.train_dataloader = torch.utils.data.DataLoader(train_set, batch_size=train_main.params.batch_size,
                                                             shuffle=True, num_workers=4, pin_memory=True)
-        self.val_dataloader = torch.utils.data.DataLoader(valset, batch_size=train_main.params.batch_size,
+        self.val_dataloader = torch.utils.data.DataLoader(val_set, batch_size=train_main.params.batch_size,
                                                           shuffle=True, num_workers=4, pin_memory=True)
-        self.test_dataloader = torch.utils.data.DataLoader(testset, batch_size=train_main.params.batch_size,
+        self.test_dataloader = torch.utils.data.DataLoader(test_set, batch_size=train_main.params.batch_size,
                                                            shuffle=False, num_workers=4, pin_memory=True)
 
         # classes_train = [label for _, label in trainset]
