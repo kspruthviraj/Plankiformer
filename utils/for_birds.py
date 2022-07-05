@@ -63,6 +63,8 @@ class CreateDataForBirds:
         classes = list(self.class_names.keys())
         self.classes = classes
 
+        self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights.pt')
+
 
 class NABirds(Dataset):
     """`NABirds <https://dl.allaboutbirds.org/nabirds>`_ Dataset.
