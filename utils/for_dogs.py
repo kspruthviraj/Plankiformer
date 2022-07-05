@@ -35,8 +35,8 @@ class CreateDataForDogs:
 
         test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
 
-        trainset = dogs(root='../data/Stanford_Dogs/', train=True, cropped=False, download=True)
-        testset = dogs(root='../data/Stanford_Dogs/', train=False, cropped=False, download=True)
+        trainset = dogs(root='../data/Stanford_Dogs/', train=True, cropped=True, download=True)
+        testset = dogs(root='../data/Stanford_Dogs/', train=False, cropped=True, download=True)
         self.classes = trainset.classes
 
         train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
