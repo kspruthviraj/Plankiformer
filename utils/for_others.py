@@ -1,5 +1,6 @@
-from utils import prepare_data_for_testing as pdata_test
-from utils import for_plankton_test as fplankton_test
+from utils import for_plankton as fplankton
+from utils import model_training as mt
+from utils import prepare_train_test_data as pdata
 
 import numpy as np
 import torch
@@ -26,16 +27,10 @@ class CreateDataForOthers:
 
     def make_train_test_for_others(self, train_main):
 
-        train_PATH = train_main.params.datapaths
-        test_PATH = train_main.params.test_path
-
-        train_PATH = ' '.join(map(str, train_PATH))
-        test_PATH = ' '.join(map(str, test_PATH))
-
-        prep_test_data = pdata_test.CreateDataset()
+        prep_test_data = pdata.CreateDataset()
         prep_test_data.LoadData_for_others(train_main)
-        prep_test_data.CreatedataSets(train_main)
+        prep_test_data.CreatedataSetsForOthers(train_main)
 
-        loaded_data = fplankton_test.CreateDataForOthers()
-        loaded_data.make_data_for_others(train_main, prep_test_data)
+        loaded_data = fplankton.CreateDataForPlankton()
+        loaded_data.make_train_test_for_others(train_main, prep_test_data)
         loaded_data.create_data_loaders_for_others(train_main)

@@ -11,6 +11,9 @@ from torch.utils.data import DataLoader, Dataset
 
 class CreateDataForPlankton:
     def __init__(self):
+        self.Filenames_val = None
+        self.Filenames_test = None
+        self.Filenames_train = None
         self.classes_int = None
         self.classes = None
         self.Filenames = None
@@ -32,7 +35,7 @@ class CreateDataForPlankton:
         return
 
     def make_train_test_for_model(self, train_main, prep_data):
-        self.class_weights_tensor = prep_data.tt.class_weights_tensor
+        self.class_weights_tensor = prep_data.class_weights_tensor
         self.Filenames = prep_data.Filenames
         classes = prep_data.classes
         Data = prep_data.Data
@@ -163,10 +166,10 @@ class CreateDataForPlankton:
         classes_int = np.unique(np.argmax(trY, axis=1))
         self.classes = classes
         self.classes_int = classes_int
-        
+
         if train_main.params.test_set == 'no':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
-            self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
+            self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
 
             data_train = trX.astype(np.float64)
             data_train = 255 * data_train
@@ -174,7 +177,7 @@ class CreateDataForPlankton:
 
         elif train_main.params.test_set == 'yes' and train_main.params.valid_set == 'no':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
-            self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
+            self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
 
             y_test_max = teY.argmax(axis=1)  # The class that the classifier would bet on
             self.y_test = np.array([classes_int[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
@@ -189,7 +192,7 @@ class CreateDataForPlankton:
 
         elif train_main.params.test_set == 'yes' and train_main.params.valid_set == 'yes':
             y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
-            self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))],dtype=object)
+            self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
 
             y_test_max = teY.argmax(axis=1)  # The class that the classifier would bet on
             self.y_test = np.array([classes_int[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
@@ -239,6 +242,68 @@ class CreateDataForPlankton:
             test_dataset = CreateDataset(X=self.X_test, y=self.y_test)
             self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                               pin_memory=True)
+
+    def make_train_test_for_others(self, prep_data):
+        self.class_weights_tensor = prep_data.class_weights_tensor
+        self.Filenames = prep_data.Filenames
+        classes = prep_data.classes
+        Data = prep_data.Data
+
+        # Data = pd.read_pickle(train_main.params.outpath + '/Data.pickle')
+        # classes = np.load(train_main.params.outpath + '/classes.npy')
+
+        self.trainFilenames = Data[0]
+        trX = Data[1]
+        trY = Data[2]
+        self.testFilenames = Data[3]
+        teX = Data[4]
+        teY = Data[5]
+        self.valFilenames = Data[6]
+        veX = Data[7]
+        veY = Data[8]
+
+        classes_int = np.unique(np.argmax(trY, axis=1))
+        self.classes = classes
+        self.classes_int = classes_int
+
+        y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
+        self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
+
+        y_test_max = teY.argmax(axis=1)  # The class that the classifier would bet on
+        self.y_test = np.array([classes_int[y_test_max[i]] for i in range(len(y_test_max))], dtype=object)
+
+        y_val_max = veY.argmax(axis=1)  # The class that the classifier would bet on
+        self.y_val = np.array([classes_int[y_val_max[i]] for i in range(len(y_val_max))], dtype=object)
+
+        data_train = trX.astype(np.float64)
+        data_train = 255 * data_train
+        self.X_train = data_train.astype(np.uint8)
+
+        data_test = teX.astype(np.float64)
+        data_test = 255 * data_test
+        self.X_test = data_test.astype(np.uint8)
+
+        data_val = veX.astype(np.float64)
+        data_val = 255 * data_val
+        self.X_val = data_val.astype(np.uint8)
+
+        return
+
+    def create_data_loaders_for_others(self, train_main):
+        self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
+        Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
+
+        train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
+        self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
+                                           pin_memory=True)
+
+        test_dataset = CreateDataset(X=self.X_test, y=self.y_test)
+        self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
+                                          pin_memory=True)
+
+        val_dataset = CreateDataset(X=self.X_val, y=self.y_val)
+        self.val_dataloader = DataLoader(val_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
+                                         pin_memory=True)
 
 
 class AugmentedDataset(Dataset):
@@ -305,4 +370,3 @@ class CreateDataset(Dataset):
         T.Resize(224),
         T.ToTensor()])
     transform_y = T.Compose([T.ToTensor()])
-

@@ -251,12 +251,12 @@ if __name__ == '__main__':
         model_training.train_and_save(train_params, loaded_data)
 
     elif train_params.params.dataset_name == 'beetle':
-        prep_test_data = pdata_test.CreateDataset()
+        prep_test_data = pdata.CreateDataset()
         prep_test_data.LoadData_for_others(train_params)
-        prep_test_data.CreatedataSets(train_params)
+        prep_test_data.CreatedataSetsForOthers(train_params)
 
-        loaded_data = fplankton_test.CreateDataForOthers()
-        loaded_data.make_data_for_others(train_params, prep_test_data)
+        loaded_data = fplankton.CreateDataForPlankton()
+        loaded_data.make_train_test_for_others(prep_test_data)
         loaded_data.create_data_loaders_for_others(train_params)
 
         # Model Training

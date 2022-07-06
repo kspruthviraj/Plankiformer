@@ -9,6 +9,11 @@ from utils import create_test_data as cdata_test
 
 class CreateDataset:
     def __init__(self, initMode='default', verbose=True):
+        self.tt2 = None
+        self.tt1 = None
+        self.Data1 = None
+        self.data2 = None
+        self.data1 = None
         self.Filenames = None
         self.valid_set = None
         self.test_set = None
@@ -66,8 +71,11 @@ class CreateDataset:
         """
 
         # Default values
-        testpath = train_main.params.test_path
         train_PATH = train_main.params.datapaths
+        testpath = train_main.params.test_path
+
+        train_PATH = ' '.join(map(str, train_PATH))
+        testpath = ' '.join(map(str, testpath))
 
         L = train_main.params.L
         class_select = train_main.params.class_select  # class_select==None has the explicit
@@ -75,16 +83,25 @@ class CreateDataset:
         classifier = train_main.params.classifier
         compute_extrafeat = train_main.params.compute_extrafeat
         resize_images = train_main.params.resize_images
+        balance_weight = train_main.params.balance_weight
         datakind = train_main.params.datakind
         training_data = train_main.params.training_data
 
         # Initialize or Load Data Structure
-        if self.data is None:
-            self.data = cdata_test.Cdata_others(train_PATH, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
-                                                datakind, training_data=training_data)
+        if self.data1 is None:
+            self.data1 = cdata_test.Cdata(testpath, L, class_select, classifier, compute_extrafeat, resize_images,
+                                          balance_weight, datakind, training_data=training_data)
         else:
-            self.data.Load_others(train_PATH, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
-                                  datakind, training_data=training_data)
+            self.data1.Load(testpath, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
+                            datakind, training_data=training_data)
+
+        # Initialize or Load Data Structure
+        if self.data2 is None:
+            self.data2 = cdata_test.Cdata(train_PATH, L, class_select, classifier, compute_extrafeat, resize_images,
+                                          balance_weight, datakind, training_data=training_data)
+        else:
+            self.data2.Load(train_PATH, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
+                            datakind, training_data=training_data)
 
         return
 

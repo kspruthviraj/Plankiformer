@@ -56,49 +56,7 @@ class CreateDataForPlankton:
 
         return
 
-    def create_data_loaders(self, train_main, test_main):
-        # self.checkpoint_path = test_main.params.model_path
-
-        test_dataset = CreateDataset(X=self.X_train)
-        self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=False, num_workers=4,
-                                          pin_memory=True)
-
-
-class CreateDataForOthers:
-    def __init__(self):
-        self.Filenames = None
-        self.val_dataloader = None
-        self.test_dataloader = None
-        self.train_dataloader = None
-        self.checkpoint_path = None
-        self.y_val = None
-        self.y_test = None
-        self.y_train = None
-        self.testFilenames = None
-        self.trainFilenames = None
-        self.valFilenames = None
-        self.X_val = None
-        self.X_test = None
-        self.X_train = None
-        self.class_weights_tensor = None
-        self.params = None
-        return
-
-    def make_data_for_others(self, train_main, prep_data):
-        Data = prep_data.Data
-        self.class_weights_tensor = prep_data.tt.class_weights_tensor
-        self.Filenames = prep_data.Filenames
-
-        self.trainFilenames = Data[0]
-        trX = Data[1]
-
-        data_train = trX.astype(np.float64)
-        data_train = 255 * data_train
-        self.X_train = data_train.astype(np.uint8)
-
-        return
-
-    def create_data_loaders_for_others(self, train_main):
+    def create_data_loaders(self, train_main):
         # self.checkpoint_path = test_main.params.model_path
 
         test_dataset = CreateDataset(X=self.X_train)
