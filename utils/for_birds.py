@@ -54,7 +54,8 @@ class CreateDataForBirds:
                                                           shuffle=True, num_workers=4, pin_memory=True)
         self.test_dataloader = torch.utils.data.DataLoader(test_set, batch_size=train_main.params.batch_size,
                                                            shuffle=False, num_workers=4, pin_memory=True)
-        self.checkpoint_path = train_main.params.outpath
+
+        self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
 
         dataset_path = os.path.join(train_PATH, 'nabirds')
         image_class_labels = pd.read_csv(os.path.join(dataset_path, 'image_class_labels.txt'), sep=' ',

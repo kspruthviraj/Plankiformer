@@ -68,7 +68,7 @@ class CreateDataForWildtrap:
         # torch.save(self.class_weights_tensor, train_main.params.outpath + '/class_weights.pt')
 
         self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights.pt')
-        self.checkpoint_path = train_main.params.outpath
+        self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
 
         return
 

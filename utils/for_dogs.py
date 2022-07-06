@@ -51,7 +51,7 @@ class CreateDataForDogs:
                                                           shuffle=True, num_workers=4, pin_memory=True)
         self.test_dataloader = torch.utils.data.DataLoader(test_set, batch_size=train_main.params.batch_size,
                                                            shuffle=False, num_workers=4, pin_memory=True)
-        self.checkpoint_path = train_main.params.outpath
+        self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
 
 
 class dogs(data.Dataset):
