@@ -103,11 +103,11 @@ def ResizeWithoutProportions(im, desired_size):
 
 
 def ResizeWithProportions(im, desired_size):
-    '''
+    """
     Take and image and resize it to a square of the desired size.
     0) If any dimension of the image is larger than the desired size, shrink until the image can fully fit in the desired size
     1) Add black paddings to create a square
-    '''
+    """
 
     old_size = im.size
     largest_dim = max(old_size)
@@ -142,43 +142,6 @@ def ResizeWithProportions(im, desired_size):
     return new_im, rescaled
 
 
-def ReduceClasses(datapaths, class_select, classifier):
-    print('datapaths:', datapaths)
-    # allClasses = [ name for name in os.listdir(datapaths) if os.path.isdir(os.path.join(datapaths, name)) ]
-    print('datapaths:{}'.format(datapaths))
-    allClasses = list(set([name for idata in range(len(datapaths)) for name in os.listdir(datapaths[idata]) if
-                           os.path.isdir(os.path.join(datapaths[idata], name))]))
-    print('classes from datapaths:', allClasses)
-
-    if classifier == 'multi':
-        if class_select is None:
-            class_select = allClasses
-        else:
-            if not set(class_select).issubset(allClasses):
-                print('Some of the classes input by the user are not present in the dataset.')
-                print('class_select:', class_select)
-                print('all  classes:', allClasses)
-                raise ValueError
-        return class_select
-    elif classifier == 'binary':
-        class_select = class_select
-        return class_select
-    elif classifier == 'versusall':
-        class_select_binary = class_select
-        class_select = allClasses
-
-        return class_select, class_select_binary
-
-
-# learning rate schedule
-def step_decay(epoch):
-    initial_lrate = 0.01
-    drop = 0.5
-    epochs_drop = 10.0
-    lrate = initial_lrate * math.pow(drop, math.floor((1 + epoch) / epochs_drop))
-    return lrate
-
-
 def LoadImage(filename, L=None, resize_images=None, show=False):
     """ Loads one image, and rescales it to size L.
     The pixel values are between 0 and 255, instead of between 0 and 1, so they should be normalized outside of the function
@@ -190,10 +153,12 @@ def LoadImage(filename, L=None, resize_images=None, show=False):
         rescaled = 0
     elif resize_images == 1:
         image, rescaled = ResizeWithProportions(image,
-                                                L)  # width and height are assumed to be the same (assertion at the beginning)
+                                                L)  # width and height are assumed to be the same (assertion at the
+        # beginning)
     elif resize_images == 2:
         image, rescaled = ResizeWithoutProportions(image,
-                                                   L)  # width and height are assumed to be the same (assertion at the beginning)
+                                                   L)  # width and height are assumed to be the same (assertion at
+        # the beginning)
     npimage = np.array(image.copy(), dtype=np.float32)
     # 	npimage = cv2.cvtColor(npimage,cv2.COLOR_GRAY2RGB) ## FOR WHOI and KAGGLE dataset
     if show:
@@ -256,68 +221,25 @@ def LoadImageList(im_names, L, resize_images, show=False):
     return npimages / 255.0
 
 
-def LoadMixedData(test_features, L, resize_images, alsoImages, compute_extrafeat):
-    # Read from tsv file, and create column with full path to the image
-    dfFeat = pd.DataFrame()
-    for idp in range(len(test_features)):
-        dftemp = pd.read_csv(test_features[idp], sep='\t')
-        pathname = str(Path(test_features[idp]).parents[0])
-        dftemp['filename'] = [pathname + '/' + dftemp.url[ii] for ii in range(len(dftemp))]
-        dfFeat = pd.concat([dfFeat, dftemp], axis=0, sort=True)
-
-    testimages1 = dfFeat['filename']
-    testimages = list(testimages1)
-    print('There are {} images in total'.format(len(testimages)))
-    print('There are {} feature files in total'.format(len(test_features)))
-
-    df = pd.DataFrame()
-    for index, row in dfFeat.iterrows():
-        if alsoImages:
-            npimage, rescaled, filename = LoadImage(row.filename, L, resize_images)
-
-            dftemp = pd.DataFrame([[npimage, rescaled] + row.to_list()],
-                                  columns=['npimage', 'rescaled'] + dfFeat.columns.to_list())
-        else:  # alsoImages is False here
-            dftemp = pd.DataFrame([row.to_list()], columns=dfFeat.columns.to_list())
-        df = pd.concat([df, dftemp], axis=0, sort=True)
-
-    df.npimage = df.npimage / 255.0
-    df = df.sample(frac=1).reset_index(drop=True)
-
-    if compute_extrafeat == 'yes':
-        dfExtraFeat = compute_extrafeat_function(df)
-        df = pd.concat([df, dfExtraFeat], axis=1)
-
-    return df
-
-
 class Cdata:
 
-    def __init__(self, datapath, L=None, class_select=None, classifier=None, compute_extrafeat=None, resize_images=None,
-                 balance_weight=None, kind='mixed', training_data=True):
+    def __init__(self, datapath, L=None, compute_extrafeat=None, resize_images=None):
+        self.classifier = None
+        self.class_select = None
         self.filenames = None
         self.Xfeat = None
         self.Ximage = None
         self.datapath = datapath
-        if L is None and kind != 'feat':
-            print('CData: image size needs to be set, unless kind is \'feat\'')
-            raise ValueError
         self.L = L
-        self.class_select = class_select
-        self.classifier = classifier
         self.compute_extrafeat = compute_extrafeat
         self.resize_images = resize_images
-        self.balance_weight = balance_weight
-        self.kind = kind
         self.df = None
         self.y = None
         self.X = None
-        self.Load(self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat, self.resize_images,
-                  self.balance_weight, self.kind, training_data=training_data)
+        self.Load(self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat, self.resize_images)
         return
 
-    def Load(self, datapaths, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
-             kind='mixed', training_data=True):
+    def Load(self, datapaths, L, class_select, classifier, compute_extrafeat, resize_images):
         """
         Loads dataset
         For the moment, only mixed data. Later, also pure images or pure features.
@@ -325,17 +247,15 @@ class Cdata:
         self.L = L
         self.datapath = datapaths
         self.class_select = class_select
-        self.kind = kind
         self.classifier = classifier
         self.compute_extrafeat = compute_extrafeat
         self.resize_images = resize_images
 
-        self.df = LoadImages(datapaths, L, resize_images, training_data=training_data)
+        self.df = LoadImages(datapaths, L, resize_images)
         if compute_extrafeat == 'yes':
             dfExtraFeat = compute_extrafeat_function(self.df)
             self.df = pd.concat([self.df, dfExtraFeat], axis=1)
 
-        self.kind = kind
         self.CreateXy()  # Creates X and y, i.e. features and labels
         return
 
@@ -350,28 +270,28 @@ class Cdata:
         self.X = self.df.drop(columns=['classname', 'url', 'filename', 'file_size', 'timestamp'], errors='ignore')
         # 		self.X = self.df.drop(columns=['classname','url','file_size','timestamp'], errors='ignore')
 
-        self.Ximage = self.X.npimage if (self.kind != 'feat') else None
-        self.Xfeat = self.X.drop(columns=['npimage'], errors='ignore') if (self.kind != 'image') else None
+        self.Ximage = self.X.npimage
+        self.Xfeat = self.X.drop(columns=['npimage'], errors='ignore')
 
         return
 
 
 def unique_cols(df):
-    ''' Returns one value per column, stating whether all the values are the same'''
+    """ Returns one value per column, stating whether all the values are the same"""
     a = df.to_numpy()  # df.values (pandas<0.24)
     return (a[0] == a[1:]).all(0)
 
 
 def DropCols(X, cols):
-    '''
+    """
     Gets rid of the columns cols from the dataframe X.
     cols is a list with the columns names
-    '''
+    """
     return X.drop(columns=cols, errors='ignore')
 
 
 def RemoveUselessCols(df):
-    ''' Removes columns with no information from dataframe '''
+    """ Removes columns with no information from dataframe """
     # Select all columns except image
     morecols = []
     cols = df.columns.tolist()
@@ -391,6 +311,10 @@ def RemoveUselessCols(df):
 
     return df[cols]
 
+
+# def prep_data_for_others():
+#     data = Cdata.Load(datapaths, L, class_select, compute_extrafeat, resize_images)
+#
 
 class CTrainTestSet:
     """
@@ -433,12 +357,8 @@ class CTrainTestSet:
         self.filenames = filenames
 
         # Now the features
-        if ttkind == 'image' and compute_extrafeat == 'no':
+        if ttkind == 'image':
             self.X = self.ImageNumpyFromMixedDataframe(X)
-        elif ttkind == 'feat':
-            X = DropCols(X, ['npimage', 'rescaled'])
-            X = RemoveUselessCols(X)
-            self.X = np.array([X.to_numpy()[i] for i in range(len(X.index))])
         else:
             # This checks if there are images, but it also implicitly checks if there are features. In fact,
             # if there are only images, X is a series and has no attribute columns (I am aware this should be coded
@@ -447,16 +367,6 @@ class CTrainTestSet:
                 raise RuntimeError(
                     'Error: you asked for mixed Train-Test, but the dataset you gave me does not contain images.')
             self.X = RemoveUselessCols(X)  # Note that with ttkind=mixed, X stays a dataframe
-
-        # Split train and test data
-        self.Split(valid_set=valid_set, test_set=test_set, random_state=random_state)
-
-        # Rescale features
-        if rescale is True:
-            self.Rescale()
-            self.rescale = True
-        else:
-            self.rescale = False
 
         return
 
@@ -528,102 +438,6 @@ class CTrainTestSet:
                 Xf = DropCols(self.trainX, ['npimage', 'rescaled'])
                 self.trainXfeat = np.array([Xf.to_numpy()[i] for i in range(len(Xf.index))])
         return
-
-    def Rescale(self):
-        if self.ttkind == 'mixed':
-            self.RescaleMixed()
-        elif self.ttkind == 'feat':
-            self.RescaleFeat()
-        elif self.ttkind == 'image' and self.compute_extrafeat == 'yes':
-            self.RescaleMixed()
-        elif self.ttkind == 'image' and self.compute_extrafeat == 'no':
-            pass  # We don't rescale the image
-        else:
-            raise NotImplementedError('CTrainTestSet: ttkind must be feat, image or mixed')
-        return
-
-    def RescaleMixed(self):
-        """
-        Rescales all columns except npimage to have mean zero and unit standard deviation
-
-        To avoid data leakage, the rescaling factors are chosen from the training set
-        """
-
-        if self.trainX is None:
-            print(
-                'No rescaling is performed because the training set is empty, but the truth is that '
-                'in this case we should have rescaling parameters coming from elsewhere')
-            return
-
-        cols = self.trainX.columns.tolist()
-
-        if 'npimage' in cols:
-            cols.remove('npimage')
-
-        # Set to zero mean and unit standard deviation
-        x = self.trainX[cols].to_numpy()
-        mu = x.mean(axis=0)
-        sigma = np.std(x, axis=0, ddof=0)
-
-        # Training set
-        self.trainX[cols] -= mu  # Set mean to zero
-        self.trainX[cols] /= sigma  # Set standard dev to one
-        # Test set
-        self.testX[cols] -= mu  # Set mean to zero
-        self.testX[cols] /= sigma  # Set standard dev to one
-
-        # These checks are only valid for the training set
-        assert (np.all(np.isclose(self.trainX[cols].mean(), 0, atol=1e-5)))  # Check that mean is zero
-        assert (
-            np.all(np.isclose(np.std(self.trainX[cols], axis=0, ddof=0), 1, atol=1e-5)))  # Check that std dev is unity
-
-        return
-
-    def RescaleFeat(self):
-        """
-        Rescales all columns
-
-        To avoid data leakage, the rescaling factors are chosen from the training set
-        """
-
-        # Set to zero mean and unit standard deviation
-        mu = self.trainX.mean(axis=0)
-        sigma = np.std(self.trainX, axis=0, ddof=0)
-
-        # Training set
-        self.trainX -= mu  # Set mean to zero
-        self.trainX /= sigma  # Set standard dev to one
-        # Test set
-        self.testX -= mu  # Set mean to zero
-        self.testX /= sigma  # Set standard dev to one
-
-        # These checks are only valid for the training set
-        assert (np.all(np.isclose(self.trainX.mean(), 0, atol=1e-5)))  # Check that mean is zero
-        assert (np.all(np.isclose(np.std(self.trainX, axis=0, ddof=0), 1, atol=1e-5)))  # Check that std dev is unity
-
-        return
-
-    def SelectCols(self, X, cols):
-        """
-        Keeps only the columns cols from the dataframe X.
-        cols is a list with the columns names
-        """
-
-        if isinstance(X, pd.DataFrame):  # Make sure it is not a series
-            if set(cols).issubset(set(X.columns)):  # Check that columns we want to select exist
-                return X[cols]
-            else:
-                print('self.X.columns: {}'.format(self.X.columns))
-                print('requested cols: {}'.format(cols))
-                raise IndexError('You are trying to select columns that are not present in the dataframe')
-        else:
-            assert (len(cols) == 1)  # If it's a series there should be only one column
-            assert (self.X.name == cols[0])  # And that column should coincide with the series name
-            return
-
-    def MergeLabels(self):
-        """ Merges labels to create aggregated classes """
-        raise NotImplementedError
 
 
 if __name__ == '__main__':

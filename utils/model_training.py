@@ -12,6 +12,7 @@ import torch.optim
 import torch.utils.data
 from sklearn.metrics import f1_score, accuracy_score, classification_report
 from torchvision.utils import make_grid
+from pathlib import Path
 
 
 class import_and_train_model:
@@ -125,6 +126,7 @@ class import_and_train_model:
             test_accuracy = accuracy_score(test_outputs, test_targets)
 
             best_acc1 = max(test_acc1, best_acc1)
+            Path(data_loader.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
             if test_f1 > best_f1:
                 torch.save({'model_state_dict': self.model.state_dict(),
