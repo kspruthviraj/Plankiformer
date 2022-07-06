@@ -355,18 +355,7 @@ class CTrainTestSet:
 
         # Take care of the labels
         self.filenames = filenames
-
-        # Now the features
-        if ttkind == 'image':
-            self.X = self.ImageNumpyFromMixedDataframe(X)
-        else:
-            # This checks if there are images, but it also implicitly checks if there are features. In fact,
-            # if there are only images, X is a series and has no attribute columns (I am aware this should be coded
-            # better).
-            if 'npimage' not in X.columns:
-                raise RuntimeError(
-                    'Error: you asked for mixed Train-Test, but the dataset you gave me does not contain images.')
-            self.X = RemoveUselessCols(X)  # Note that with ttkind=mixed, X stays a dataframe
+        self.X = self.ImageNumpyFromMixedDataframe(X)
 
         return
 
@@ -379,65 +368,6 @@ class CTrainTestSet:
         im_col = [i for i, col in enumerate(X.columns) if col == 'npimage'][0]
 
         return np.array([X.to_numpy()[i, im_col] for i in range(len(X.index))])
-
-    def Split(self, valid_set=None, test_set=None, random_state=12345):
-        """
-        Splits train and test datasets.
-        Allows to put all the data in the test set by choosing test_size=1. This is useful for evaluation.
-        Handles differently the mixed case, because in that case  X is a dataframe.
-        """
-        self.trainX, self.trainFilenames = self.X, self.filenames
-
-        if self.ttkind == 'mixed':
-            # Images
-            if test_set != 'no':
-                if self.trainX is not None:
-                    self.trainXimage = self.ImageNumpyFromMixedDataframe(self.trainX)
-                self.testXimage = self.ImageNumpyFromMixedDataframe(self.testX)
-                if valid_set == 'yes':
-                    self.valXimage = self.ImageNumpyFromMixedDataframe(self.valX)
-            else:
-                self.trainXimage = self.ImageNumpyFromMixedDataframe(self.trainX)
-
-            # Features
-            if test_set != 'no':
-                if self.trainX is not None:
-                    Xf = DropCols(self.trainX, ['npimage', 'rescaled'])
-                    self.trainXfeat = np.array([Xf.to_numpy()[i] for i in range(len(Xf.index))])
-                Xf = DropCols(self.testX, ['npimage', 'rescaled'])
-                self.testXfeat = np.array([Xf.to_numpy()[i] for i in range(len(Xf.index))])
-                if valid_set == 'yes':
-                    Xf = DropCols(self.valX, ['npimage', 'rescaled'])
-                    self.valXfeat = np.array([Xf.to_numpy()[i] for i in range(len(Xf.index))])
-            else:
-                Xf = DropCols(self.trainX, ['npimage', 'rescaled'])
-                self.trainXfeat = np.array([Xf.to_numpy()[i] for i in range(len(Xf.index))])
-
-        elif self.ttkind == 'image' and self.compute_extrafeat == 'yes':
-            # Images
-            if test_set != 'no':
-                if self.trainX is not None:
-                    self.trainXimage = self.ImageNumpyFromMixedDataframe(self.trainX)
-                self.testXimage = self.ImageNumpyFromMixedDataframe(self.testX)
-                if valid_set == 'yes':
-                    self.valXimage = self.ImageNumpyFromMixedDataframe(self.valX)
-            else:
-                self.trainXimage = self.ImageNumpyFromMixedDataframe(self.trainX)
-
-            # Features
-            if test_set != 'no':
-                if self.trainX is not None:
-                    Xf = DropCols(self.trainX, ['npimage', 'rescaled'])
-                    self.trainXfeat = np.array([Xf.to_numpy()[i] for i in range(len(Xf.index))])
-                Xf = DropCols(self.testX, ['npimage', 'rescaled'])
-                self.testXfeat = np.array([Xf.to_numpy()[i] for i in range(len(Xf.index))])
-                if valid_set == 'yes':
-                    Xf = DropCols(self.valX, ['npimage', 'rescaled'])
-                    self.valXfeat = np.array([Xf.to_numpy()[i] for i in range(len(Xf.index))])
-            else:
-                Xf = DropCols(self.trainX, ['npimage', 'rescaled'])
-                self.trainXfeat = np.array([Xf.to_numpy()[i] for i in range(len(Xf.index))])
-        return
 
 
 if __name__ == '__main__':

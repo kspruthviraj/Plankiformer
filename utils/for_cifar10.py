@@ -41,6 +41,7 @@ class CreateDataForCifar10:
         test_set = ApplyTransform(test_set, transform=test_transform)
 
         self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
+        print('checkpoint_path: {}'.format(self.checkpoint_path))
 
         self.train_dataloader = torch.utils.data.DataLoader(train_set, batch_size=train_main.params.batch_size,
                                                             shuffle=True, num_workers=4, pin_memory=True)
