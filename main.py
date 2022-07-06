@@ -15,9 +15,8 @@ from utils import for_cifar10 as cifar10
 from utils import for_wildtrap as wildtrap
 from utils import for_dogs as dogs
 from utils import for_birds as birds
-
-
-# from utils import for_plankton_test as fplankton_test
+from utils import prepare_data_for_testing as pdata_test
+from utils import for_plankton_test as fplankton_test
 
 
 def ArgsCheck(args):
@@ -138,7 +137,8 @@ class LoadInputParameters:
                             help="directory name where you want the Best models to be saved")
         parser.add_argument('-test_path', nargs='*', default=['./data/'], help="directory of images where you want to "
                                                                                "predict")
-        parser.add_argument('-train_data_path', nargs='*', default=['./data/'], help="directory of training images ")
+        parser.add_argument('-train_path', nargs='*', default=['./data/'], help="directory of training images when "
+                                                                                "train and test are separated ")
         parser.add_argument('-main_param_path', default='./out/trained_models/', help="main directory where the "
                                                                                       "training parameters are saved")
         parser.add_argument('-test_outpath', default='./out/', help="directory where you want to save the predictions")
@@ -149,6 +149,7 @@ class LoadInputParameters:
         parser.add_argument('-ensemble', type=int, default=0,
                             help="Set this to one if you want to ensemble multiple models else set it to zero")
         parser.add_argument('-run_early_stopping', choices=['yes', 'no'], default='no', )
+        parser.add_argument('-run_lr_scheduler', choices=['yes', 'no'], default='no', )
 
         args = parser.parse_args(string)
 
@@ -250,15 +251,14 @@ if __name__ == '__main__':
         model_training.train_and_save(train_params, loaded_data)
 
     elif train_params.params.dataset_name == 'beetle':
-        print('Creating dataset using input parameters')
-        prep_data = pdata.CreateDataset()
-        prep_data.LoadData(train_params)
+        prep_test_data = pdata_test.CreateDataset()
+        prep_test_data.LoadData_for_others(train_params)
+        prep_test_data.CreatedataSets(train_params)
 
-        prep_data.CreateTrainTestSets(train_params, test_set='no')
-        # For Plankton
-        loaded_data = fplankton.CreateDataForPlankton()
-        loaded_data.make_train_test_for_model(train_params, prep_data)
-        loaded_data.create_data_loaders(train_params)
+        loaded_data = fplankton_test.CreateDataForOthers()
+        loaded_data.make_data_for_others(train_params, prep_test_data)
+        loaded_data.create_data_loaders_for_others(train_params)
+
         # Model Training
         model_training = mt.import_and_train_model()
         # Run training

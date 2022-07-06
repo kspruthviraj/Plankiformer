@@ -148,8 +148,8 @@ class import_and_train_model:
                                                                   np.round(test_f1, 3),
                                                                   np.round(loss, 3),
                                                                   np.round(total_mins, 3)))
-
-            self.lr_scheduler(loss)
+            if train_main.params.run_lr_scheduler == 'yes':
+                self.lr_scheduler(loss)
 
             if train_main.params.run_early_stopping == 'yes':
                 self.early_stopping(loss)

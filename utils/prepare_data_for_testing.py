@@ -4,7 +4,7 @@
 
 import joblib
 
-from utils import create_test_data as cdata
+from utils import create_test_data as cdata_test
 
 
 class CreateDataset:
@@ -49,11 +49,42 @@ class CreateDataset:
 
         # Initialize or Load Data Structure
         if self.data is None:
-            self.data = cdata.Cdata(testpath, L, class_select, classifier, compute_extrafeat, resize_images,
-                                    balance_weight, datakind, training_data=training_data)
+            self.data = cdata_test.Cdata(testpath, L, class_select, classifier, compute_extrafeat, resize_images,
+                                         balance_weight, datakind, training_data=training_data)
         else:
             self.data.Load(testpath, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
                            datakind, training_data=training_data)
+
+        return
+
+    def LoadData_for_others(self, train_main):
+        """
+        Loads dataset using the function in the Cdata class.
+        Acts differently in case it is the first time or not that the data is loaded
+
+        The flag `training_data` is there because of how the taxonomists created the data directories. In the folders that I use for training there is an extra subfolder called `training_data`. This subfolder is absent, for example, in the validation directories.
+        """
+
+        # Default values
+        testpath = train_main.params.test_path
+        train_PATH = train_main.params.datapaths
+
+        L = train_main.params.L
+        class_select = train_main.params.class_select  # class_select==None has the explicit
+        # meaning of selecting all the classes
+        classifier = train_main.params.classifier
+        compute_extrafeat = train_main.params.compute_extrafeat
+        resize_images = train_main.params.resize_images
+        datakind = train_main.params.datakind
+        training_data = train_main.params.training_data
+
+        # Initialize or Load Data Structure
+        if self.data is None:
+            self.data = cdata_test.Cdata_others(train_PATH, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
+                                                datakind, training_data=training_data)
+        else:
+            self.data.Load_others(train_PATH, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
+                                  datakind, training_data=training_data)
 
         return
 
@@ -84,10 +115,10 @@ class CreateDataset:
         if compute_extrafeat is None:
             compute_extrafeat = train_main.params.compute_extrafeat
 
-        self.tt = cdata.CTrainTestSet(self.data.X, self.data.y, self.data.filenames,
-                                      ttkind=ttkind, classifier=classifier, balance_weight=balance_weight,
-                                      testSplit=testSplit, valid_set=valid_set, test_set=self.test_set,
-                                      compute_extrafeat=compute_extrafeat, random_state=random_state)
+        self.tt = cdata_test.CTrainTestSet(self.data.X, self.data.y, self.data.filenames,
+                                           ttkind=ttkind, classifier=classifier, balance_weight=balance_weight,
+                                           testSplit=testSplit, valid_set=valid_set, test_set=self.test_set,
+                                           compute_extrafeat=compute_extrafeat, random_state=random_state)
 
         # To store the data
         if train_main.params.ttkind == 'mixed':
@@ -123,5 +154,49 @@ class CreateDataset:
             print("Set the right data type")
 
         self.Filenames = [self.tt.trainFilenames]
-        
+
+        return
+
+    def CreatedataSets(self, train_main, ttkind=None, classifier=None, balance_weight=None, compute_extrafeat=None):
+        """
+        Creates train and test sets using the CtrainTestSet class
+        """
+
+        # Set default value for ttkind
+        if ttkind is None:
+            ttkind = train_main.params.ttkind
+        else:
+            self.params.ttkind = ttkind
+
+        # Set default value for testSplit
+        testSplit = 0
+
+        self.valid_set = 'no'
+        self.test_set = 'no'
+
+        if classifier is None:
+            classifier = train_main.params.classifier
+
+        if balance_weight is None:
+            balance_weight = train_main.params.balance_weight
+
+        if compute_extrafeat is None:
+            compute_extrafeat = train_main.params.compute_extrafeat
+
+        self.tt = cdata_test.CTrainTestSet(self.data.X, self.data.y, self.data.filenames,
+                                           ttkind=ttkind, classifier=classifier, balance_weight=balance_weight,
+                                           testSplit=testSplit, valid_set=self.valid_set, test_set=self.test_set,
+                                           compute_extrafeat=compute_extrafeat)
+
+        if train_main.params.ttkind == 'image' and train_main.params.compute_extrafeat == 'no':
+            self.Data = [self.tt.trainFilenames, self.tt.trainX, self.tt.trainY,
+                         [], [], [],
+                         [], [], [],
+                         [], [], []]
+
+        else:
+            print("Set the right data type")
+
+        self.Filenames = [self.tt.trainFilenames]
+
         return
