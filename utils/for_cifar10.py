@@ -4,6 +4,7 @@ import torchvision.transforms as T
 from torch.utils.data import Dataset
 from torch.utils.data import Dataset
 from torchvision import datasets
+from pathlib import Path
 
 
 class CreateDataForCifar10:
@@ -42,6 +43,7 @@ class CreateDataForCifar10:
 
         self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
         print('checkpoint_path: {}'.format(self.checkpoint_path))
+        Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
         self.train_dataloader = torch.utils.data.DataLoader(train_set, batch_size=train_main.params.batch_size,
                                                             shuffle=True, num_workers=4, pin_memory=True)
