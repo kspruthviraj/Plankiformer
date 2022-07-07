@@ -254,6 +254,7 @@ class import_and_train_model:
                 self.run_prediction(train_main, data_loader, 'tuned')
 
             elif not os.path.exists(model_present_path2):
+                print(' I am using trained_model_original.pth as the base')
                 self.import_deit_models(train_main, data_loader)
                 PATH = data_loader.checkpoint_path + '/trained_model_original.pth'
                 checkpoint = torch.load(PATH)
@@ -287,6 +288,7 @@ class import_and_train_model:
                 self.run_prediction(train_main, data_loader, 'finetuned')
 
             elif not os.path.exists(model_present_path2):
+                print(' I am using trained_model_original.pth as the base')
                 self.import_deit_models(train_main, data_loader)
                 PATH = data_loader.checkpoint_path + '/trained_model_original.pth'
                 checkpoint = torch.load(PATH)
@@ -307,6 +309,7 @@ class import_and_train_model:
                 self.run_prediction(train_main, data_loader, 'finetuned')
 
             elif not os.path.exists(model_present_path3):
+                print(' I am using trained_model_tuned.pth as the base')
                 self.import_deit_models(train_main, data_loader)
                 PATH = data_loader.checkpoint_path + '/trained_model_tuned.pth'
                 checkpoint = torch.load(PATH)
