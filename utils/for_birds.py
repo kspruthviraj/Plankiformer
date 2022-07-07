@@ -47,7 +47,7 @@ class CreateDataForBirds:
         test_set = NABirds(root=train_PATH, train=False, transform=test_transform)
 
         class_weight_path = train_main.params.outpath + '/class_weights_tensor.pt'
-        if class_weight_path.exists():
+        if os.path.exists(class_weight_path):
             self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights_tensor.pt')
         else:
             class_train = []

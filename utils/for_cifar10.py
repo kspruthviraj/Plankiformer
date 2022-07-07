@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import torch
 import torchvision.transforms as T
@@ -36,7 +38,7 @@ class CreateDataForCifar10:
         test_set = datasets.CIFAR10('../data/CIFAR10/', download=True, train=False)
 
         class_weight_path = train_main.params.outpath + '/class_weights_tensor.pt'
-        if class_weight_path.exists():
+        if os.path.exists(class_weight_path):
             self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights_tensor.pt')
         else:
             class_train = []
