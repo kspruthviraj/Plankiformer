@@ -127,6 +127,8 @@ class LoadInputParameters:
         parser.add_argument('-clip_grad_norm', type=float, default=0, help="clip gradient norm")
         parser.add_argument('-disable_cos', choices=[True, False], default=True,
                             help="Disable cos. Choose from Yes or No")
+        parser.add_argument('-run_early_stopping', choices=['yes', 'no'], default='no', )
+        parser.add_argument('-run_lr_scheduler', choices=['yes', 'no'], default='no', )
 
         # Superclass or not
         parser.add_argument('-super_class', choices=['yes', 'no'], default='yes', )
@@ -150,8 +152,9 @@ class LoadInputParameters:
         # Related to ensembling
         parser.add_argument('-ensemble', type=int, default=0,
                             help="Set this to one if you want to ensemble multiple models else set it to zero")
-        parser.add_argument('-run_early_stopping', choices=['yes', 'no'], default='no', )
-        parser.add_argument('-run_lr_scheduler', choices=['yes', 'no'], default='no', )
+
+        # # Train from previous saved models
+        # parser.add_argument('-train_from_saved', choices=['yes', 'no'], default='no', )
 
         args = parser.parse_args(string)
 

@@ -1,4 +1,5 @@
 import math
+import os
 import pickle
 from time import time
 
@@ -126,7 +127,6 @@ class import_and_train_model:
 
             best_acc1 = max(test_acc1, best_acc1)
 
-
             if test_f1 > best_f1:
                 torch.save({'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict()},
@@ -166,7 +166,7 @@ class import_and_train_model:
 
         Log_Path = data_loader.checkpoint_path
 
-        with open(Log_Path + '/Logs_' + name + 'pickle', 'wb') as cw:
+        with open(Log_Path + '/Logs_' + name + '.pickle', 'wb') as cw:
             pickle.dump(Logs, cw)
 
         # Logs = pd.read_pickle(Log_Path + '/Logs.pickle')
@@ -230,35 +230,97 @@ class import_and_train_model:
         f.close()
 
     def train_and_save(self, train_main, data_loader):
+        model_present_path1 = data_loader.checkpoint_path + '/trained_model_original.pth'
+        model_present_path2 = data_loader.checkpoint_path + '/trained_model_tuned.pth'
+        model_present_path3 = data_loader.checkpoint_path + '/trained_model_finetuned.pth'
+
         self.import_deit_models(train_main, data_loader)
         if train_main.params.finetune == 0:
-            self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
-            self.run_prediction(train_main, data_loader, 'original')
+            if not os.path.exists(model_present_path1):
+                self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
+                self.run_prediction(train_main, data_loader, 'original')
+            else:
+                print('Trained model already exists!')
 
         elif train_main.params.finetune == 1:
-            self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
-            self.run_prediction(train_main, data_loader, 'original')
-            self.initialize_model(train_main=train_main, test_main=None,
-                                  data_loader=data_loader, lr=train_main.params.lr / 10)
-            self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
-                              "tuned")
-            self.run_prediction(train_main, data_loader, 'tuned')
+            if not os.path.exists(model_present_path1):
+                self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
+                self.run_prediction(train_main, data_loader, 'original')
+
+                self.initialize_model(train_main=train_main, test_main=None,
+                                      data_loader=data_loader, lr=train_main.params.lr / 10)
+                self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
+                                  "tuned")
+                self.run_prediction(train_main, data_loader, 'tuned')
+
+            elif not os.path.exists(model_present_path2):
+                self.import_deit_models(train_main, data_loader)
+                PATH = data_loader.checkpoint_path + '/trained_model_original.pth'
+                checkpoint = torch.load(PATH)
+                self.model.load_state_dict(checkpoint['model_state_dict'])
+                self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+                self.initialize_model(train_main=train_main, test_main=None,
+                                      data_loader=data_loader, lr=train_main.params.lr / 10)
+                self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
+                                  "tuned")
+                self.run_prediction(train_main, data_loader, 'tuned')
+            else:
+                print('Trained model already exists!')
 
         elif train_main.params.finetune == 2:
-            self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
-            self.run_prediction(train_main, data_loader, 'original')
 
-            self.initialize_model(train_main=train_main, test_main=None,
-                                  data_loader=data_loader, lr=train_main.params.lr / 10)
-            self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
-                              "tuned")
-            self.run_prediction(train_main, data_loader, 'tuned')
+            if not os.path.exists(model_present_path1):
+                self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
+                self.run_prediction(train_main, data_loader, 'original')
 
-            self.initialize_model(train_main=train_main, test_main=None,
-                                  data_loader=data_loader, lr=train_main.params.lr / 100)
-            self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 100,
-                              "finetuned")
-            self.run_prediction(train_main, data_loader, 'finetuned')
+                self.initialize_model(train_main=train_main, test_main=None,
+                                      data_loader=data_loader, lr=train_main.params.lr / 10)
+                self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
+                                  "tuned")
+                self.run_prediction(train_main, data_loader, 'tuned')
+
+                self.initialize_model(train_main=train_main, test_main=None,
+                                      data_loader=data_loader, lr=train_main.params.lr / 100)
+                self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 100,
+                                  "finetuned")
+                self.run_prediction(train_main, data_loader, 'finetuned')
+
+            elif not os.path.exists(model_present_path2):
+                self.import_deit_models(train_main, data_loader)
+                PATH = data_loader.checkpoint_path + '/trained_model_original.pth'
+                checkpoint = torch.load(PATH)
+                self.model.load_state_dict(checkpoint['model_state_dict'])
+                self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+                self.initialize_model(train_main=train_main, test_main=None,
+                                      data_loader=data_loader, lr=train_main.params.lr / 10)
+                self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
+                                  "tuned")
+                self.run_prediction(train_main, data_loader, 'tuned')
+
+                self.initialize_model(train_main=train_main, test_main=None,
+                                      data_loader=data_loader, lr=train_main.params.lr / 100)
+                self.run_training(train_main, data_loader, train_main.params.finetune_epochs,
+                                  train_main.params.lr / 100,
+                                  "finetuned")
+                self.run_prediction(train_main, data_loader, 'finetuned')
+
+            elif not os.path.exists(model_present_path3):
+                self.import_deit_models(train_main, data_loader)
+                PATH = data_loader.checkpoint_path + '/trained_model_tuned.pth'
+                checkpoint = torch.load(PATH)
+                self.model.load_state_dict(checkpoint['model_state_dict'])
+                self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+                self.initialize_model(train_main=train_main, test_main=None,
+                                      data_loader=data_loader, lr=train_main.params.lr / 100)
+                self.run_training(train_main, data_loader, train_main.params.finetune_epochs,
+                                  train_main.params.lr / 100,
+                                  "finetuned")
+                self.run_prediction(train_main, data_loader, 'finetuned')
+            else:
+                print('Trained model already exists!')
         else:
             print('Choose the correct finetune label')
 
