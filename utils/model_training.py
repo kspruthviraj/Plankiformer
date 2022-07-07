@@ -334,7 +334,7 @@ class import_and_train_model:
         if data_loader.class_weights_tensor is not None:
             self.criterion = nn.CrossEntropyLoss(data_loader.class_weights_tensor)
         else:
-            class_weights_tensor = torch.load(train_main.params.main_param_path + '/class_weights_tensor.pt')
+            class_weights_tensor = torch.load(train_main.params.datapaths + '/class_weights_tensor.pt')
             self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
         torch.cuda.set_device(train_main.params.gpu_id)
