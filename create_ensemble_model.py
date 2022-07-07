@@ -91,7 +91,10 @@ class LoadEnsembleParameters:
 
     def get_ensemble_performance(self):
         print(self.params.main_model_dir)
-        classes = np.load(self.params.main_model_dir + '/classes.npy')
+        # classes = np.load(self.params.main_model_dir + '/classes.npy')
+
+        classes = ('airplane', 'automobile', 'bird', 'cat',
+                   'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
         DEIT_01Path = self.params.main_model_dir + 'trained_models/' + 'Init_0/'
         DEIT_02Path = self.params.main_model_dir + 'trained_models/' + 'Init_1/'
