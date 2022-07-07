@@ -238,7 +238,8 @@ class import_and_train_model:
         elif train_main.params.finetune == 1:
             self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
             self.run_prediction(train_main, data_loader, 'original')
-            self.initialize_model(train_main=train_main, data_loader=data_loader, lr=train_main.params.lr / 10)
+            self.initialize_model(train_main=train_main, test_main=None,
+                                  data_loader=data_loader, lr=train_main.params.lr / 10)
             self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
                               "tuned")
             self.run_prediction(train_main, data_loader, 'tuned')
@@ -247,12 +248,14 @@ class import_and_train_model:
             self.run_training(train_main, data_loader, train_main.params.epochs, train_main.params.lr, "original")
             self.run_prediction(train_main, data_loader, 'original')
 
-            self.initialize_model(train_main=train_main, data_loader=data_loader, lr=train_main.params.lr / 10)
+            self.initialize_model(train_main=train_main, test_main=None,
+                                  data_loader=data_loader, lr=train_main.params.lr / 10)
             self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 10,
                               "tuned")
             self.run_prediction(train_main, data_loader, 'tuned')
 
-            self.initialize_model(train_main=train_main, data_loader=data_loader, lr=train_main.params.lr / 100)
+            self.initialize_model(train_main=train_main, test_main=None,
+                                  data_loader=data_loader, lr=train_main.params.lr / 100)
             self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 100,
                               "finetuned")
             self.run_prediction(train_main, data_loader, 'finetuned')
@@ -328,22 +331,7 @@ class import_and_train_model:
         To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names, Ens_label)]
         np.savetxt(test_main.params.test_outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
 
-    def initialize_model(self, train_main, data_loader, lr):
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.model.to(device)
-        if data_loader.class_weights_tensor is not None:
-            self.criterion = nn.CrossEntropyLoss(data_loader.class_weights_tensor)
-        else:
-            class_weights_tensor = torch.load(train_main.params.datapaths + '/class_weights_tensor.pt')
-            self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
-
-        torch.cuda.set_device(train_main.params.gpu_id)
-        self.model.cuda(train_main.params.gpu_id)
-        self.criterion = self.criterion.cuda(train_main.params.gpu_id)
-        # Observe that all parameters are being optimized
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=train_main.params.weight_decay)
-
-    def initialize_model_for_testing(self, train_main, test_main, data_loader, lr):
+    def initialize_model(self, train_main, test_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
         if data_loader.class_weights_tensor is not None:
@@ -361,21 +349,21 @@ class import_and_train_model:
     def load_model_and_run_prediction(self, train_main, test_main, data_loader):
         self.import_deit_models_for_testing(train_main, test_main)
         if train_main.params.finetune == 0:
-            self.initialize_model_for_testing(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen(test_main, data_loader, 'original')
             else:
                 self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'original')
 
         elif train_main.params.finetune == 1:
-            self.initialize_model_for_testing(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen(test_main, data_loader, 'tuned')
             else:
                 self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'tuned')
 
         elif train_main.params.finetune == 2:
-            self.initialize_model_for_testing(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen(test_main, data_loader, 'finetuned')
             else:

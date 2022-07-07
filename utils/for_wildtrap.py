@@ -34,6 +34,18 @@ class CreateDataForWildtrap:
         trainset = datasets.ImageFolder(train_PATH)
         testset = datasets.ImageFolder(test_PATH)
 
+        class_weight_path = train_main.params.outpath + '/class_weights_tensor.pt'
+        if class_weight_path.exists():
+            self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights_tensor.pt')
+        else:
+            class_train = []
+            for i in range(len(trainset)):
+                class_train.append(trainset[i][1])
+            class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(class_train),
+                                                 y=class_train)
+            self.class_weights_tensor = torch.Tensor(class_weights)
+            torch.save(self.class_weights_tensor, train_main.params.outpath + '/class_weights_tensor.pt')
+
         torch.save(trainset.classes, train_main.params.outpath + '/class_labels.pt')
 
         self.classes = trainset.classes
@@ -67,7 +79,7 @@ class CreateDataForWildtrap:
         # self.class_weights_tensor = torch.Tensor(class_weights_all)
         # torch.save(self.class_weights_tensor, train_main.params.outpath + '/class_weights.pt')
 
-        self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights.pt')
+        # self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights.pt')
         self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
 
         return

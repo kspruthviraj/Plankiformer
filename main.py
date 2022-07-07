@@ -135,10 +135,10 @@ class LoadInputParameters:
                             help="Total number of epochs for the funetune training")
         parser.add_argument('-init_name', default='Init_01',
                             help="directory name where you want the Best models to be saved")
+
+        # Related to predicting on unseen
         parser.add_argument('-test_path', nargs='*', default=['./data/'], help="directory of images where you want to "
                                                                                "predict")
-        parser.add_argument('-train_path', nargs='*', default=['./data/'], help="directory of training images when "
-                                                                                "train and test are separated ")
         parser.add_argument('-main_param_path', default='./out/trained_models/', help="main directory where the "
                                                                                       "training parameters are saved")
         parser.add_argument('-test_outpath', default='./out/', help="directory where you want to save the predictions")
@@ -146,6 +146,8 @@ class LoadInputParameters:
                             default=['./out/trained_models/Init_0/',
                                      './out/trained_models/Init_1/'],
                             help='path of the saved models')
+
+        # Related to ensembling
         parser.add_argument('-ensemble', type=int, default=0,
                             help="Set this to one if you want to ensemble multiple models else set it to zero")
         parser.add_argument('-run_early_stopping', choices=['yes', 'no'], default='no', )

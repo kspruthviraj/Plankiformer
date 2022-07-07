@@ -10,6 +10,7 @@ import torch
 import torch.utils.data as data
 import torchvision.transforms as T
 from PIL import Image
+from sklearn.utils import compute_class_weight
 from torch.utils.data import Dataset
 from torchvision.datasets.utils import download_url, list_dir
 from torchvision.datasets.folder import default_loader
@@ -45,6 +46,18 @@ class CreateDataForBirds:
         trainset = NABirds(root=train_PATH, train=True, transform=train_transform)
         test_set = NABirds(root=train_PATH, train=False, transform=test_transform)
 
+        class_weight_path = train_main.params.outpath + '/class_weights_tensor.pt'
+        if class_weight_path.exists():
+            self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights_tensor.pt')
+        else:
+            class_train = []
+            for i in range(len(trainset)):
+                class_train.append(trainset[i][1])
+            class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(class_train),
+                                                 y=class_train)
+            self.class_weights_tensor = torch.Tensor(class_weights)
+            torch.save(self.class_weights_tensor, train_main.params.outpath + '/class_weights_tensor.pt')
+
         train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
                                                                       int(np.round(0.2 * len(trainset), 0))])
 
@@ -68,7 +81,7 @@ class CreateDataForBirds:
             classes.append(list(class_names.values())[list(class_names.keys()).index(str(i))])
 
         self.classes = classes
-        self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights.pt')
+
 
 
 class NABirds(Dataset):
