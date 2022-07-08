@@ -99,6 +99,7 @@ class LoadEnsembleParameters:
         DEIT_01Path = self.params.main_model_dir + 'trained_models/' + 'Init_0/'
         DEIT_02Path = self.params.main_model_dir + 'trained_models/' + 'Init_1/'
         DEIT_03Path = self.params.main_model_dir + 'trained_models/' + 'Init_2/'
+        DEIT_04Path = self.params.main_model_dir + 'trained_models/' + 'Init_3/'
 
         if self.params.finetune == 0:
             DEIT_01 = pd.read_pickle(DEIT_01Path + '/GT_Pred_GTLabel_PredLabel_prob_model_original.pickle')
@@ -112,6 +113,7 @@ class LoadEnsembleParameters:
             DEIT_01 = pd.read_pickle(DEIT_01Path + '/GT_Pred_GTLabel_PredLabel_prob_model_finetuned.pickle')
             DEIT_02 = pd.read_pickle(DEIT_02Path + '/GT_Pred_GTLabel_PredLabel_prob_model_finetuned.pickle')
             DEIT_03 = pd.read_pickle(DEIT_03Path + '/GT_Pred_GTLabel_PredLabel_prob_model_finetuned.pickle')
+            DEIT_04 = pd.read_pickle(DEIT_04Path + '/GT_Pred_GTLabel_PredLabel_prob_model_finetuned.pickle')
 
         DEIT_01_GTLabel = DEIT_01[2]
         DEIT_01_PredLabel = DEIT_01[3]
@@ -137,9 +139,18 @@ class LoadEnsembleParameters:
         DEIT_03_PredLabel_03 = DEIT_03_PredLabel[DEIT_03_GTLabel_indices]
         DEIT_03_Prob_03 = DEIT_03_Prob[DEIT_03_GTLabel_indices]
 
+        DEIT_04_GTLabel = DEIT_04[2]
+        DEIT_04_PredLabel = DEIT_04[3]
+        DEIT_04_Prob = DEIT_04[4]
+        DEIT_04_GTLabel_04 = np.sort(DEIT_04_GTLabel)
+        DEIT_04_GTLabel_indices = np.argsort(DEIT_04_GTLabel)
+        DEIT_04_PredLabel_04 = DEIT_04_PredLabel[DEIT_04_GTLabel_indices]
+        DEIT_04_Prob_04 = DEIT_04_Prob[DEIT_04_GTLabel_indices]
+
         Ens_DEIT_1 = np.add(DEIT_01_Prob_01, DEIT_02_Prob_02)
-        Ens_DEIT = np.add(Ens_DEIT_1, DEIT_03_Prob_03)
-        Ens_DEIT = Ens_DEIT / 3
+        Ens_DEIT_2 = np.add(DEIT_03_Prob_03, DEIT_04_Prob_04)
+        Ens_DEIT = np.add(Ens_DEIT_1, Ens_DEIT_2)
+        Ens_DEIT = Ens_DEIT / 4
         Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
         Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))], dtype=object)
 
@@ -151,7 +162,7 @@ class LoadEnsembleParameters:
         clf_report = classification_report(DEIT_03_GTLabel_03, Ens_DEIT_label)
         f1 = f1_score(DEIT_03_GTLabel_03, Ens_DEIT_label, average='macro')
 
-        f = open(self.params.outpath + 'Ensemble_test_report_2.txt', 'w')
+        f = open(self.params.outpath + 'Ensemble_test_report.txt', 'w')
         f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                               clf_report))
         f.close()
