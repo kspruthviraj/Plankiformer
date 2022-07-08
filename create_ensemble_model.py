@@ -50,6 +50,9 @@ class LoadEnsembleParameters:
         parser.add_argument('-outpath', default='./out/Ensemble/', help="directory where you want the output saved")
 
         parser.add_argument('-finetune', type=int, default=0, help='Choose "0" or "1" or "2" for finetuning')
+        parser.add_argument('-model_dirs', nargs='*',
+                            default=['./data/'],
+                            help="Directories with the model.")
 
         args = parser.parse_args(string)
 
@@ -96,71 +99,57 @@ class LoadEnsembleParameters:
         classes = ('airplane', 'automobile', 'bird', 'cat',
                    'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-        DEIT_01Path = self.params.main_model_dir + 'trained_models/' + 'Init_0/'
-        DEIT_02Path = self.params.main_model_dir + 'trained_models/' + 'Init_1/'
-        DEIT_03Path = self.params.main_model_dir + 'trained_models/' + 'Init_2/'
-        DEIT_04Path = self.params.main_model_dir + 'trained_models/' + 'Init_3/'
+        DEIT_models_all = []
+        DEIT_GTLabel = []
+        DEIT_PredLabel = []
+        DEIT_Prob = []
+        DEIT_GTLabel_sorted = []
+        DEIT_GTLabel_indices = []
+        DEIT_PredLabel_sorted = []
+        DEIT_Prob_sorted = []
 
-        if self.params.finetune == 0:
-            DEIT_01 = pd.read_pickle(DEIT_01Path + '/GT_Pred_GTLabel_PredLabel_prob_model_original.pickle')
-            DEIT_02 = pd.read_pickle(DEIT_02Path + '/GT_Pred_GTLabel_PredLabel_prob_model_original.pickle')
-            DEIT_03 = pd.read_pickle(DEIT_03Path + '/GT_Pred_GTLabel_PredLabel_prob_model_original.pickle')
-        elif self.params.finetune == 1:
-            DEIT_01 = pd.read_pickle(DEIT_01Path + '/GT_Pred_GTLabel_PredLabel_prob_model_tuned.pickle')
-            DEIT_02 = pd.read_pickle(DEIT_02Path + '/GT_Pred_GTLabel_PredLabel_prob_model_tuned.pickle')
-            DEIT_03 = pd.read_pickle(DEIT_03Path + '/GT_Pred_GTLabel_PredLabel_prob_model_tuned.pickle')
-        elif self.params.finetune == 2:
-            DEIT_01 = pd.read_pickle(DEIT_01Path + '/GT_Pred_GTLabel_PredLabel_prob_model_finetuned.pickle')
-            DEIT_02 = pd.read_pickle(DEIT_02Path + '/GT_Pred_GTLabel_PredLabel_prob_model_finetuned.pickle')
-            DEIT_03 = pd.read_pickle(DEIT_03Path + '/GT_Pred_GTLabel_PredLabel_prob_model_finetuned.pickle')
-            DEIT_04 = pd.read_pickle(DEIT_04Path + '/GT_Pred_GTLabel_PredLabel_prob_model_finetuned.pickle')
+        for model_path in self.params.model_dirs:
+            DEIT_model = []
+            if self.params.finetune == 0:
+                DEIT_model = pd.read_pickle(model_path + '/GT_Pred_GTLabel_PredLabel_prob_model_original.pickle')
 
-        DEIT_01_GTLabel = DEIT_01[2]
-        DEIT_01_PredLabel = DEIT_01[3]
-        DEIT_01_Prob = DEIT_01[4]
-        DEIT_01_GTLabel_01 = np.sort(DEIT_01_GTLabel)
-        DEIT_01_GTLabel_indices = np.argsort(DEIT_01_GTLabel)
-        DEIT_01_PredLabel_01 = DEIT_01_PredLabel[DEIT_01_GTLabel_indices]
-        DEIT_01_Prob_01 = DEIT_01_Prob[DEIT_01_GTLabel_indices]
+            elif self.params.finetune == 1:
+                DEIT_model = pd.read_pickle(model_path + '/GT_Pred_GTLabel_PredLabel_prob_model_tuned.pickle')
 
-        DEIT_02_GTLabel = DEIT_02[2]
-        DEIT_02_PredLabel = DEIT_02[3]
-        DEIT_02_Prob = DEIT_02[4]
-        DEIT_02_GTLabel_02 = np.sort(DEIT_02_GTLabel)
-        DEIT_02_GTLabel_indices = np.argsort(DEIT_02_GTLabel)
-        DEIT_02_PredLabel_02 = DEIT_02_PredLabel[DEIT_02_GTLabel_indices]
-        DEIT_02_Prob_02 = DEIT_02_Prob[DEIT_02_GTLabel_indices]
+            elif self.params.finetune == 2:
+                DEIT_model = pd.read_pickle(model_path + '//GT_Pred_GTLabel_PredLabel_prob_model_finetuned.pickle')
+            else:
+                print(' Please Select correct finetuning parameters')
 
-        DEIT_03_GTLabel = DEIT_03[2]
-        DEIT_03_PredLabel = DEIT_03[3]
-        DEIT_03_Prob = DEIT_03[4]
-        DEIT_03_GTLabel_03 = np.sort(DEIT_03_GTLabel)
-        DEIT_03_GTLabel_indices = np.argsort(DEIT_03_GTLabel)
-        DEIT_03_PredLabel_03 = DEIT_03_PredLabel[DEIT_03_GTLabel_indices]
-        DEIT_03_Prob_03 = DEIT_03_Prob[DEIT_03_GTLabel_indices]
+            DEIT_01_GTLabel = DEIT_model[2]
+            DEIT_01_PredLabel = DEIT_model[3]
+            DEIT_01_Prob = DEIT_model[4]
 
-        DEIT_04_GTLabel = DEIT_04[2]
-        DEIT_04_PredLabel = DEIT_04[3]
-        DEIT_04_Prob = DEIT_04[4]
-        DEIT_04_GTLabel_04 = np.sort(DEIT_04_GTLabel)
-        DEIT_04_GTLabel_indices = np.argsort(DEIT_04_GTLabel)
-        DEIT_04_PredLabel_04 = DEIT_04_PredLabel[DEIT_04_GTLabel_indices]
-        DEIT_04_Prob_04 = DEIT_04_Prob[DEIT_04_GTLabel_indices]
+            DEIT_01_GTLabel_sorted = np.sort(DEIT_01_GTLabel)
+            DEIT_01_GTLabel_indices = np.argsort(DEIT_01_GTLabel)
+            DEIT_01_PredLabel_sorted = DEIT_01_PredLabel[DEIT_01_GTLabel_indices]
+            DEIT_01_Prob_sorted = DEIT_01_Prob[DEIT_01_GTLabel_indices]
 
-        Ens_DEIT_1 = np.add(DEIT_01_Prob_01, DEIT_02_Prob_02)
-        Ens_DEIT_2 = np.add(DEIT_03_Prob_03, DEIT_04_Prob_04)
-        Ens_DEIT = np.add(Ens_DEIT_1, Ens_DEIT_2)
-        Ens_DEIT = Ens_DEIT / 4
+            DEIT_models_all.append(DEIT_model)
+            DEIT_GTLabel.append(DEIT_01_GTLabel)
+            DEIT_PredLabel.append(DEIT_01_PredLabel)
+            DEIT_Prob.append(DEIT_01_Prob)
+            DEIT_GTLabel_sorted.append(DEIT_01_GTLabel_sorted)
+            DEIT_GTLabel_indices.append(DEIT_01_GTLabel_indices)
+            DEIT_PredLabel_sorted.append(DEIT_01_PredLabel_sorted)
+            DEIT_Prob_sorted.append(DEIT_01_Prob_sorted)
+
+        Ens_DEIT = sum(DEIT_Prob)/len(DEIT_Prob)
         Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
         Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))], dtype=object)
 
-        print('Accuracy:  {}'.format(round(accuracy_score(DEIT_03_GTLabel_03, Ens_DEIT_label), 3)))
-        print('F1-score:  {}'.format(round(f1_score(DEIT_03_GTLabel_03, Ens_DEIT_label, average='macro'), 3)))
-        print(classification_report(DEIT_03_GTLabel_03, Ens_DEIT_label, digits=2))
+        print('Accuracy:  {}'.format(round(accuracy_score(DEIT_GTLabel[0], Ens_DEIT_label), 3)))
+        print('F1-score:  {}'.format(round(f1_score(DEIT_GTLabel[0], Ens_DEIT_label, average='macro'), 3)))
+        print(classification_report(DEIT_GTLabel[0], Ens_DEIT_label, digits=2))
 
-        accuracy_model = accuracy_score(DEIT_03_GTLabel_03, Ens_DEIT_label)
-        clf_report = classification_report(DEIT_03_GTLabel_03, Ens_DEIT_label)
-        f1 = f1_score(DEIT_03_GTLabel_03, Ens_DEIT_label, average='macro')
+        accuracy_model = accuracy_score(DEIT_GTLabel[0], Ens_DEIT_label)
+        clf_report = classification_report(DEIT_GTLabel[0], Ens_DEIT_label)
+        f1 = f1_score(DEIT_GTLabel[0], Ens_DEIT_label, average='macro')
 
         f = open(self.params.outpath + 'Ensemble_test_report.txt', 'w')
         f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
