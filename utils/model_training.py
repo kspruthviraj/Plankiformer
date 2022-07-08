@@ -104,12 +104,11 @@ class import_and_train_model:
         print("Beginning training")
         time_begin = time()
 
-        for epoch in range(train_main.params.epochs):
+        for epoch in range(epochs):
             print('EPOCH : {} / {}'.format(epoch + 1, epochs))
 
             adjust_learning_rate(self.optimizer, epoch, lr, train_main.params.warmup,
-                                 train_main.params.disable_cos,
-                                 train_main.params.epochs)
+                                 train_main.params.disable_cos, epochs)
 
             train_acc1, train_loss, train_outputs, train_targets = cls_train(data_loader.train_dataloader, self.model,
                                                                              self.criterion,
