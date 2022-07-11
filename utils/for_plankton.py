@@ -5,6 +5,8 @@
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
+import torch
 import torchvision.transforms as T
 from torch.utils.data import DataLoader, Dataset
 
@@ -35,13 +37,16 @@ class CreateDataForPlankton:
         return
 
     def make_train_test_for_model(self, train_main, prep_data):
-        self.class_weights_tensor = prep_data.class_weights_tensor
-        self.Filenames = prep_data.Filenames
-        classes = prep_data.classes
-        Data = prep_data.Data
 
-        # Data = pd.read_pickle(train_main.params.outpath + '/Data.pickle')
-        # classes = np.load(train_main.params.outpath + '/classes.npy')
+        if train_main.params.saved_data == 'yes':
+            Data = pd.read_pickle(train_main.params.outpath + '/Data.pickle')
+            classes = np.load(train_main.params.outpath + '/classes.npy')
+            self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights_tensor.pt')
+        else:
+            self.class_weights_tensor = prep_data.class_weights_tensor
+            self.Filenames = prep_data.Filenames
+            classes = prep_data.classes
+            Data = prep_data.Data
 
         if train_main.params.test_set == 'no':
             if train_main.params.ttkind == 'mixed':

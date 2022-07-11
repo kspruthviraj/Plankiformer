@@ -11,6 +11,7 @@ import numpy as np
 from utils import for_plankton as fplankton
 from utils import model_training as mt
 
+
 def ArgsCheck(args):
     """ Consistency checks for command line arguments """
 
@@ -182,7 +183,7 @@ if __name__ == '__main__':
 
     # For Plankton -- use saved data
     for_plankton = fplankton.CreateDataForPlankton()
-    for_plankton.make_train_test_for_model(train_params)
+    for_plankton.make_train_test_for_model(train_params, None)
     for_plankton.create_data_loaders(train_params)
 
     # Model Training
