@@ -142,6 +142,7 @@ class LoadEnsembleParameters:
             DEIT_PredLabel_sorted.append(DEIT_01_PredLabel_sorted)
             DEIT_Prob_sorted.append(DEIT_01_Prob_sorted)
 
+        Ens_DEIT_label = []
         if self.params.ens_type == 1:
             Ens_DEIT = sum(DEIT_Prob) / len(DEIT_Prob)
             Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
