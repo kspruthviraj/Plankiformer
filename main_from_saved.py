@@ -189,4 +189,4 @@ if __name__ == '__main__':
     # Model Training
     model_training = mt.import_and_train_model()
     # Run training
-    model_training.train_and_save(for_plankton, train_params)
+    model_training.train_and_save(train_params, for_plankton)

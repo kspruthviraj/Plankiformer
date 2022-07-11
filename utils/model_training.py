@@ -229,6 +229,7 @@ class import_and_train_model:
         f.close()
 
     def train_and_save(self, train_main, data_loader):
+
         model_present_path1 = data_loader.checkpoint_path + '/trained_model_original.pth'
         model_present_path2 = data_loader.checkpoint_path + '/trained_model_tuned.pth'
         model_present_path3 = data_loader.checkpoint_path + '/trained_model_finetuned.pth'
