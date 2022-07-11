@@ -104,9 +104,10 @@ class LoadInputParameters:
 
         # Choose dataset name
         parser.add_argument('-dataset_name', choices=['zoolake', 'zooscan', 'whoi', 'kaggle',
-                                                      'eilat', 'rsmas', 'nabirds', 'dogs', 'beetle', 'wildtrap'],
-                            default='multi', help='Choose between different datasets "zoolake", "zooscan", "whoi", '
-                                                  '"kaggle", "eilat", "rsmas", "nabirds", "dogs", "beetle", "wildtrap"')
+                                                      'eilat', 'rsmas', 'birds', 'dogs', 'beetle', 'wildtrap',
+                                                      'cifar10'],
+                            default='zoolake', help='Choose between different datasets "zoolake", "zooscan", "whoi", '
+                                                    '"kaggle", "eilat", "rsmas", "birds", "dogs", "beetle", "wildtrap"')
 
         # For model training
         parser.add_argument('-batch_size', type=int, default=16, help="Batch size for training")
@@ -119,6 +120,8 @@ class LoadInputParameters:
         parser.add_argument('-clip_grad_norm', type=float, default=0, help="clip gradient norm")
         parser.add_argument('-disable_cos', choices=[True, False], default=True,
                             help="Disable cos. Choose from Yes or No")
+        parser.add_argument('-run_early_stopping', choices=['yes', 'no'], default='no', )
+        parser.add_argument('-run_lr_scheduler', choices=['yes', 'no'], default='no', )
 
         # Superclass or not
         parser.add_argument('-super_class', choices=['yes', 'no'], default='yes', )
@@ -127,6 +130,24 @@ class LoadInputParameters:
                             help="Total number of epochs for the funetune training")
         parser.add_argument('-init_name', default='Init_01',
                             help="directory name where you want the Best models to be saved")
+
+        # Related to predicting on unseen
+        parser.add_argument('-test_path', nargs='*', default=['./data/'], help="directory of images where you want to "
+                                                                               "predict")
+        parser.add_argument('-main_param_path', default='./out/trained_models/', help="main directory where the "
+                                                                                      "training parameters are saved")
+        parser.add_argument('-test_outpath', default='./out/', help="directory where you want to save the predictions")
+        parser.add_argument('-model_path', nargs='*',
+                            default=['./out/trained_models/Init_0/',
+                                     './out/trained_models/Init_1/'],
+                            help='path of the saved models')
+
+        # Related to ensembling
+        parser.add_argument('-ensemble', type=int, default=0,
+                            help="Set this to one if you want to ensemble multiple models else set it to zero")
+
+        # # Train from previous saved models
+        # parser.add_argument('-train_from_saved', choices=['yes', 'no'], default='no', )
 
         args = parser.parse_args(string)
 
