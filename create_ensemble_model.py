@@ -9,6 +9,7 @@ import sys
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, f1_score, classification_report
+from scipy.stats import gmean
 
 
 class LoadEnsembleParameters:
@@ -53,6 +54,8 @@ class LoadEnsembleParameters:
         parser.add_argument('-model_dirs', nargs='*',
                             default=['./data/'],
                             help="Directories with the model.")
+        parser.add_argument('-ens_type', type=int, default=1,
+                            help="choose between either arithmetic mean (=1) or geometric mean (=2)")
 
         args = parser.parse_args(string)
 
@@ -139,9 +142,18 @@ class LoadEnsembleParameters:
             DEIT_PredLabel_sorted.append(DEIT_01_PredLabel_sorted)
             DEIT_Prob_sorted.append(DEIT_01_Prob_sorted)
 
-        Ens_DEIT = sum(DEIT_Prob)/len(DEIT_Prob)
-        Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
-        Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))], dtype=object)
+        if self.params.ens_type == 1:
+            Ens_DEIT = sum(DEIT_Prob) / len(DEIT_Prob)
+            Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
+            Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))],
+                                      dtype=object)
+        elif self.params.ens_type == 2:
+            Ens_DEIT = gmean(DEIT_Prob)
+            Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
+            Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))],
+                                      dtype=object)
+        else:
+            print("Choose correct ensemble type")
 
         print('Accuracy:  {}'.format(round(accuracy_score(DEIT_GTLabel[0], Ens_DEIT_label), 3)))
         print('F1-score:  {}'.format(round(f1_score(DEIT_GTLabel[0], Ens_DEIT_label, average='macro'), 3)))
