@@ -160,12 +160,12 @@ class LoadEnsembleParameters:
         else:
             print("Choose correct ensemble type")
 
-        print('Accuracy:  {}'.format(round(accuracy_score(DEIT_GTLabel[0], Ens_DEIT_label), 3)))
-        print('F1-score:  {}'.format(round(f1_score(DEIT_GTLabel[0], Ens_DEIT_label, average='macro'), 3)))
-        print(classification_report(DEIT_GTLabel[0], Ens_DEIT_label, digits=2))
+        print('Accuracy:  {}'.format(round(accuracy_score(DEIT_GTLabel[1], Ens_DEIT_label), 3)))
+        print('F1-score:  {}'.format(round(f1_score(DEIT_GTLabel[1], Ens_DEIT_label, average='macro'), 3)))
+        print(classification_report(DEIT_GTLabel[1], Ens_DEIT_label, digits=2))
 
-        accuracy_model = accuracy_score(DEIT_GTLabel[0], Ens_DEIT_label)
-        clf_report = classification_report(DEIT_GTLabel[0], Ens_DEIT_label)
+        accuracy_model = accuracy_score(DEIT_GTLabel[1], Ens_DEIT_label)
+        clf_report = classification_report(DEIT_GTLabel[1], Ens_DEIT_label)
         f1 = f1_score(DEIT_GTLabel[0], Ens_DEIT_label, average='macro')
 
         f = open(self.params.outpath + 'Ensemble_test_report.txt', 'w')
