@@ -137,10 +137,6 @@ class LoadEnsembleParameters:
             DEIT_01_PredLabel_sorted = DEIT_01_PredLabel[DEIT_01_GTLabel_indices]
             DEIT_01_Prob_sorted = DEIT_01_Prob[DEIT_01_GTLabel_indices]
 
-            DEIT_models_all.append(DEIT_model)
-            DEIT_GTLabel.append(DEIT_01_GTLabel)
-            DEIT_PredLabel.append(DEIT_01_PredLabel)
-            DEIT_Prob.append(DEIT_01_Prob)
             DEIT_GTLabel_sorted.append(DEIT_01_GTLabel_sorted)
             DEIT_GTLabel_indices.append(DEIT_01_GTLabel_indices)
             DEIT_PredLabel_sorted.append(DEIT_01_PredLabel_sorted)
@@ -148,22 +144,22 @@ class LoadEnsembleParameters:
 
         Ens_DEIT_label = []
         if self.params.ens_type == 1:
-            Ens_DEIT = sum(DEIT_Prob) / len(DEIT_Prob)
+            Ens_DEIT = sum(DEIT_Prob_sorted) / len(DEIT_Prob_sorted)
             Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
             Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))], dtype=object)
         elif self.params.ens_type == 2:
-            Ens_DEIT = gmean(DEIT_Prob)
+            Ens_DEIT = gmean(DEIT_Prob_sorted)
             Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
             Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))], dtype=object)
         else:
             print("Choose correct ensemble type")
 
-        print('Accuracy:  {}'.format(round(accuracy_score(DEIT_GTLabel_sorted[1], Ens_DEIT_label), 3)))
-        print('F1-score:  {}'.format(round(f1_score(DEIT_GTLabel_sorted[1], Ens_DEIT_label, average='macro'), 3)))
-        print(classification_report(DEIT_GTLabel_sorted[1], Ens_DEIT_label, digits=2))
+        print('Accuracy:  {}'.format(round(accuracy_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label), 3)))
+        print('F1-score:  {}'.format(round(f1_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label, average='macro'), 3)))
+        print(classification_report(DEIT_GTLabel_sorted[0], Ens_DEIT_label, digits=2))
 
-        accuracy_model = accuracy_score(DEIT_GTLabel_sorted[1], Ens_DEIT_label)
-        clf_report = classification_report(DEIT_GTLabel_sorted[1], Ens_DEIT_label)
+        accuracy_model = accuracy_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label)
+        clf_report = classification_report(DEIT_GTLabel_sorted[0], Ens_DEIT_label)
         f1 = f1_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label, average='macro')
 
         f = open(self.params.outpath + 'Ensemble_test_report.txt', 'w')
