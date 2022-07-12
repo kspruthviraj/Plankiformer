@@ -199,7 +199,7 @@ class import_and_train_model:
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
         avg_acc1, target, output, prob = cls_predict(data_loader.test_dataloader, self.model, self.criterion,
-                                                     time_begin=None)
+                                                     time_begin=time())
 
         target = torch.cat(target)
         output = torch.cat(output)
@@ -647,8 +647,8 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
             acc1_val += float(acc1[0] * images.size(0))
 
     avg_loss, avg_acc1 = (loss_val / n), (acc1_val / n)
-    total_mins = -1 if time_begin is None else (time() - time_begin) / 60
-    print('Time taken for prediction (in mins): {}'.format(total_mins))
+    total_secs = -1 if time_begin is None else (time() - time_begin)
+    print('Time taken for prediction (in secs): {}'.format(total_secs))
 
     return avg_acc1, targets, outputs, probs
 
@@ -668,7 +668,7 @@ def cls_predict_on_unseen(test_loader, model, time_begin=None):
             prob = torch.nn.functional.softmax(output, dim=1)
             probs.append(prob)
 
-    total_mins = -1 if time_begin is None else (time() - time_begin) / 60
-    print('Time taken for prediction (in mins): {}'.format(total_mins))
+    total_secs = -1 if time_begin is None else (time() - time_begin)
+    print('Time taken for prediction (in secs): {}'.format(total_secs))
 
     return outputs, probs
