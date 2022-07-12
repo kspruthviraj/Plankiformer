@@ -97,7 +97,7 @@ class LoadEnsembleParameters:
         return
 
     def get_ensemble_performance(self):
-        print(self.params.main_model_dir)
+        print('Main model directory: {}'.format(self.params.main_model_dir))
         classes_dir = self.params.main_model_dir + '/classes.npy'
 
         if not os.path.exists(classes_dir):
