@@ -579,6 +579,9 @@ class Cdata:
 
     def __init__(self, datapath, L=None, class_select=None, classifier=None, compute_extrafeat=None, resize_images=None,
                  balance_weight=None, kind='mixed', training_data=True):
+        self.Xfeat = None
+        self.Ximage = None
+        self.filenames = None
         self.classes = None
         self.datapath = datapath
         if L is None and kind != 'feat':
@@ -600,10 +603,10 @@ class Cdata:
 
     def Load(self, datapaths, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
              kind='mixed', training_data=True):
-        '''
+        """
         Loads dataset
         For the moment, only mixed data. Later, also pure images or pure features.
-        '''
+        """
         self.L = L
         self.datapath = datapaths
         self.class_select = class_select

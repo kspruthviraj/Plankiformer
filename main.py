@@ -8,15 +8,13 @@ import sys
 
 import numpy as np
 
+from utils import for_birds as birds
+from utils import for_cifar10 as cifar10
+from utils import for_dogs as dogs
 from utils import for_plankton as fplankton
+from utils import for_wildtrap as wildtrap
 from utils import model_training as mt
 from utils import prepare_train_test_data as pdata
-from utils import for_cifar10 as cifar10
-from utils import for_wildtrap as wildtrap
-from utils import for_dogs as dogs
-from utils import for_birds as birds
-from utils import prepare_data_for_testing as pdata_test
-from utils import for_plankton_test as fplankton_test
 
 
 def ArgsCheck(args):
@@ -208,6 +206,7 @@ if __name__ == '__main__':
     train_params.CreateOutDir()
     print('Loaded input parameters')
     #
+    loaded_data = None
 
     if train_params.params.dataset_name == 'zoolake':
         print('Creating dataset using input parameters')
@@ -218,42 +217,6 @@ if __name__ == '__main__':
         loaded_data = fplankton.CreateDataForPlankton()
         loaded_data.make_train_test_for_model(train_params, prep_data)
         loaded_data.create_data_loaders(train_params)
-        # Model Training
-        model_training = mt.import_and_train_model()
-        # Run training
-        model_training.train_and_save(train_params, loaded_data)
-
-    elif train_params.params.dataset_name == 'cifar10':
-        loaded_data = cifar10.CreateDataForCifar10()
-        loaded_data.make_train_test_for_cifar(train_params)
-        # Model Training
-        model_training = mt.import_and_train_model()
-        # Run training
-        model_training.train_and_save(train_params, loaded_data)
-
-    elif train_params.params.dataset_name == 'wildtrap':
-        loaded_data = wildtrap.CreateDataForWildtrap()
-        loaded_data.make_train_test_for_wildtrap(train_params)
-        # Model Training
-        model_training = mt.import_and_train_model()
-        # Run training
-        model_training.train_and_save(train_params, loaded_data)
-
-    elif train_params.params.dataset_name == 'dogs':
-        loaded_data = dogs.CreateDataForDogs()
-        loaded_data.make_train_test_for_dogs(train_params)
-        # Model Training
-        model_training = mt.import_and_train_model()
-        # Run training
-        model_training.train_and_save(train_params, loaded_data)
-
-    elif train_params.params.dataset_name == 'birds':
-        loaded_data = birds.CreateDataForBirds()
-        loaded_data.make_train_test_for_birds(train_params)
-        # Model Training
-        model_training = mt.import_and_train_model()
-        # Run training
-        model_training.train_and_save(train_params, loaded_data)
 
     elif train_params.params.dataset_name == 'beetle':
         prep_test_data = pdata.CreateDataset()
@@ -264,7 +227,23 @@ if __name__ == '__main__':
         loaded_data.make_train_test_for_others(prep_test_data)
         loaded_data.create_data_loaders_for_others(train_params)
 
-        # Model Training
-        model_training = mt.import_and_train_model()
-        # Run training
-        model_training.train_and_save(train_params, loaded_data)
+    elif train_params.params.dataset_name == 'cifar10':
+        loaded_data = cifar10.CreateDataForCifar10()
+        loaded_data.make_train_test_for_cifar(train_params)
+
+    elif train_params.params.dataset_name == 'wildtrap':
+        loaded_data = wildtrap.CreateDataForWildtrap()
+        loaded_data.make_train_test_for_wildtrap(train_params)
+
+    elif train_params.params.dataset_name == 'dogs':
+        loaded_data = dogs.CreateDataForDogs()
+        loaded_data.make_train_test_for_dogs(train_params)
+
+    elif train_params.params.dataset_name == 'birds':
+        loaded_data = birds.CreateDataForBirds()
+        loaded_data.make_train_test_for_birds(train_params)
+
+    # Model Training
+    model_training = mt.import_and_train_model()
+    # Run training
+    model_training.train_and_save(train_params, loaded_data)

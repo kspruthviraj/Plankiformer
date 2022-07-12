@@ -441,7 +441,7 @@ class Cdata:
         - removing the evidently junk columns.
         - allowing to access images and features separately and confortably
         """
-        self.y = self.df.classname
+        # self.y = self.df.classname
         self.filenames = self.df.filename
         self.X = self.df.drop(columns=['classname', 'url', 'filename', 'file_size', 'timestamp'], errors='ignore')
         # 		self.X = self.df.drop(columns=['classname','url','file_size','timestamp'], errors='ignore')
@@ -453,21 +453,21 @@ class Cdata:
 
 
 def unique_cols(df):
-    ''' Returns one value per column, stating whether all the values are the same'''
+    """ Returns one value per column, stating whether all the values are the same"""
     a = df.to_numpy()  # df.values (pandas<0.24)
     return (a[0] == a[1:]).all(0)
 
 
 def DropCols(X, cols):
-    '''
+    """
     Gets rid of the columns cols from the dataframe X.
     cols is a list with the columns names
-    '''
+    """
     return X.drop(columns=cols, errors='ignore')
 
 
 def RemoveUselessCols(df):
-    ''' Removes columns with no information from dataframe '''
+    """ Removes columns with no information from dataframe """
     # Select all columns except image
     morecols = []
     cols = df.columns.tolist()
