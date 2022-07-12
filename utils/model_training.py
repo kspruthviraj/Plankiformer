@@ -341,7 +341,7 @@ class import_and_train_model:
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model, time_begin=time())
+            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
 
             output = torch.cat(output)
             prob = torch.cat(prob)
@@ -375,7 +375,7 @@ class import_and_train_model:
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model, time_begin=time())
+            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
 
             prob = torch.cat(prob)
             prob = prob.cpu().numpy()
@@ -653,10 +653,11 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
     return avg_acc1, targets, outputs, probs
 
 
-def cls_predict_on_unseen(test_loader, model, time_begin=None):
+def cls_predict_on_unseen(test_loader, model):
     model.eval()
     outputs = []
     probs = []
+    time_begin = time()
     with torch.no_grad():
         for i, (images) in enumerate(test_loader):
             device = torch.device("cuda")
