@@ -37,7 +37,7 @@ class import_and_train_model:
         self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
                                        num_classes=len(np.unique(classes)))
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        # model = nn.DataParallel(model)
+        # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
         # total parameters and trainable parameters
@@ -282,7 +282,8 @@ class import_and_train_model:
 
                 self.initialize_model(train_main=train_main, test_main=None,
                                       data_loader=data_loader, lr=train_main.params.lr / 100)
-                self.run_training(train_main, data_loader, train_main.params.finetune_epochs, train_main.params.lr / 100,
+                self.run_training(train_main, data_loader, train_main.params.finetune_epochs,
+                                  train_main.params.lr / 100,
                                   "finetuned")
                 self.run_prediction(train_main, data_loader, 'finetuned')
 
