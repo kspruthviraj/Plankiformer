@@ -229,7 +229,6 @@ class import_and_train_model:
         f.close()
 
     def train_and_save(self, train_main, data_loader):
-
         model_present_path1 = data_loader.checkpoint_path + '/trained_model_original.pth'
         model_present_path2 = data_loader.checkpoint_path + '/trained_model_tuned.pth'
         model_present_path3 = data_loader.checkpoint_path + '/trained_model_finetuned.pth'
@@ -342,7 +341,7 @@ class import_and_train_model:
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model, time_begin=None)
+            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model, time_begin=time())
 
             output = torch.cat(output)
             prob = torch.cat(prob)
@@ -376,7 +375,7 @@ class import_and_train_model:
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model, time_begin=None)
+            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model, time_begin=time())
 
             prob = torch.cat(prob)
             prob = prob.cpu().numpy()
