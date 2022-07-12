@@ -328,7 +328,7 @@ class import_and_train_model:
 
     def run_prediction_on_unseen(self, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
-        if len(test_main.params.model_path) > 1:
+        if len(test_main.params.model_path) > 0:
             print("Do you want to predict using ensemble model ? If so then set the ensemble parameter to 1 and run "
                   "again")
         else:
