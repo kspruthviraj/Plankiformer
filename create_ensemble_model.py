@@ -3,6 +3,7 @@
 ###########
 
 import argparse
+import os
 import pathlib
 import sys
 
@@ -97,10 +98,13 @@ class LoadEnsembleParameters:
 
     def get_ensemble_performance(self):
         print(self.params.main_model_dir)
-        # classes = np.load(self.params.main_model_dir + '/classes.npy')
+        classes_dir = self.params.main_model_dir + '/classes.npy'
 
-        classes = ('airplane', 'automobile', 'bird', 'cat',
-                   'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+        if not os.path.exists(classes_dir):
+            classes = ('airplane', 'automobile', 'bird', 'cat',
+                       'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+        else:
+            classes = np.load(self.params.main_model_dir + '/classes.npy')
 
         DEIT_models_all = []
         DEIT_GTLabel = []
