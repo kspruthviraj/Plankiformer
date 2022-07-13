@@ -413,7 +413,7 @@ class import_and_train_model:
         Ens_DEIT_label = Ens_DEIT_label.tolist()
 
         To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
-        np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions' + name2 + name + '.txt', To_write, fmt='%s')
+        np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name + '.txt', To_write, fmt='%s')
 
     def initialize_model(self, train_main, test_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
