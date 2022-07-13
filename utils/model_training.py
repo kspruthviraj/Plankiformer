@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim
 import torch.utils.data
+from scipy.stats import gmean
 from sklearn.metrics import f1_score, accuracy_score, classification_report
 from torchvision.utils import make_grid
 
@@ -378,18 +379,31 @@ class import_and_train_model:
 
             output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
 
+            output = torch.cat(output)
             prob = torch.cat(prob)
+
+            output = output.cpu().numpy()
             prob = prob.cpu().numpy()
 
             Ensemble_prob.append(prob)
 
-        Ensemble_prob_sum = np.sum(Ensemble_prob, axis=0)
+        Ens_DEIT_prob_max = []
+        Ens_DEIT_label = []
+        Ens_DEIT = []
+        if test_main.params.ensemble == 1:
 
-        Ensemble_prob_normalized = Ensemble_prob_sum / len(Ensemble_prob)
-        Ens_prob_max = Ensemble_prob_normalized.argmax(axis=1)  # The class that the classifier would bet on
-        Ens_label = np.array([classes[Ens_prob_max[i]] for i in range(len(Ens_prob_max))], dtype=object)
+            Ens_DEIT = sum(Ensemble_prob) / len(Ensemble_prob)
+            Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
+            Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))],
+                                      dtype=object)
 
-        Pred_PredLabel_Prob = [Ens_prob_max, Ens_label, Ensemble_prob_normalized]
+        elif test_main.params.ensemble == 1:
+            Ens_DEIT = gmean(Ensemble_prob)
+            Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
+            Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))],
+                                      dtype=object)
+
+        Pred_PredLabel_Prob = [Ens_DEIT_prob_max, Ens_DEIT_label, Ens_DEIT]
         with open(test_main.params.test_outpath + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
             pickle.dump(Pred_PredLabel_Prob, cw)
 

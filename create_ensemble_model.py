@@ -106,10 +106,6 @@ class LoadEnsembleParameters:
         else:
             classes = np.load(self.params.main_model_dir + '/classes.npy')
 
-        DEIT_models_all = []
-        DEIT_GTLabel = []
-        DEIT_PredLabel = []
-        DEIT_Prob = []
         DEIT_GTLabel_sorted = []
         DEIT_GTLabel_indices = []
         DEIT_PredLabel_sorted = []
