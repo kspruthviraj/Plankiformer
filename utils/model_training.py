@@ -360,8 +360,8 @@ class import_and_train_model:
 
             # im_names1 = os.path.basename(os.path.dirname(im_names)) + '/' + os.path.basename(im_names)
 
-            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names, output_label)]
-            np.savetxt(test_main.params.test_outpath + '/Predictions_avg_ens.txt', To_write, fmt='%s')
+            To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names, output_label)]
+            np.savetxt(test_main.params.test_outpath + '/Plankiformer_predictions_avg_ens.txt', To_write, fmt='%s')
 
     def run_ensemble_prediction_on_unseen(self, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
