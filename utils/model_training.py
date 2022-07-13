@@ -390,8 +390,8 @@ class import_and_train_model:
         Ens_DEIT_prob_max = []
         Ens_DEIT_label = []
         Ens_DEIT = []
-        if test_main.params.ensemble == 1:
 
+        if test_main.params.ensemble == 1:
             Ens_DEIT = sum(Ensemble_prob) / len(Ensemble_prob)
             Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
             Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))],
@@ -403,7 +403,7 @@ class import_and_train_model:
             Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))],
                                       dtype=object)
 
-        Pred_PredLabel_Prob = [Ensemble_prob, Ens_DEIT_prob_max, Ens_DEIT_label, Ens_DEIT]
+        Pred_PredLabel_Prob = [im_names, Ensemble_prob, Ens_DEIT_prob_max, Ens_DEIT_label, Ens_DEIT]
         with open(test_main.params.test_outpath + '/Pred_PredLabel_Prob' + name + '.pickle', 'wb') as cw:
             pickle.dump(Pred_PredLabel_Prob, cw)
 
