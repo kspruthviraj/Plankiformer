@@ -379,10 +379,8 @@ class import_and_train_model:
 
             output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
 
-            output = torch.cat(output)
             prob = torch.cat(prob)
 
-            output = output.cpu().numpy()
             prob = prob.cpu().numpy()
 
             Ensemble_prob.append(prob)
