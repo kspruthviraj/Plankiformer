@@ -38,7 +38,7 @@ class import_and_train_model:
         # self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
         #                                num_classes=len(np.unique(classes)))
 
-        self.model = timm.create_model('efficientnet_b7', pretrained=True, num_classes=len(np.unique(classes)))
+        self.model = timm.create_model('tf_efficientnet_b7', pretrained=True, num_classes=len(np.unique(classes)))
 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model) # to run on multiple GPUs
