@@ -35,8 +35,10 @@ class import_and_train_model:
 
     def import_deit_models(self, train_main, data_loader):
         classes = data_loader.classes
-        self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
-                                       num_classes=len(np.unique(classes)))
+        # self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
+        #                                num_classes=len(np.unique(classes)))
+
+        self.model = timm.create_model('efficientnet_b7', pretrained=True, num_classes=len(np.unique(classes)))
 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model) # to run on multiple GPUs
@@ -572,8 +574,8 @@ def cls_train(train_loader, model, criterion, optimizer, clip_grad_norm):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         images, target = images.to(device), target.to(device)
 
-        output, x = model(images)
-        # output = model(images)
+        # output, x = model(images)
+        output = model(images)
 
         loss = criterion(output, target.long())
 

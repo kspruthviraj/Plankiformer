@@ -14,6 +14,7 @@ from utils import for_dogs as dogs
 from utils import for_plankton as fplankton
 from utils import for_wildtrap as wildtrap
 from utils import model_training as mt
+from utils import model_training_cnn as mt_cnn
 from utils import prepare_train_test_data as pdata
 
 
@@ -115,6 +116,9 @@ class LoadInputParameters:
                                                     '"kaggle", "eilat", "rsmas", "birds", "dogs", "beetle", "wildtrap"')
 
         # For model training
+        parser.add_argument('-architecture', choices=['cnn', 'deit'],
+                            default='deit', help='Choose between different datasets "cnn", "deit"')
+
         parser.add_argument('-batch_size', type=int, default=16, help="Batch size for training")
         parser.add_argument('-image_size', type=int, default=224, help="Image size for training the model")
         parser.add_argument('-epochs', type=int, default=100, help="number of epochs for training the model")
@@ -243,7 +247,13 @@ if __name__ == '__main__':
         loaded_data = birds.CreateDataForBirds()
         loaded_data.make_train_test_for_birds(train_params)
 
-    # Model Training
-    model_training = mt.import_and_train_model()
-    # Run training
-    model_training.train_and_save(train_params, loaded_data)
+    if train_params.params.architecture == 'deit':
+        # Model Training
+        model_training = mt.import_and_train_model()
+        # Run training
+        model_training.train_and_save(train_params, loaded_data)
+    elif train_params.params.architecture == 'cnn':
+        # Model Training
+        model_training = mt_cnn.import_and_train_model()
+        # Run training
+        model_training.train_and_save(train_params, loaded_data)
