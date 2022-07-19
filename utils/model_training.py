@@ -14,7 +14,7 @@ import torch.utils.data
 from scipy.stats import gmean
 from sklearn.metrics import f1_score, accuracy_score, classification_report
 from torchvision.utils import make_grid
-
+import copy
 
 class import_and_train_model:
     def __init__(self, initMode='default', verbose=True):
@@ -359,7 +359,8 @@ class import_and_train_model:
 
             output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
 
-            output_corrected_label = output_label
+            output_corrected_label = copy.deepcopy(output_label)
+
             first_indices = prob.argsort()[:, -1]
             confs = [prob[i][first_indices[i]] for i in range(len(first_indices))]
             for i in range(len(confs)):
@@ -429,7 +430,7 @@ class import_and_train_model:
                                       dtype=object)
             name2 = 'geo_mean_'
 
-        Ens_DEIT_corrected_label = Ens_DEIT_label
+        Ens_DEIT_corrected_label = copy.deepcopy(Ens_DEIT_label)
 
         first_indices = Ens_DEIT.argsort()[:, -1]
         Ens_confs = [Ens_DEIT[i][first_indices[i]] for i in range(len(first_indices))]
