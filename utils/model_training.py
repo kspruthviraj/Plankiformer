@@ -413,8 +413,8 @@ class import_and_train_model:
 
         for i in range(len(Ens_confs)):
             if Ens_confs[i] < 0.7:
-                Ens_DEIT_corrected_label[i] == 'unknown'
-                Ens_DEIT_corrected_label_1[i] == 'unknown_'
+                Ens_DEIT_corrected_label[i] = 'unknown'
+                Ens_DEIT_corrected_label_1[i] = 'unknown_'
 
         Pred_PredLabel_Prob = [Ens_DEIT_prob_max, Ens_DEIT_label, Ens_DEIT_corrected_label, Ens_DEIT_corrected_label_1, Ens_DEIT]
         with open(test_main.params.test_outpath + '/Ensemble_models_Pred_PredLabel_Prob_' + name2 + name + '.pickle', 'wb') as cw:
