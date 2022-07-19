@@ -367,7 +367,8 @@ class import_and_train_model:
                     output_corrected_label[i] = 'unknown'
 
             # Pred_PredLabel_Prob = [output_max, output_label, output_corrected_label, prob]
-            # with open(test_main.params.test_outpath + '/Single_model_Pred_PredLabel_Prob_' + name + '.pickle', 'wb') as cw:
+            # with open(test_main.params.test_outpath + '/Single_model_Pred_PredLabel_Prob_' + name + '.pickle',
+            # 'wb') as cw:
             #     pickle.dump(Pred_PredLabel_Prob, cw)
 
             output_label = output_label.tolist()
