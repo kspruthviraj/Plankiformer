@@ -412,7 +412,7 @@ class import_and_train_model:
         Ens_confs = [Ens_DEIT[i][first_indices[i]] for i in range(len(first_indices))]
 
         for i in range(len(Ens_confs)):
-            if Ens_confs[i] < 0.54:
+            if Ens_confs[i] < 0.7:
                 Ens_DEIT_corrected_label[i] == 'unknown'
                 Ens_DEIT_corrected_label_1[i] == 'unknown_'
 
