@@ -381,6 +381,7 @@ class import_and_train_model:
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions_thresholded.txt',
                            To_write, fmt='%s')
             else:
+                print('I am using default value as threshold i.e. 0')
                 To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write, fmt='%s')
 
@@ -452,6 +453,7 @@ class import_and_train_model:
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
                        '_thresholded.txt', To_write, fmt='%s')
         else:
+            print('I am using default value as threshold i.e. 0')
             To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
