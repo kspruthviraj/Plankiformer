@@ -150,6 +150,7 @@ class LoadInputParameters:
                             default=['./out/trained_models/Init_0/',
                                      './out/trained_models/Init_1/'],
                             help='path of the saved models')
+        parser.add_argument('-finetuned', type=int, default=2, help='Choose "0" or "1" or "2" for finetuning')
 
         # Related to ensembling
         parser.add_argument('-ensemble', type=int, default=0,
