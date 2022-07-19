@@ -5,6 +5,7 @@
 import argparse
 import os
 import pathlib
+import pickle
 import sys
 
 import numpy as np
@@ -139,14 +140,20 @@ class LoadEnsembleParameters:
             DEIT_Prob_sorted.append(DEIT_01_Prob_sorted)
 
         Ens_DEIT_label = []
+        Ens_DEIT = []
+        name = ''
         if self.params.ens_type == 1:
             Ens_DEIT = sum(DEIT_Prob_sorted) / len(DEIT_Prob_sorted)
             Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
-            Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))], dtype=object)
+            Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))],
+                                      dtype=object)
+            name = 'arth'
         elif self.params.ens_type == 2:
             Ens_DEIT = gmean(DEIT_Prob_sorted)
             Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
-            Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))], dtype=object)
+            Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))],
+                                      dtype=object)
+            name = 'geo'
         else:
             print("Choose correct ensemble type")
 
@@ -157,6 +164,10 @@ class LoadEnsembleParameters:
         accuracy_model = accuracy_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label)
         clf_report = classification_report(DEIT_GTLabel_sorted[0], Ens_DEIT_label)
         f1 = f1_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label, average='macro')
+
+        Pred_PredLabel_Prob = [DEIT_GTLabel_sorted[0], Ens_DEIT_label, Ens_DEIT]
+        with open(self.params.outpath + '/Ensemble_models_GTLabel_PredLabel_Prob_' + name + '.pickle', 'wb') as cw:
+            pickle.dump(Pred_PredLabel_Prob, cw)
 
         f = open(self.params.outpath + 'Ensemble_test_report.txt', 'w')
         f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
