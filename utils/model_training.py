@@ -359,14 +359,29 @@ class import_and_train_model:
 
             output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
 
-            Pred_PredLabel_Prob = [output_max, output_label, prob]
-            with open(test_main.params.test_outpath + '/Single_model_Pred_PredLabel_Prob_' + name + '.pickle', 'wb') as cw:
-                pickle.dump(Pred_PredLabel_Prob, cw)
+            output_corrected_label = output_label
+            first_indices = prob.argsort()[:, -1]
+            confs = [prob[i][first_indices[i]] for i in range(len(first_indices))]
+            for i in range(len(confs)):
+                if confs[i] < test_main.params.threshold:
+                    output_corrected_label[i] = 'unknown'
+
+            # Pred_PredLabel_Prob = [output_max, output_label, output_corrected_label, prob]
+            # with open(test_main.params.test_outpath + '/Single_model_Pred_PredLabel_Prob_' + name + '.pickle', 'wb') as cw:
+            #     pickle.dump(Pred_PredLabel_Prob, cw)
 
             output_label = output_label.tolist()
 
-            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
-            np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write, fmt='%s')
+            if test_main.params.threshold > 0:
+                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
+                np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write, fmt='%s')
+
+                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_corrected_label)]
+                np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions_thresholded.txt',
+                           To_write, fmt='%s')
+            else:
+                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
+                np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write, fmt='%s')
 
     def run_ensemble_prediction_on_unseen(self, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
