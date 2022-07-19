@@ -344,6 +344,9 @@ class import_and_train_model:
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
+            device = torch.device("cpu")
+            self.model = self.model.module.to(device)
+
             output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
 
             output = torch.cat(output)
@@ -377,6 +380,9 @@ class import_and_train_model:
             checkpoint = torch.load(PATH)
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+            device = torch.device("cpu")
+            self.model = self.model.module.to(device)
 
             output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
 
