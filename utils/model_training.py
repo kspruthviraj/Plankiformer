@@ -374,6 +374,7 @@ class import_and_train_model:
             output_label = output_label.tolist()
 
             if test_main.params.threshold > 0:
+                print('I am using threshold value as : {}'.format(test_main.params.threshold))
                 To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write, fmt='%s')
 
@@ -445,6 +446,7 @@ class import_and_train_model:
         Ens_DEIT_label = Ens_DEIT_label.tolist()
 
         if test_main.params.threshold > 0:
+            print('I am using threshold value as : {}'.format(test_main.params.threshold))
             To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
