@@ -412,34 +412,33 @@ class import_and_train_model:
             name2 = 'geo_mean_'
 
         Ens_DEIT_corrected_label = Ens_DEIT_label
-        Ens_DEIT_corrected_label_1 = Ens_DEIT_label
 
         first_indices = Ens_DEIT.argsort()[:, -1]
         Ens_confs = [Ens_DEIT[i][first_indices[i]] for i in range(len(first_indices))]
 
         for i in range(len(Ens_confs)):
-            if Ens_confs[i] < 0.7:
+            if Ens_confs[i] < test_main.params.threshold:
                 Ens_DEIT_corrected_label[i] = 'unknown'
-                Ens_DEIT_corrected_label_1[i] = 'unknown_'
 
-        Pred_PredLabel_Prob = [Ens_DEIT_prob_max, Ens_DEIT_label, Ens_DEIT_corrected_label, Ens_DEIT_corrected_label_1, Ens_DEIT]
-        with open(test_main.params.test_outpath + '/Ensemble_models_Pred_PredLabel_Prob_' + name2 + name + '.pickle', 'wb') as cw:
-            pickle.dump(Pred_PredLabel_Prob, cw)
+        # Pred_PredLabel_Prob = [Ens_DEIT_prob_max, Ens_DEIT_label, Ens_DEIT_corrected_label, Ens_DEIT]
+        # with open(test_main.params.test_outpath + '/Ensemble_models_Pred_PredLabel_Prob_' + name2 + name + '.pickle',
+        #           'wb') as cw:
+        #     pickle.dump(Pred_PredLabel_Prob, cw)
 
         Ens_DEIT_label = Ens_DEIT_label.tolist()
 
-        To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
-        np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
-                   '_original.txt', To_write, fmt='%s')
+        if test_main.params.threshold > 0:
+            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
+            np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
+                       '.txt', To_write, fmt='%s')
 
-        To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_corrected_label)]
-        np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
-                   '_modifed_1.txt', To_write, fmt='%s')
-
-        To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_corrected_label_1)]
-        np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
-                   '_modifed_1.txt', To_write, fmt='%s')
-
+            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_corrected_label)]
+            np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
+                       '_thresholded.txt', To_write, fmt='%s')
+        else:
+            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
+            np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
+                       '.txt', To_write, fmt='%s')
 
     def initialize_model(self, train_main, test_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

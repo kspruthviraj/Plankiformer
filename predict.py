@@ -63,6 +63,7 @@ class LoadInputParameters:
         parser.add_argument('-ensemble', type=int, default=0,
                             help="Set this to one if you want to ensemble multiple models else set it to zero")
         parser.add_argument('-finetuned', type=int, default=2, help='Choose "0" or "1" or "2" for finetuning')
+        parser.add_argument('-threshold', type=float, default=0.0, help="Threshold to set")
 
         args = parser.parse_args(string)
 
