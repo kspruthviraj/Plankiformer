@@ -16,6 +16,7 @@ from sklearn.metrics import f1_score, accuracy_score, classification_report
 from torchvision.utils import make_grid
 import copy
 
+
 class import_and_train_model:
     def __init__(self, initMode='default', verbose=True):
         self.class_weights_tensor = None
@@ -377,7 +378,8 @@ class import_and_train_model:
             if test_main.params.threshold > 0:
                 print('I am using threshold value as : {}'.format(test_main.params.threshold))
                 To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
-                np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write, fmt='%s')
+                np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write,
+                           fmt='%s')
 
                 To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_corrected_label)]
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions_thresholded.txt',
@@ -385,7 +387,8 @@ class import_and_train_model:
             else:
                 print('I am using default value as threshold i.e. 0')
                 To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
-                np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write, fmt='%s')
+                np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write,
+                           fmt='%s')
 
     def run_ensemble_prediction_on_unseen(self, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
@@ -461,6 +464,176 @@ class import_and_train_model:
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
 
+    def run_prediction_on_unseen_with_y(self, test_main, data_loader, name):
+        classes = np.load(test_main.params.main_param_path + '/classes.npy')
+        if len(test_main.params.model_path) > 1:
+            print("Do you want to predict using ensemble model ? If so then set the ensemble parameter to 1 and run "
+                  "again")
+        else:
+            checkpoint_path = test_main.params.model_path[0]
+            PATH = checkpoint_path + '/trained_model_' + name + '.pth'
+            # PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
+            im_names = data_loader.Filenames
+
+            checkpoint = torch.load(PATH)
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+            # device = torch.device("cpu")
+            # self.model = self.model.module.to(device)
+
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(data_loader.test_dataloader, self.model,
+                                                                          self.criterion,
+                                                                          time_begin=time())
+
+            target = torch.cat(target)
+            output = torch.cat(output)
+            prob = torch.cat(prob)
+
+            target = target.cpu().numpy()
+            output = output.cpu().numpy()
+            prob = prob.cpu().numpy()
+
+            output_max = output.argmax(axis=1)
+
+            target_label = np.array([classes[target[i]] for i in range(len(target))], dtype=object)
+            output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
+
+            output_corrected_label = copy.deepcopy(output_label)
+
+            first_indices = prob.argsort()[:, -1]
+            confs = [prob[i][first_indices[i]] for i in range(len(first_indices))]
+            for i in range(len(confs)):
+                if confs[i] < test_main.params.threshold:
+                    output_corrected_label[i] = 'unknown'
+
+            GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob = [target, output_max, target_label, output_label, output_corrected_label, prob]
+            with open(test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name + '.pickle', 'wb') \
+                    as cw:
+                pickle.dump(GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob, cw)
+
+            output_label = output_label.tolist()
+
+            if test_main.params.threshold > 0:
+                print('I am using threshold value as : {}'.format(test_main.params.threshold))
+                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
+                np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write,
+                           fmt='%s')
+
+                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_corrected_label)]
+                np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions_thresholded.txt',
+                           To_write, fmt='%s')
+
+            else:
+                print('I am using default value as threshold i.e. 0')
+                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
+                np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write,
+                           fmt='%s')
+
+            accuracy_model = accuracy_score(target_label, output_label)
+            clf_report = classification_report(target_label, output_label)
+            f1 = f1_score(target_label, output_label, average='macro')
+
+            f = open(test_main.params.test_outpath + 'test_report_' + name + '.txt', 'w')
+            f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
+                                                                                                  clf_report))
+            f.close()
+
+    def run_ensemble_prediction_on_unseen_with_y(self, test_main, data_loader, name):
+        classes = np.load(test_main.params.main_param_path + '/classes.npy')
+        Ensemble_prob = []
+        Ensemble_GT = []
+        im_names = data_loader.Filenames
+
+        for i in range(len(test_main.params.model_path)):
+            checkpoint_path = test_main.params.model_path[i]
+            PATH = checkpoint_path + '/trained_model_' + name + '.pth'
+
+            checkpoint = torch.load(PATH)
+            self.model.load_state_dict(checkpoint['model_state_dict'])
+            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+            # device = torch.device("cpu")
+            # self.model = self.model.module.to(device)
+
+            # output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(data_loader.test_dataloader, self.model,
+                                                                          self.criterion,
+                                                                          time_begin=time())
+
+            target = torch.cat(target)
+            prob = torch.cat(prob)
+
+            prob = prob.cpu().numpy()
+            target = target.cpu().numpy()
+
+            Ensemble_prob.append(prob)
+            Ensemble_GT.append(target)
+
+        Ens_DEIT_prob_max = []
+        Ens_DEIT_label = []
+        Ens_DEIT = []
+        name2 = []
+        GT = Ensemble_GT[0]
+        GT_label = np.array([classes[GT[i]] for i in range(len(GT))], dtype=object)
+
+        if test_main.params.ensemble == 1:
+            Ens_DEIT = sum(Ensemble_prob) / len(Ensemble_prob)
+            Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
+            Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))],
+                                      dtype=object)
+            name2 = 'arth_mean_'
+
+        elif test_main.params.ensemble == 2:
+            Ens_DEIT = gmean(Ensemble_prob)
+            Ens_DEIT_prob_max = Ens_DEIT.argmax(axis=1)  # The class that the classifier would bet on
+            Ens_DEIT_label = np.array([classes[Ens_DEIT_prob_max[i]] for i in range(len(Ens_DEIT_prob_max))],
+                                      dtype=object)
+            name2 = 'geo_mean_'
+
+        Ens_DEIT_corrected_label = copy.deepcopy(Ens_DEIT_label)
+
+        first_indices = Ens_DEIT.argsort()[:, -1]
+        Ens_confs = [Ens_DEIT[i][first_indices[i]] for i in range(len(first_indices))]
+
+        for i in range(len(Ens_confs)):
+            if Ens_confs[i] < test_main.params.threshold:
+                Ens_DEIT_corrected_label[i] = 'unknown'
+
+        GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob = [GT, Ens_DEIT_prob_max, GT_label, Ens_DEIT_label,
+                                                             Ens_DEIT_corrected_label, Ens_DEIT]
+        with open(
+                test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name + '.pickle',
+                'wb') \
+                as cw:
+            pickle.dump(GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob, cw)
+
+        Ens_DEIT_label = Ens_DEIT_label.tolist()
+
+        if test_main.params.threshold > 0:
+            print('I am using threshold value as : {}'.format(test_main.params.threshold))
+            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
+            np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
+                       '.txt', To_write, fmt='%s')
+
+            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_corrected_label)]
+            np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
+                       '_thresholded.txt', To_write, fmt='%s')
+        else:
+            print('I am using default value as threshold i.e. 0')
+            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
+            np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
+                       '.txt', To_write, fmt='%s')
+
+            accuracy_model = accuracy_score(GT_label, Ens_DEIT_label)
+            clf_report = classification_report(GT_label, Ens_DEIT_label)
+            f1 = f1_score(GT_label, Ens_DEIT_label, average='macro')
+
+            f = open(test_main.params.test_outpath + 'test_report_' + name + '.txt', 'w')
+            f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
+                                                                                                  clf_report))
+            f.close()
+
     def initialize_model(self, train_main, test_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
@@ -498,6 +671,31 @@ class import_and_train_model:
                 self.run_prediction_on_unseen(test_main, data_loader, 'finetuned')
             else:
                 self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'finetuned')
+        else:
+            print('Choose the correct finetune label')
+
+    def load_model_and_run_prediction_with_y(self, train_main, test_main, data_loader):
+        self.import_deit_models_for_testing(train_main, test_main)
+        if test_main.params.finetuned == 0:
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            if test_main.params.ensemble == 0:
+                self.run_prediction_on_unseen_with_y(test_main, data_loader, 'original')
+            else:
+                self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'original')
+
+        elif test_main.params.finetuned == 1:
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            if test_main.params.ensemble == 0:
+                self.run_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
+            else:
+                self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
+
+        elif test_main.params.finetuned == 2:
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            if test_main.params.ensemble == 0:
+                self.run_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
+            else:
+                self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')
 
@@ -739,3 +937,34 @@ def cls_predict_on_unseen(test_loader, model):
     print('Time taken for prediction (in secs): {}'.format(total_secs))
 
     return outputs, probs
+
+
+def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
+    model.eval()
+    loss_val, acc1_val = 0, 0
+    n = 0
+    outputs = []
+    targets = []
+    probs = []
+    with torch.no_grad():
+        for i, (images, target) in enumerate(val_loader):
+            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            images, target = images.to(device), target.to(device)
+            targets.append(target)
+
+            output = model(images)
+            outputs.append(output)
+            prob = torch.nn.functional.softmax(output, dim=1)
+            probs.append(prob)
+            loss = criterion(output, target)
+
+            acc1 = accuracy(output, target)
+            n += images.size(0)
+            loss_val += float(loss.item() * images.size(0))
+            acc1_val += float(acc1[0] * images.size(0))
+
+    avg_loss, avg_acc1 = (loss_val / n), (acc1_val / n)
+    total_secs = -1 if time_begin is None else (time() - time_begin)
+    print('Time taken for prediction (in secs): {}'.format(total_secs))
+
+    return avg_acc1, targets, outputs, probs
