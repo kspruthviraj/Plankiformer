@@ -779,7 +779,7 @@ class Cdata_with_y:
 
         # 		print(self.df['classname'].unique())
         # self.classes = self.df['classname'].unique()
-        self.classes = np.load(classpath + '/classes.npy')
+        self.classes = np.load(classpaths + '/classes.npy')
         self.kind = kind  # Now the data kind is kind. In most cases, we had already kind=self.kind, but if the user
         # tested another kind, it must be changed
         self.Check_with_y()  # Some sanity checks on the dataset
