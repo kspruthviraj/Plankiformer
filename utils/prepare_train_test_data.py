@@ -10,6 +10,7 @@ from joblib import dump
 from sklearn.preprocessing import StandardScaler
 
 from utils import create_data as cdata
+from utils import create_test_data as cdata_test
 
 
 class CreateDataset:
