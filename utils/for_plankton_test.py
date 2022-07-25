@@ -86,9 +86,9 @@ class CreateDataForPlankton:
             trX = Data[1]
             trY = Data[2]
 
-        print('I am printing trY : {}'.format(trY[0]))
-
         classes_int = np.unique(np.argmax(trY, axis=1))
+        print('I am printing classes_int : {}'.format(classes_int))
+
         self.classes = classes
         self.classes_int = classes_int
 
@@ -97,6 +97,7 @@ class CreateDataForPlankton:
         self.X_train = data_train.astype(np.uint8)
         y_train_max = trY.argmax(axis=1)  # The class that the classifier would bet on
         self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
+        print('I am printing self.y_train : {}'.format(self.y_train))
 
         return
 
