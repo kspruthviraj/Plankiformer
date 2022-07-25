@@ -3,6 +3,7 @@
 ###########
 
 import numpy as np
+import torch
 import torchvision.transforms as T
 from torch.utils.data import DataLoader, Dataset
 
@@ -58,11 +59,11 @@ class CreateDataForPlankton:
 
         return
 
-    def make_train_test_for_model_with_y(self, train_main, prep_data):
+    def make_train_test_for_model_with_y(self, train_main, test_main, prep_data):
         Data = prep_data.Data
         classes = prep_data.classes
-        self.class_weights_tensor = prep_data.tt.class_weights_tensor
         self.Filenames = prep_data.Filenames
+        self.class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
 
         if train_main.params.ttkind == 'mixed':
             self.trainFilenames = Data[0]
@@ -98,7 +99,7 @@ class CreateDataForPlankton:
         self.y_train = np.concatenate([np.where(classes == uid) if np.where(classes == uid) else print(
             'The folder should match the trained classes') for uid in trY]).ravel()
 
-        # print('I am printing self.y_train : {}'.format(self.y_train))
+        print('I am printing self.y_train : {}'.format(self.y_train))
 
         return
 
@@ -147,16 +148,16 @@ class CreateDataset_with_y(Dataset):
     """Characterizes a dataset for PyTorch"""
 
     def __init__(self, X, y):
-        'Initialization'
+        """Initialization"""
         self.X = X
         self.y = y
 
     def __len__(self):
-        'Denotes the total number of samples'
+        """Denotes the total number of samples"""
         return len(self.X)
 
     def __getitem__(self, index):
-        'Generates one sample of data'
+        """Generates one sample of data"""
         # Select sample
         image = self.X[index]
         label = self.y[index]
