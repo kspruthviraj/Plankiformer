@@ -61,7 +61,8 @@ class CreateDataForPlankton:
 
     def make_train_test_for_model_with_y(self, train_main, test_main, prep_data):
         Data = prep_data.Data
-        classes = prep_data.classes
+        # classes = prep_data.classes
+        self.classes = np.load(test_main.params.main_param_path + '/classes.npy')
         self.Filenames = prep_data.Filenames
         self.class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
 
@@ -89,7 +90,6 @@ class CreateDataForPlankton:
 
         # classes_int = np.array([i for i in range(len(classes))])
 
-        self.classes = classes
         # self.classes_int = classes_int
         print('I am printing trY : {}'.format(trY))
         print('I am printing classes: {}'.format(self.classes))
