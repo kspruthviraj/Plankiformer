@@ -645,7 +645,7 @@ class Cdata:
 
         # 		print(self.df['classname'].unique())
         self.classes = self.df['classname'].unique()
-
+        print('The data path is : {}'.format(self.datapath))
         self.kind = kind  # Now the data kind is kind. In most cases, we had already kind=self.kind, but if the user
         # tested another kind, it must be changed
         self.Check()  # Some sanity checks on the dataset

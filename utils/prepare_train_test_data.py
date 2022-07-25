@@ -98,11 +98,11 @@ class CreateDataset:
 
         # Initialize or Load Data Structure
         if self.data is None:
-            self.data = cdata.Cdata_with_y(classpath, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
-                                           balance_weight, datakind, training_data=training_data)
+            self.data = cdata.Cdata(testpath, L, class_select, classifier, compute_extrafeat, resize_images,
+                                    balance_weight, datakind, training_data=training_data)
         else:
-            self.data.Load_with_y(classpath, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
-                                  balance_weight, datakind, training_data=training_data)
+            self.data.Load(testpath, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
+                           datakind, training_data=training_data)
 
         return
 
