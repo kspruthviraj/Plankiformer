@@ -86,10 +86,10 @@ class CreateDataForPlankton:
             trX = Data[1]
             trY = Data[2]
 
-        classes_int = np.array([i for i in range(len(classes))])
+        # classes_int = np.array([i for i in range(len(classes))])
 
         self.classes = classes
-        self.classes_int = classes_int
+        # self.classes_int = classes_int
 
         data_train = trX.astype(np.float64)
         data_train = 255 * data_train
@@ -98,7 +98,7 @@ class CreateDataForPlankton:
         self.y_train = np.concatenate([np.where(classes == uid) if np.where(classes == uid) else print(
             'The folder should match the trained classes') for uid in trY]).ravel()
 
-        print('I am printing self.y_train : {}'.format(self.y_train))
+        # print('I am printing self.y_train : {}'.format(self.y_train))
 
         return
 
