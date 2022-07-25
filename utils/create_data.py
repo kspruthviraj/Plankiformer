@@ -710,15 +710,13 @@ class Cdata:
 class Cdata_with_y:
 
     def __init__(self, classpath, datapath, L=None, class_select=None, classifier=None, compute_extrafeat=None,
-                 resize_images=None,
-                 balance_weight=None, kind='mixed', training_data=True):
-        self.classpath = classpath
-        self.classes = None
-        self.npimage = None
+                 resize_images=None, balance_weight=None, kind='mixed', training_data=True):
         self.Xfeat = None
         self.Ximage = None
         self.filenames = None
+        self.classes = None
         self.datapath = datapath
+        self.classpath = classpath
         if L is None and kind != 'feat':
             print('CData: image size needs to be set, unless kind is \'feat\'')
             raise ValueError
@@ -733,8 +731,8 @@ class Cdata_with_y:
         self.y = None
         self.X = None
 
-        # self.Load_with_y(self.classpath, self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat,
-        #                  self.resize_images, self.kind, training_data=training_data)
+        # self.Load(self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat, self.resize_images,
+        #           self.balance_weight, self.kind, training_data=training_data)
         #
         self.Load_with_y(self.classpath, self.datapath, self.L, self.class_select, self.classifier,
                          self.compute_extrafeat, self.resize_images,
@@ -777,9 +775,9 @@ class Cdata_with_y:
         else:
             raise NotImplementedError('Only mixed, image or feat data-loading')
 
-        # 		print(self.df['classname'].unique())
+        print('The class path is : {}'.format(self.classpath))
         # self.classes = self.df['classname'].unique()
-        self.classes = np.load(classpaths + '/classes.npy')
+        self.classes = np.load(self.classpath + '/classes.npy')
         self.kind = kind  # Now the data kind is kind. In most cases, we had already kind=self.kind, but if the user
         # tested another kind, it must be changed
         self.Check_with_y()  # Some sanity checks on the dataset
