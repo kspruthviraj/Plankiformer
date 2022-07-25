@@ -91,6 +91,8 @@ class CreateDataForPlankton:
 
         self.classes = classes
         # self.classes_int = classes_int
+        print('I am printing trY : {}'.format(self.trY))
+        print('I am printing classes: {}'.format(self.classes))
 
         data_train = trX.astype(np.float64)
         data_train = 255 * data_train
