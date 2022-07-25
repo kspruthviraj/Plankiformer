@@ -4,6 +4,7 @@
 
 import pickle
 
+import joblib
 import numpy as np
 import torch
 from joblib import dump
@@ -15,6 +16,8 @@ from utils import create_test_data as cdata_test
 
 class CreateDataset:
     def __init__(self, initMode='default', verbose=True):
+        self.test_set = None
+        self.valid_set = None
         self.class_weights_tensor = None
         self.Filenames_val = None
         self.Filenames_test = None
@@ -144,7 +147,7 @@ class CreateDataset:
         return
 
     def CreateTestSet(self, train_main, test_main, ttkind=None, classifier=None, balance_weight=None,
-                            valid_set=None, compute_extrafeat=None, random_state=12345):
+                      valid_set=None, compute_extrafeat=None, random_state=12345):
         """
         Creates train and test sets using the CtrainTestSet class
         """
