@@ -94,13 +94,14 @@ class CreateDataset:
         balance_weight = train_main.params.balance_weight
         datakind = train_main.params.datakind
         training_data = train_main.params.training_data
+        classpath = train_main.params.main_param_path
 
         # Initialize or Load Data Structure
         if self.data is None:
-            self.data = cdata.Cdata_with_y(train_main, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
+            self.data = cdata.Cdata_with_y(classpath, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
                                            balance_weight, datakind, training_data=training_data)
         else:
-            self.data.Load_with_y(train_main, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
+            self.data.Load_with_y(classpath, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
                                   balance_weight, datakind, training_data=training_data)
 
         return
