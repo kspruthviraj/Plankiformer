@@ -86,7 +86,6 @@ class CreateDataForPlankton:
             trX = Data[1]
             trY = Data[2]
 
-        print('I am printing trY : {}'.format(trY[0]))
         classes_int = np.unique(np.argmax(trY, axis=1))
         self.classes = classes
         self.classes_int = classes_int
