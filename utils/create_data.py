@@ -731,11 +731,11 @@ class Cdata_with_y:
         self.y = None
         self.X = None
 
-        self.Load_with_y(self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat,
+        self.Load_with_y(self.train_main, self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat,
                          self.resize_images, self.kind, training_data=training_data)
         return
 
-    def Load_with_y(self, datapaths, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
+    def Load_with_y(self, train_main, datapaths, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
                     kind='mixed', training_data=True):
         """
         Loads dataset
@@ -772,7 +772,7 @@ class Cdata_with_y:
 
         # 		print(self.df['classname'].unique())
         # self.classes = self.df['classname'].unique()
-        self.classes = np.load(self.train_main.params.main_param_path + '/classes.npy')
+        self.classes = np.load(train_main.params.main_param_path + '/classes.npy')
         self.kind = kind  # Now the data kind is kind. In most cases, we had already kind=self.kind, but if the user
         # tested another kind, it must be changed
         self.Check_with_y()  # Some sanity checks on the dataset

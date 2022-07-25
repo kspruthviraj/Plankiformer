@@ -100,7 +100,7 @@ class CreateDataset:
             self.data = cdata.Cdata_with_y(train_main, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
                                            balance_weight, datakind, training_data=training_data)
         else:
-            self.data.Load_with_y(testpath, L, class_select, classifier, compute_extrafeat, resize_images,
+            self.data.Load_with_y(train_main, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
                                   balance_weight, datakind, training_data=training_data)
 
         return
