@@ -11,6 +11,8 @@ from joblib import dump
 from sklearn.preprocessing import StandardScaler
 
 from utils import create_data as cdata
+
+
 # from utils import create_test_data as cdata_test
 
 
@@ -95,11 +97,11 @@ class CreateDataset:
 
         # Initialize or Load Data Structure
         if self.data is None:
-            self.data = cdata.Cdata(testpath, L, class_select, classifier, compute_extrafeat, resize_images,
-                                    balance_weight, datakind, training_data=training_data)
+            self.data = cdata.Cdata_with_y(train_main, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
+                                           balance_weight, datakind, training_data=training_data)
         else:
-            self.data.Load(testpath, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
-                           datakind, training_data=training_data)
+            self.data.Load_with_y(testpath, L, class_select, classifier, compute_extrafeat, resize_images,
+                                  balance_weight, datakind, training_data=training_data)
 
         return
 
@@ -173,10 +175,10 @@ class CreateDataset:
         if compute_extrafeat is None:
             compute_extrafeat = train_main.params.compute_extrafeat
 
-        self.tt = cdata.CTrainTestSet(self.data.X, self.data.y, self.data.filenames,
-                                           ttkind=ttkind, classifier=classifier, balance_weight=balance_weight,
-                                           testSplit=testSplit, valid_set=valid_set, test_set=self.test_set,
-                                           compute_extrafeat=compute_extrafeat, random_state=random_state)
+        self.tt = cdata.CTestSet_with_y(self.data.X, self.data.y, self.data.filenames,
+                                        ttkind=ttkind, classifier=classifier, balance_weight=balance_weight,
+                                        testSplit=testSplit, valid_set=valid_set, test_set=self.test_set,
+                                        compute_extrafeat=compute_extrafeat, random_state=random_state)
 
         # To store the data
         if train_main.params.ttkind == 'mixed':
