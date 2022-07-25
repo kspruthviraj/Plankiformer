@@ -98,7 +98,7 @@ class CreateDataForPlankton:
         data_train = 255 * data_train
         self.X_train = data_train.astype(np.uint8)
         # self.y_train = np.array([classes_int[y_train_max[i]] for i in range(len(y_train_max))], dtype=object)
-        y_train = np.concatenate([np.where(classes == uid) if np.where(classes == uid) else print(
+        y_train = np.concatenate([np.where(self.classes == uid) if np.where(self.classes == uid) else print(
             'The folder should match the trained classes') for uid in trY]).ravel()
 
         print('I am printing self.y_train : {}'.format(y_train))
