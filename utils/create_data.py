@@ -148,7 +148,8 @@ def ReduceClasses(datapaths, class_select, classifier):
     print('datapaths:', datapaths)
     # allClasses = [ name for name in os.listdir(datapaths) if os.path.isdir(os.path.join(datapaths, name)) ]
     print('datapaths:{}'.format(datapaths))
-    allClasses = list(set([name for idata in range(len(datapaths)) for name in os.listdir(datapaths[idata]) if os.path.isdir(os.path.join(datapaths[idata], name))]))
+    allClasses = list(set([name for idata in range(len(datapaths)) for name in os.listdir(datapaths[idata]) if
+                           os.path.isdir(os.path.join(datapaths[idata], name))]))
     print('classes from datapaths:', allClasses)
 
     if classifier == 'multi':
@@ -708,7 +709,8 @@ class Cdata:
 
 class Cdata_with_y:
 
-    def __init__(self, classpath, datapath, L=None, class_select=None, classifier=None, compute_extrafeat=None, resize_images=None,
+    def __init__(self, classpath, datapath, L=None, class_select=None, classifier=None, compute_extrafeat=None,
+                 resize_images=None,
                  balance_weight=None, kind='mixed', training_data=True):
         self.classpath = classpath
         self.classes = None
@@ -731,12 +733,16 @@ class Cdata_with_y:
         self.y = None
         self.X = None
 
-        self.Load_with_y(self.classpath, self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat,
-                         self.resize_images, self.kind, training_data=training_data)
+        # self.Load_with_y(self.classpath, self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat,
+        #                  self.resize_images, self.kind, training_data=training_data)
+        #
+        self.Load_with_y(self.classpath, self.datapath, self.L, self.class_select, self.classifier,
+                         self.compute_extrafeat, self.resize_images,
+                         self.balance_weight, self.kind, training_data=training_data)
         return
 
-    def Load_with_y(self, classpath, datapaths, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
-                    kind='mixed', training_data=True):
+    def Load_with_y(self, classpath, datapaths, L, class_select, classifier, compute_extrafeat, resize_images,
+                    balance_weight, kind='mixed', training_data=True):
         """
         Loads dataset
         For the moment, only mixed data. Later, also pure images or pure features.
