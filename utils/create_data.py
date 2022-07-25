@@ -741,7 +741,7 @@ class Cdata_with_y:
                          self.balance_weight, self.kind, training_data=training_data)
         return
 
-    def Load_with_y(self, classpath, datapaths, L, class_select, classifier, compute_extrafeat, resize_images,
+    def Load_with_y(self, classpaths, datapaths, L, class_select, classifier, compute_extrafeat, resize_images,
                     balance_weight, kind='mixed', training_data=True):
         """
         Loads dataset
@@ -754,7 +754,7 @@ class Cdata_with_y:
         self.classifier = classifier
         self.compute_extrafeat = compute_extrafeat
         self.resize_images = resize_images
-        self.classpath = classpath
+        self.classpath = classpaths
 
         if kind == 'mixed':
             self.df = LoadMixed(datapaths, L, class_select, classifier, resize_images, alsoImages=True)
