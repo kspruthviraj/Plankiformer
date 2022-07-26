@@ -636,6 +636,10 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
+            f = open(test_main.params.test_outpath + 'Test_Filenames' + '.txt', 'w')
+            f.write('\n Filenames : \n\n{}\n'.format(im_names[0]))
+            f.close()
+
     def initialize_model(self, train_main, test_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
