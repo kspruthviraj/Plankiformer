@@ -510,7 +510,7 @@ class import_and_train_model:
                     output_corrected_label[i] = 'unknown'
 
             GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob = [target, output_max, target_label, output_label, output_corrected_label, prob]
-            with open(test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name + '.pickle', 'wb') \
+            with open(test_main.params.test_outpath + '/Single_GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name + '.pickle', 'wb') \
                     as cw:
                 pickle.dump(GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob, cw)
 
@@ -536,7 +536,7 @@ class import_and_train_model:
             clf_report = classification_report(target_label, output_label)
             f1 = f1_score(target_label, output_label, average='macro')
 
-            f = open(test_main.params.test_outpath + 'test_report_' + name + '.txt', 'w')
+            f = open(test_main.params.test_outpath + 'Single_test_report_' + name + '.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                                   clf_report))
             f.close()
@@ -605,7 +605,7 @@ class import_and_train_model:
         GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob = [GT, Ens_DEIT_prob_max, GT_label, Ens_DEIT_label,
                                                              Ens_DEIT_corrected_label, Ens_DEIT]
         with open(
-                test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name + '.pickle',
+                test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name2 + name + '.pickle',
                 'wb') \
                 as cw:
             pickle.dump(GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob, cw)
@@ -631,7 +631,7 @@ class import_and_train_model:
             clf_report = classification_report(GT_label, Ens_DEIT_label)
             f1 = f1_score(GT_label, Ens_DEIT_label, average='macro')
 
-            f = open(test_main.params.test_outpath + 'test_report_' + name + '.txt', 'w')
+            f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                                   clf_report))
             f.close()
