@@ -641,20 +641,20 @@ class import_and_train_model:
 
             To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_corrected_label)]
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_predictions_' + name2 + name +
-                       '_thresholded_' + str(test_main.params.test_outpath) + '.txt', To_write, fmt='%s')
+                       '_thresholded_' + str(test_main.params.threshold) + '.txt', To_write, fmt='%s')
 
             accuracy_model = accuracy_score(GT_label, Ens_DEIT_corrected_label)
             clf_report = classification_report(GT_label, Ens_DEIT_corrected_label)
             f1 = f1_score(GT_label, Ens_DEIT_corrected_label, average='macro')
 
-            f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '_thresholded_' + str(test_main.params.test_outpath) +'.txt', 'w')
+            f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '_thresholded_' + str(test_main.params.threshold) +'.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                                   clf_report))
             f.close()
 
             filenames_out = im_names[0]
             for jj in range(len(filenames_out)):
-                dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded_' + str(test_main.params.test_outpath) + '/' + str(GT_label[jj]) + '_as_' + str(Ens_DEIT_corrected_label[jj])
+                dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded_' + str(test_main.params.threshold) + '/' + str(GT_label[jj]) + '_as_' + str(Ens_DEIT_corrected_label[jj])
                 Path(dest_path).mkdir(parents=True, exist_ok=True)
                 shutil.copy(filenames_out[jj], dest_path)
 
