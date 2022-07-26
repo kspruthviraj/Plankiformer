@@ -475,6 +475,8 @@ class import_and_train_model:
             # PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
             im_names = data_loader.Filenames
 
+            print('im_names : {}'.format(im_names))
+
             checkpoint = torch.load(PATH)
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
