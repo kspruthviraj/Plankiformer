@@ -1,5 +1,6 @@
 import os
 from collections import Counter
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -82,7 +83,7 @@ class CreateDataForWildtrap:
 
         # self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights.pt')
         self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
-
+        Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
         return
 
 
