@@ -636,8 +636,9 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
+            filenames_out = im_names[0]
             f = open(test_main.params.test_outpath + 'Test_Filenames' + '.txt', 'w')
-            f.write('\n Filenames : \n\n{}\n'.format(im_names[0]))
+            f.write('\n Filenames : \n\n{}\n'.format([filename for filename in filenames_out]))
             f.close()
 
     def initialize_model(self, train_main, test_main, data_loader, lr):
