@@ -2,6 +2,7 @@ import math
 import os
 import pickle
 import shutil
+from pathlib import Path
 from time import time
 
 import matplotlib.pyplot as plt
@@ -639,7 +640,8 @@ class import_and_train_model:
 
             filenames_out = im_names[0]
             for jj in range(len(filenames_out)):
-                dest_path = test_main.params.test_outpath + str(Ens_DEIT_label[jj])
+                dest_path = test_main.params.test_outpath + '/' + name2 + name + '/' + str(GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
+                Path(dest_path).mkdir(parents=True, exist_ok=True)
                 shutil.copy(filenames_out[jj], dest_path)
 
             # f = open(test_main.params.test_outpath + 'Test_Filenames' + '.txt', 'w')
