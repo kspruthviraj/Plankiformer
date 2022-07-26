@@ -616,15 +616,8 @@ class import_and_train_model:
 
         if test_main.params.threshold > 0:
             print('I am using threshold value as : {}'.format(test_main.params.threshold))
-            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
-            np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
-                       '.txt', To_write, fmt='%s')
 
-            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_corrected_label)]
-            np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
-                       '_thresholded.txt', To_write, fmt='%s')
-        else:
-            print('I am using default value as threshold i.e. 0')
+            ## Original
             To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
@@ -644,9 +637,50 @@ class import_and_train_model:
                 Path(dest_path).mkdir(parents=True, exist_ok=True)
                 shutil.copy(filenames_out[jj], dest_path)
 
-            # f = open(test_main.params.test_outpath + 'Test_Filenames' + '.txt', 'w')
-            # f.write('\n Filenames : \n\n{}\n'.format([filename for filename in filenames_out]))
-            # f.close()
+            ## Thresholded
+
+            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_corrected_label)]
+            np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
+                       '_thresholded.txt', To_write, fmt='%s')
+
+            accuracy_model = accuracy_score(GT_label, Ens_DEIT_corrected_label)
+            clf_report = classification_report(GT_label, Ens_DEIT_corrected_label)
+            f1 = f1_score(GT_label, Ens_DEIT_corrected_label, average='macro')
+
+            f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '_thresholded.txt', 'w')
+            f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
+                                                                                                  clf_report))
+            f.close()
+
+            filenames_out = im_names[0]
+            for jj in range(len(filenames_out)):
+                dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded/' + str(GT_label[jj]) + '_as_' + str(Ens_DEIT_corrected_label[jj])
+                Path(dest_path).mkdir(parents=True, exist_ok=True)
+                shutil.copy(filenames_out[jj], dest_path)
+
+        else:
+            print('I am using default value as threshold i.e. 0')
+            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
+            np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
+                       '.txt', To_write, fmt='%s')
+
+
+
+
+            accuracy_model = accuracy_score(GT_label, Ens_DEIT_label)
+            clf_report = classification_report(GT_label, Ens_DEIT_label)
+            f1 = f1_score(GT_label, Ens_DEIT_label, average='macro')
+
+            f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '.txt', 'w')
+            f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
+                                                                                                  clf_report))
+            f.close()
+
+            filenames_out = im_names[0]
+            for jj in range(len(filenames_out)):
+                dest_path = test_main.params.test_outpath + '/' + name2 + name + '/' + str(GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
+                Path(dest_path).mkdir(parents=True, exist_ok=True)
+                shutil.copy(filenames_out[jj], dest_path)
 
     def initialize_model(self, train_main, test_main, data_loader, lr):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
