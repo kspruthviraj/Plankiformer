@@ -10,6 +10,7 @@ import sys
 
 import numpy as np
 import pandas as pd
+import torch
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 from scipy.stats import gmean
 
@@ -99,13 +100,16 @@ class LoadEnsembleParameters:
 
     def get_ensemble_performance(self):
         print('Main model directory: {}'.format(self.params.main_model_dir))
-        classes_dir = self.params.main_model_dir + '/classes.npy'
+        classes_dir1 = self.params.main_model_dir + '/classes.npy'
+        classes_dir2 = self.params.main_model_dir + '/classes.pt'
 
-        if not os.path.exists(classes_dir):
+        if os.path.exists(classes_dir1):
+            classes = np.load(self.params.main_model_dir + '/classes.npy')
+        elif os.path.exists(classes_dir2):
+            classes = torch.load(classes_dir2)
+        else:
             classes = ('airplane', 'automobile', 'bird', 'cat',
                        'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-        else:
-            classes = np.load(self.params.main_model_dir + '/classes.npy')
 
         DEIT_GTLabel_sorted = []
         DEIT_GTLabel_indices = []
