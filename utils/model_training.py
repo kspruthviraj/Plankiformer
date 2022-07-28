@@ -379,16 +379,16 @@ class import_and_train_model:
 
             if test_main.params.threshold > 0:
                 print('I am using threshold value as : {}'.format(test_main.params.threshold))
-                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
+                To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], output_label)]
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write,
                            fmt='%s')
 
-                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_corrected_label)]
+                To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], output_corrected_label)]
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions_thresholded.txt',
                            To_write, fmt='%s')
             else:
                 print('I am using default value as threshold i.e. 0')
-                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
+                To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], output_label)]
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write,
                            fmt='%s')
 
@@ -453,16 +453,16 @@ class import_and_train_model:
 
         if test_main.params.threshold > 0:
             print('I am using threshold value as : {}'.format(test_main.params.threshold))
-            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
+            To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
 
-            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_corrected_label)]
+            To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_corrected_label)]
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
                        '_thresholded.txt', To_write, fmt='%s')
         else:
             print('I am using default value as threshold i.e. 0')
-            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
+            To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
 
@@ -520,17 +520,17 @@ class import_and_train_model:
 
             if test_main.params.threshold > 0:
                 print('I am using threshold value as : {}'.format(test_main.params.threshold))
-                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
+                To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], output_label)]
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write,
                            fmt='%s')
 
-                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_corrected_label)]
+                To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], output_corrected_label)]
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions_thresholded.txt',
                            To_write, fmt='%s')
 
             else:
                 print('I am using default value as threshold i.e. 0')
-                To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], output_label)]
+                To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], output_label)]
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write,
                            fmt='%s')
 
@@ -618,7 +618,7 @@ class import_and_train_model:
             print('I am using threshold value as : {}'.format(test_main.params.threshold))
 
             ## Original
-            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
+            To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
 
@@ -645,7 +645,7 @@ class import_and_train_model:
 
             ## Thresholded
 
-            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_corrected_label)]
+            To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_corrected_label)]
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_predictions_' + name2 + name +
                        '_thresholded_' + str(test_main.params.threshold) + '.txt', To_write, fmt='%s')
 
@@ -675,7 +675,7 @@ class import_and_train_model:
 
         else:
             print('I am using default value as threshold i.e. 0')
-            To_write = [i + '------------------' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
+            To_write = [i + '------------------ ' + j + '\n' for i, j in zip(im_names[0], Ens_DEIT_label)]
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
 
