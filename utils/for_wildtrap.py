@@ -48,7 +48,7 @@ class CreateDataForWildtrap:
             self.class_weights_tensor = torch.Tensor(class_weights)
             torch.save(self.class_weights_tensor, train_main.params.outpath + '/class_weights_tensor.pt')
 
-        torch.save(trainset.classes, train_main.params.outpath + '/class_labels.pt')
+        torch.save(trainset.classes, train_main.params.outpath + '/classes.pt')
 
         self.classes = trainset.classes
 
