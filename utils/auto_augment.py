@@ -1,8 +1,8 @@
 import random
+
 import numpy as np
-import scipy
-from scipy import ndimage
 from PIL import Image, ImageEnhance, ImageOps
+from scipy import ndimage
 
 
 class AutoAugment(object):
