@@ -8,14 +8,8 @@ import sys
 
 import numpy as np
 
-from utils import for_birds as birds
-from utils import for_cifar10 as cifar10
-from utils import for_dogs as dogs
 from utils import for_plankton as fplankton
-from utils import for_wildtrap as wildtrap
 from utils import model_training as mt
-from utils import model_training_cnn as mt_cnn
-from utils import prepare_train_test_data as pdata
 
 
 def ArgsCheck(args):
@@ -116,9 +110,6 @@ class LoadInputParameters:
                                                     '"kaggle", "eilat", "rsmas", "birds", "dogs", "beetle", "wildtrap"')
 
         # For model training
-        parser.add_argument('-architecture', choices=['cnn', 'deit'],
-                            default='deit', help='Choose between different datasets "cnn", "deit"')
-
         parser.add_argument('-batch_size', type=int, default=16, help="Batch size for training")
         parser.add_argument('-image_size', type=int, default=224, help="Image size for training the model")
         parser.add_argument('-epochs', type=int, default=100, help="number of epochs for training the model")
@@ -150,13 +141,10 @@ class LoadInputParameters:
                             default=['./out/trained_models/Init_0/',
                                      './out/trained_models/Init_1/'],
                             help='path of the saved models')
-        parser.add_argument('-finetuned', type=int, default=2, help='Choose "0" or "1" or "2" for finetuning')
-        parser.add_argument('-threshold', type=float, default=0.0, help="Threshold to set")
 
         # Related to ensembling
         parser.add_argument('-ensemble', type=int, default=0,
                             help="Set this to one if you want to ensemble multiple models else set it to zero")
-        parser.add_argument('-predict', type=int, default=None, help='Choose "0" for training anf "1" for predicting')
 
         # # Train from previous saved models
         # parser.add_argument('-train_from_saved', choices=['yes', 'no'], default='no', )
@@ -213,24 +201,13 @@ if __name__ == '__main__':
     train_params.CreateOutDir()
     print('Loaded input parameters')
     #
-    loaded_data = None
 
-    if train_params.params.dataset_name == 'zoolake':
-        print('Using saved data')
-        # For Plankton
-        loaded_data = fplankton.CreateDataForPlankton()
-        loaded_data.make_train_test_for_model(train_params, None)
-        loaded_data.create_data_loaders(train_params)
+    # For Plankton -- use saved data
+    for_plankton = fplankton.CreateDataForPlankton()
+    for_plankton.make_train_test_for_model(train_params, None)
+    for_plankton.create_data_loaders(train_params)
 
-    if train_params.params.architecture == 'deit':
-        # Model Training
-        model_training = mt.import_and_train_model()
-        # Run training
-        model_training.train_and_save(train_params, loaded_data)
-    elif train_params.params.architecture == 'cnn':
-        # Model Training
-        model_training = mt_cnn.import_and_train_model()
-        # Run training
-        model_training.train_and_save(train_params, loaded_data)
-
-
+    # Model Training
+    model_training = mt.import_and_train_model()
+    # Run training
+    model_training.train_and_save(train_params, for_plankton)
