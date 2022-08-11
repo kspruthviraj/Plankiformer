@@ -156,7 +156,7 @@ class LoadInputParameters:
         # Related to ensembling
         parser.add_argument('-ensemble', type=int, default=0,
                             help="Set this to one if you want to ensemble multiple models else set it to zero")
-        parser.add_argument('-predict', type=int, default=0, help='Choose "0" for training anf "1" for predicting')
+        parser.add_argument('-predict', type=int, default=None, help='Choose "0" for training anf "1" for predicting')
 
         # # Train from previous saved models
         # parser.add_argument('-train_from_saved', choices=['yes', 'no'], default='no', )
