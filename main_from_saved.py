@@ -156,6 +156,7 @@ class LoadInputParameters:
         # Related to ensembling
         parser.add_argument('-ensemble', type=int, default=0,
                             help="Set this to one if you want to ensemble multiple models else set it to zero")
+        parser.add_argument('-predict', type=int, default=None, help='Choose "0" for training anf "1" for predicting')
 
         # # Train from previous saved models
         # parser.add_argument('-train_from_saved', choices=['yes', 'no'], default='no', )
@@ -214,10 +215,12 @@ if __name__ == '__main__':
     #
     loaded_data = None
 
-    # For Plankton
-    loaded_data = fplankton.CreateDataForPlankton()
-    loaded_data.make_train_test_for_model(train_params, None)
-    loaded_data.create_data_loaders(train_params)
+    if train_params.params.dataset_name == 'zoolake':
+        print('Using saved data')
+        # For Plankton
+        loaded_data = fplankton.CreateDataForPlankton()
+        loaded_data.make_train_test_for_model(train_params, None)
+        loaded_data.create_data_loaders(train_params)
 
     if train_params.params.architecture == 'deit':
         # Model Training

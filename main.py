@@ -226,12 +226,12 @@ if __name__ == '__main__':
         loaded_data.create_data_loaders(train_params)
 
     elif train_params.params.dataset_name == 'beetle':
-        prep_test_data = pdata.CreateDataset()
-        prep_test_data.LoadData_for_others(train_params)
-        prep_test_data.CreatedataSetsForOthers(train_params)
+        prep_data = pdata.CreateDataset()
+        prep_data.LoadData_for_others(train_params)
+        prep_data.CreatedataSetsForOthers(train_params)
 
         loaded_data = fplankton.CreateDataForPlankton()
-        loaded_data.make_train_test_for_others(prep_test_data)
+        loaded_data.make_train_test_for_others(prep_data)
         loaded_data.create_data_loaders_for_others(train_params)
 
     elif train_params.params.dataset_name == 'cifar10':
