@@ -711,7 +711,7 @@ class import_and_train_model:
         self.model.to(device)
         if data_loader.class_weights_tensor is not None:
             self.criterion = nn.CrossEntropyLoss(data_loader.class_weights_tensor)
-        elif test_main.params.predict is None:
+        elif test_main is None:
             class_weights_tensor = torch.load(train_main.params.main_param_path + '/class_weights_tensor.pt')
             self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
         else:
