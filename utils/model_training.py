@@ -511,8 +511,11 @@ class import_and_train_model:
                 if confs[i] < test_main.params.threshold:
                     output_corrected_label[i] = 'unknown'
 
-            GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob = [target, output_max, target_label, output_label, output_corrected_label, prob]
-            with open(test_main.params.test_outpath + '/Single_GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name + '.pickle', 'wb') \
+            GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob = [target, output_max, target_label, output_label,
+                                                                 output_corrected_label, prob]
+            with open(
+                    test_main.params.test_outpath + '/Single_GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name + '.pickle',
+                    'wb') \
                     as cw:
                 pickle.dump(GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob, cw)
 
@@ -639,7 +642,8 @@ class import_and_train_model:
                     shutil.copy(filenames_out[jj], dest_path)
 
                 else:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
+                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(
+                        GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
                     Path(dest_path).mkdir(parents=True, exist_ok=True)
                     shutil.copy(filenames_out[jj], dest_path)
 
@@ -653,7 +657,8 @@ class import_and_train_model:
             clf_report = classification_report(GT_label, Ens_DEIT_corrected_label)
             f1 = f1_score(GT_label, Ens_DEIT_corrected_label, average='macro')
 
-            f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '_thresholded_' + str(test_main.params.threshold) +'.txt', 'w')
+            f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '_thresholded_' + str(
+                test_main.params.threshold) + '.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                                   clf_report))
             f.close()
@@ -884,8 +889,8 @@ def cls_train(train_loader, model, criterion, optimizer, clip_grad_norm):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         images, target = images.to(device), target.to(device)
 
-        output, x = model(images)
-        # output = model(images)
+        # output, x = model(images)
+        output = model(images)  # to run it on CSCS
 
         loss = criterion(output, target.long())
 
