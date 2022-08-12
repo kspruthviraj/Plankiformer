@@ -52,7 +52,7 @@ class import_and_train_model:
             p.numel() for p in self.model.parameters() if p.requires_grad)
         print(f"{total_trainable_params:,} training parameters.")
 
-        self.criterion = nn.CrossEntropyLoss(data_loader.class_weights_tensor, label_smoothing=0.1)
+        self.criterion = nn.CrossEntropyLoss(data_loader.class_weights_tensor)
 
         torch.cuda.set_device(train_main.params.gpu_id)
         self.model.cuda(train_main.params.gpu_id)
