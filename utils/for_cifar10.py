@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import timm
 import torch
 import torchvision.transforms as T
 from sklearn.utils import compute_class_weight
@@ -11,6 +12,13 @@ import random
 import numpy as np
 from PIL import Image, ImageEnhance, ImageOps
 from scipy import ndimage
+from timm.data.auto_augment import rand_augment_transform
+from timm.data.transforms_factory import create_transform
+from timm.data.random_erasing import RandomErasing
+from timm.data.mixup import Mixup
+from timm.data import create_dataset, create_loader, resolve_data_config, Mixup, FastCollateMixup, AugMixDataset
+from timm.loss import JsdCrossEntropy, SoftTargetCrossEntropy, BinaryCrossEntropy, \
+    LabelSmoothingCrossEntropy
 
 # from auto_augment import AutoAugment, Cutout
 
@@ -32,6 +40,32 @@ class CreateDataForCifar10:
     def make_train_test_for_cifar(self, train_main, train_transform=None):
         self.classes = ('airplane', 'automobile', 'bird', 'cat',
                         'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
+        if train_main.params.architecture == 'cnn':
+            model = timm.create_model('tf_efficientnet_b7', pretrained=True,
+                                      num_classes=10)
+
+        elif train_main.params.architecture == 'deit':
+            model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
+                                      num_classes=10)
+
+        # Load data config associated with the model to use in data augmentation pipeline
+        data_config = timm.data.resolve_data_config({}, model=model, verbose=True)
+        data_mean = data_config["mean"]
+        data_std = data_config["std"]
+
+        train_transform = timm.data.create_transform(
+            input_size=224,
+            is_training=True,
+            mean=data_mean,
+            std=data_std,
+            auto_augment="rand-m9-mstd0.5",
+
+        )
+
+        test_transform = timm.data.create_transform(input_size=224,
+                                                    mean=data_mean,
+                                                    std=data_std)
 
         # train_transform = [T.RandomCrop(32, padding=4), T.RandomHorizontalFlip(), AutoAugment(), Cutout()]
         # train_transform.extend([T.ToTensor(),
@@ -56,11 +90,11 @@ class CreateDataForCifar10:
         #     download=True,
         #     transform=test_transform)
 
-        train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
-                                     T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
-                                     T.RandomRotation(degrees=(0, 180)), T.ToTensor()])
-
-        test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
+        # train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
+        #                              T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
+        #                              T.RandomRotation(degrees=(0, 180)), T.ToTensor()])
+        #
+        # test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
 
         trainset = datasets.CIFAR10('./data/CIFAR10/', download=True, train=True)
         test_set = datasets.CIFAR10('./data/CIFAR10/', download=True, train=False)
