@@ -62,8 +62,8 @@ class CreateDataForCifar10:
 
         test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
 
-        trainset = datasets.CIFAR10('../data/CIFAR10/', download=True, train=True)
-        test_set = datasets.CIFAR10('../data/CIFAR10/', download=True, train=False)
+        trainset = datasets.CIFAR10('./data/CIFAR10/', download=True, train=True)
+        test_set = datasets.CIFAR10('./data/CIFAR10/', download=True, train=False)
 
         class_weight_path = train_main.params.outpath + '/class_weights_tensor.pt'
         if os.path.exists(class_weight_path):
