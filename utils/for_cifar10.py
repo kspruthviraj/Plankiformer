@@ -77,8 +77,8 @@ class CreateDataForCifar10:
             self.class_weights_tensor = torch.Tensor(class_weights)
             torch.save(self.class_weights_tensor, train_main.params.outpath + '/class_weights_tensor.pt')
 
-        train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
-                                                                      int(np.round(0.2 * len(trainset), 0))])
+        train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.98 * len(trainset), 0)),
+                                                                      int(np.round(0.02 * len(trainset), 0))])
 
         train_set = ApplyTransform(train_set, transform=train_transform)
         val_set = ApplyTransform(val_set, transform=train_transform)
