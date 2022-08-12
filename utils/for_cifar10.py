@@ -1,24 +1,18 @@
 import os
+import random
 from pathlib import Path
 
+import numpy as np
 import timm
 import torch
-import torchvision.transforms as T
+from PIL import Image, ImageEnhance, ImageOps
+from scipy import ndimage
 from sklearn.utils import compute_class_weight
+from timm.data.auto_augment import rand_augment_transform
 from torch.utils.data import Dataset
 from torch.utils.data import Dataset
 from torchvision import datasets
-import random
-import numpy as np
-from PIL import Image, ImageEnhance, ImageOps
-from scipy import ndimage
-from timm.data.auto_augment import rand_augment_transform
-from timm.data.transforms_factory import create_transform
-from timm.data.random_erasing import RandomErasing
-from timm.data.mixup import Mixup
-from timm.data import create_dataset, create_loader, resolve_data_config, Mixup, FastCollateMixup, AugMixDataset
-from timm.loss import JsdCrossEntropy, SoftTargetCrossEntropy, BinaryCrossEntropy, \
-    LabelSmoothingCrossEntropy
+
 
 # from auto_augment import AutoAugment, Cutout
 
