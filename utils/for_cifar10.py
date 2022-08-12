@@ -7,7 +7,10 @@ from sklearn.utils import compute_class_weight
 from torch.utils.data import Dataset
 from torch.utils.data import Dataset
 from torchvision import datasets
-
+import random
+import numpy as np
+from PIL import Image, ImageEnhance, ImageOps
+from scipy import ndimage
 
 # from auto_augment import AutoAugment, Cutout
 
@@ -30,40 +33,37 @@ class CreateDataForCifar10:
         self.classes = ('airplane', 'automobile', 'bird', 'cat',
                         'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
-        policies = [T.AutoAugmentPolicy.CIFAR10]
-        train_transform = [T.RandomCrop(32, padding=4), T.RandomHorizontalFlip(), AutoAugment(), Cutout()]
-        train_transform.extend([T.ToTensor(),
-                                T.Normalize((0.4914, 0.4822, 0.4465),
-                                            (0.2023, 0.1994, 0.2010)), ])
-        train_transform = T.Compose(train_transform)
-
-        test_transform = T.Compose([
-            T.ToTensor(),
-            T.Normalize((0.5071, 0.4867, 0.4408),
-                                 (0.2675, 0.2565, 0.2761)),
-        ])
-
-        trainset = datasets.CIFAR10(
-            root='~/data',
-            train=True,
-            download=True,
-            transform=train_transform)
-        test_set = datasets.CIFAR10(
-            root='~/data',
-            train=False,
-            download=True,
-            transform=test_transform)
-
-
+        # train_transform = [T.RandomCrop(32, padding=4), T.RandomHorizontalFlip(), AutoAugment(), Cutout()]
+        # train_transform.extend([T.ToTensor(),
+        #                         T.Normalize((0.4914, 0.4822, 0.4465),
+        #                                     (0.2023, 0.1994, 0.2010)), ])
+        # train_transform = T.Compose(train_transform)
         #
-        # train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
-        #                              T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
-        #                              T.RandomRotation(degrees=(0, 180)), T.ToTensor()])
+        # test_transform = T.Compose([
+        #     T.ToTensor(),
+        #     T.Normalize((0.5071, 0.4867, 0.4408),
+        #                          (0.2675, 0.2565, 0.2761)),
+        # ])
         #
-        # test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
+        # trainset = datasets.CIFAR10(
+        #     root='~/data',
+        #     train=True,
+        #     download=True,
+        #     transform=train_transform)
+        # test_set = datasets.CIFAR10(
+        #     root='~/data',
+        #     train=False,
+        #     download=True,
+        #     transform=test_transform)
 
-        # trainset = datasets.CIFAR10('../data/CIFAR10/', download=True, train=True)
-        # test_set = datasets.CIFAR10('../data/CIFAR10/', download=True, train=False)
+        train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
+                                     T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
+                                     T.RandomRotation(degrees=(0, 180)), T.ToTensor()])
+
+        test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
+
+        trainset = datasets.CIFAR10('../data/CIFAR10/', download=True, train=True)
+        test_set = datasets.CIFAR10('../data/CIFAR10/', download=True, train=False)
 
         class_weight_path = train_main.params.outpath + '/class_weights_tensor.pt'
         if os.path.exists(class_weight_path):
@@ -80,9 +80,9 @@ class CreateDataForCifar10:
         train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
                                                                       int(np.round(0.2 * len(trainset), 0))])
 
-        # train_set = ApplyTransform(train_set, transform=train_transform)
-        # val_set = ApplyTransform(val_set, transform=train_transform)
-        # test_set = ApplyTransform(test_set, transform=test_transform)
+        train_set = ApplyTransform(train_set, transform=train_transform)
+        val_set = ApplyTransform(val_set, transform=train_transform)
+        test_set = ApplyTransform(test_set, transform=test_transform)
 
         self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
         print('checkpoint_path: {}'.format(self.checkpoint_path))
@@ -124,13 +124,6 @@ class ApplyTransform(Dataset):
 
     def __len__(self):
         return len(self.dataset)
-
-
-import random
-
-import numpy as np
-from PIL import Image, ImageEnhance, ImageOps
-from scipy import ndimage
 
 
 class AutoAugment(object):
