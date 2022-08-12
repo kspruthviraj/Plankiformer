@@ -835,7 +835,7 @@ class LRScheduler:
         self.patience = patience
         self.min_lr = min_lr
         self.factor = factor
-        self.lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer)
+        self.lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, 10)
 
     def __call__(self, val_loss):
         self.lr_scheduler.step(val_loss)
