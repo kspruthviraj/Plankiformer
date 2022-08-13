@@ -10,9 +10,8 @@ from scipy import ndimage
 from sklearn.utils import compute_class_weight
 from timm.data.auto_augment import rand_augment_transform
 from torch.utils.data import Dataset
-from torch.utils.data import Dataset
 from torchvision import datasets
-
+from timm.data.random_erasing import RandomErasing
 
 # from auto_augment import AutoAugment, Cutout
 
@@ -56,6 +55,8 @@ class CreateDataForCifar10:
             auto_augment="rand-m9-mstd0.5",
 
         )
+        random_erase = RandomErasing(probability=0.5)
+        train_transform.extend(random_erase, AutoAugment(), Cutout())
 
         test_transform = timm.data.create_transform(input_size=224,
                                                     mean=data_mean,
