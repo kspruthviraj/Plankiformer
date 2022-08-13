@@ -52,11 +52,10 @@ class CreateDataForCifar10:
             is_training=True,
             mean=data_mean,
             std=data_std,
-            auto_augment="rand-m9-mstd0.5",
+            auto_augment="rand-m9-mstd0.5", hflip=0.5, vflip=0.5, re_prob=0.3)
 
-        )
-        random_erase = RandomErasing(probability=0.5)
-        train_transform.extend(random_erase, AutoAugment(), Cutout())
+        # random_erase = RandomErasing(probability=0.5)
+        # train_transform.extend(random_erase, AutoAugment(), Cutout())
 
         test_transform = timm.data.create_transform(input_size=224,
                                                     mean=data_mean,
