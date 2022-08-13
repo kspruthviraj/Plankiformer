@@ -918,8 +918,8 @@ def cls_train(train_loader, model, criterion, optimizer, clip_grad_norm):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         images, target = images.to(device), target.to(device)
 
-        output, x = model(images)
-        # output = model(images)  # to run it on CSCS
+        # output, x = model(images)
+        output = model(images)  # to run it on CSCS
 
         loss = criterion(output, target.long())
 
