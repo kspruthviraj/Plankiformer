@@ -140,7 +140,7 @@ class import_and_train_model:
             best_f1 = max(test_f1, best_f1)
             best_loss = min(test_f1, best_loss)
 
-            if train_main.params.save_best_model_on_loss_or_f1 == 1:
+            if train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 1:
                 if test_loss < best_loss:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
@@ -160,7 +160,7 @@ class import_and_train_model:
                                 'epoch': epoch, },
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
-            elif train_main.params.save_best_model_on_loss_or_f1 == 3:
+            elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 3:
                 if test_acc1 > best_acc1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
