@@ -122,15 +122,18 @@ class LoadInputParameters:
         parser.add_argument('-batch_size', type=int, default=16, help="Batch size for training")
         parser.add_argument('-image_size', type=int, default=224, help="Image size for training the model")
         parser.add_argument('-epochs', type=int, default=100, help="number of epochs for training the model")
+        # parser.add_argument('-initial_epoch', type=int, default=0, help="set the initial epoch value")
         parser.add_argument('-gpu_id', type=int, default=0, help="select the gpu id ")
         parser.add_argument('-lr', type=float, default=1e-4, help="starting learning rate")
-        parser.add_argument('-warmup', type=int, default=10, help="starting learning rate")
-        parser.add_argument('-weight_decay', type=float, default=3e-2, help="weight decay")
+        parser.add_argument('-warmup', type=int, default=5, help="starting learning rate")
+        parser.add_argument('-weight_decay', type=float, default=0.05, help="weight decay")
         parser.add_argument('-clip_grad_norm', type=float, default=0, help="clip gradient norm")
-        parser.add_argument('-disable_cos', choices=[True, False], default=True,
+        parser.add_argument('-disable_cos', choices=[True, False], default=False,
                             help="Disable cos. Choose from Yes or No")
         parser.add_argument('-run_early_stopping', choices=['yes', 'no'], default='no', )
         parser.add_argument('-run_lr_scheduler', choices=['yes', 'no'], default='no', )
+        parser.add_argument('-save_best_model_on_loss_or_f1_or_accuracy', type=int, default=2,
+                            help='Choose "1" to save model based on loss or "2" based on f1-score or "3" based on accu')
 
         # Superclass or not
         parser.add_argument('-super_class', choices=['yes', 'no'], default='yes', )
