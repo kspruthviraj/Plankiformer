@@ -898,7 +898,7 @@ def accuracy(output, target):
 
         res = []
         correct_k = correct[:1].flatten().float().sum(0, keepdim=True)
-        res.append(correct_k.mul_(batch_size))
+        res.append(correct_k.mul_(10000.0 / batch_size))
         return res
 
 
