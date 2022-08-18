@@ -183,14 +183,16 @@ class import_and_train_model:
             train_f1s.append(train_f1)
             test_f1s.append(test_f1)
 
+            total_mins_per_epoch = (time() - time_begin) / 60
+
             print('[Train] Acc:{}, F1:{}, loss:{}'.format(np.round(train_accuracy, 3),
                                                           np.round(train_f1, 3),
                                                           np.round(train_loss, 3),
                                                           np.round(test_accuracy, 3)))
-            print('[Test] Acc:{}, F1:{}, loss:{},TIME (in mins) :{}, CUM TIME (in mins):{}'.format(np.round(test_accuracy, 3),
+            print('[Test] Acc:{}, F1:{}, loss:{}, TIME (in mins) :{}, cumulative time (in mins):{}'.format(np.round(test_accuracy, 3),
                                                                               np.round(test_f1, 3),
                                                                               np.round(test_loss, 3),
-                                                                              np.round(time()/60, 3),
+                                                                              np.round(total_mins_per_epoch, 3),
                                                                               np.round(total_mins, 3)))
             if train_main.params.run_lr_scheduler == 'yes':
                 self.lr_scheduler(test_loss)
