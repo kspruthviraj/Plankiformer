@@ -150,18 +150,19 @@ class import_and_train_model:
                                 'loss': test_loss,
                                 'f1': test_f1,
                                 'acc': test_acc1,
-                                'epoch': epoch, },
+                                'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 2:
-                print(' I AM in F!-SCORE')
+
                 if test_f1 > best_f1:
+                    print(' I AM in SAVING')
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
                                 'loss': test_loss,
                                 'f1': test_f1,
                                 'acc': test_acc1,
-                                'epoch': epoch, },
+                                'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 3:
@@ -171,7 +172,7 @@ class import_and_train_model:
                                 'loss': test_loss,
                                 'f1': test_f1,
                                 'acc': test_acc1,
-                                'epoch': epoch, },
+                                'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             train_losses.append(train_loss)
