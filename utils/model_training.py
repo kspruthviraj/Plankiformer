@@ -111,6 +111,9 @@ class import_and_train_model:
     def run_training(self, train_main, data_loader, initial_epoch, epochs, lr, name, best_values):
 
         best_acc1, best_f1, best_loss = best_values[0], best_values[1], best_values[2]
+
+        print("Initial values:- best_acc1 : {}, best_f1: {}, best_loss: {} ".format(best_acc1, best_f1, best_loss ))
+
         train_losses, test_losses, train_accuracies, test_accuracies, train_f1s, test_f1s = [], [], [], [], [], []
 
         print("Beginning training")
@@ -151,6 +154,7 @@ class import_and_train_model:
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 2:
+                print(' I AM in F!-SCORE')
                 if test_f1 > best_f1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
