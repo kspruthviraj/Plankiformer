@@ -336,6 +336,8 @@ class import_and_train_model:
 
         if os.path.exists(model_present_path0):
             print('I already EXIST')
+        else:
+            print('I DONOT EXIST')
 
         self.import_deit_models(train_main, data_loader)
         if train_main.params.finetune == 0:
