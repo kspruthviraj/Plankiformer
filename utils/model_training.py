@@ -110,9 +110,9 @@ class import_and_train_model:
 
     def run_training(self, train_main, data_loader, initial_epoch, epochs, lr, name, best_values):
 
-        best_acc1, best_f1, best_loss = best_values[0], best_values[1], best_values[2]
+        best_loss, best_f1, best_acc1 = best_values[0], best_values[1], best_values[2]
 
-        print("Initial values:- best_acc1 : {}, best_f1: {}, best_loss: {} ".format(best_acc1, best_f1, best_loss ))
+        print("Initial values:- best_loss : {}, best_f1: {}, best_acc1: {} ".format(best_loss, best_f1, best_acc1))
 
         train_losses, test_losses, train_accuracies, test_accuracies, train_f1s, test_f1s = [], [], [], [], [], []
 
@@ -366,6 +366,7 @@ class import_and_train_model:
                           'previous epochs')
                     self.init_train_predict(train_main, data_loader, 0)
                 print('training tuned model')
+                self.initial_epoch = 0
                 self.init_train_predict(train_main, data_loader, 1)
 
             else:
@@ -392,8 +393,9 @@ class import_and_train_model:
                           'previous epochs')
                     self.init_train_predict(train_main, data_loader, 0)
                 print('training tuned model')
+                self.initial_epoch = 0
                 self.init_train_predict(train_main, data_loader, 1)
-
+                self.initial_epoch = 0
                 self.init_train_predict(train_main, data_loader, 2)
 
             elif not os.path.exists(model_present_path2):
@@ -404,7 +406,7 @@ class import_and_train_model:
                     self.init_train_predict(train_main, data_loader, 1)
                 else:
                     print('Trained model already exists!')
-
+                self.initial_epoch = 0
                 self.init_train_predict(train_main, data_loader, 2)
 
             else:
@@ -896,7 +898,7 @@ def accuracy(output, target):
 
         res = []
         correct_k = correct[:1].flatten().float().sum(0, keepdim=True)
-        res.append(correct_k.mul_(100.0 / batch_size))
+        res.append(correct_k.mul_(batch_size))
         return res
 
 
@@ -1006,7 +1008,7 @@ def cls_train(train_loader, model, criterion, optimizer, clip_grad_norm):
         images, target = images.to(device), target.to(device)
 
         output, x = model(images)
-        # output = model(images)  # to run it on CSCS
+        # output = model(images)  # to run it on CSCS and colab
 
         loss = criterion(output, target.long())
 
