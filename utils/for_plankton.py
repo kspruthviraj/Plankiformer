@@ -220,7 +220,7 @@ class CreateDataForPlankton:
         return
 
     def create_data_loaders(self, train_main):
-        self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name
+        self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
         Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
         if train_main.params.test_set == 'yes' and train_main.params.valid_set == 'yes':
