@@ -217,7 +217,7 @@ class import_and_train_model:
         with open(Log_Path + '/Logs_' + name + '.pickle', 'ab') as cw:
             pickle.dump(Logs, cw)
 
-        Logs = pd.read_pickle(Log_Path + '/Logs.pickle')
+        Logs = pd.read_pickle(Log_Path + '/Logs_' + name + '.pickle')
 
         train_losses = Logs[0]
         train_f1s = Logs[4]
