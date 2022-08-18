@@ -169,7 +169,7 @@ class LoadInputParameters:
         for i, elem in enumerate(args.datapaths):
             args.datapaths[i] = elem + '/'
 
-        args.outpath = args.outpath + '/'
+        # args.outpath = args.outpath
         args.training_data = True if args.training_data == 'True' else False
 
         ArgsCheck(args)
