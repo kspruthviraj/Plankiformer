@@ -306,14 +306,13 @@ class import_and_train_model:
             if self.initial_epoch < train_main.params.finetune_epochs:
                 print('Tuned trained model exists but not completely trained. Therefore resuming the training from '
                       'previous epochs')
-                self.init_train_predict(train_main, data_loader, 0)
+                self.init_train_predict(train_main, data_loader, 1)
 
         elif modeltype == 2:
             if self.initial_epoch < train_main.params.finetune_epochs:
                 print('Finetuned trained model exists but not completely trained. Therefore resuming the training from '
                       'previous epochs')
-                self.init_train_predict(train_main, data_loader, 0)
-
+                self.init_train_predict(train_main, data_loader, 2)
 
     def init_train_predict(self, train_main, data_loader, modeltype):
         if modeltype == 0:
