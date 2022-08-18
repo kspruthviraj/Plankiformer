@@ -330,6 +330,10 @@ class import_and_train_model:
         model_present_path1 = data_loader.checkpoint_path + '/trained_model_tuned.pth'
         model_present_path2 = data_loader.checkpoint_path + '/trained_model_finetuned.pth'
 
+        print('original path: {}'.format(model_present_path0))
+        print('tune path: {}'.format(model_present_path1))
+        print('finetune path: {}'.format(model_present_path2))
+
         self.import_deit_models(train_main, data_loader)
         if train_main.params.finetune == 0:
             if not os.path.exists(model_present_path0):
@@ -996,8 +1000,8 @@ def cls_train(train_loader, model, criterion, optimizer, clip_grad_norm):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         images, target = images.to(device), target.to(device)
 
-        # output, x = model(images)
-        output = model(images)  # to run it on CSCS
+        output, x = model(images)
+        # output = model(images)  # to run it on CSCS
 
         loss = criterion(output, target.long())
 
