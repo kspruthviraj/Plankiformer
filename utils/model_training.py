@@ -139,10 +139,6 @@ class import_and_train_model:
             test_f1 = f1_score(test_outputs, test_targets, average='macro')
             test_accuracy = accuracy_score(test_outputs, test_targets)
 
-            best_acc1 = max(test_acc1, best_acc1)
-            best_f1 = max(test_f1, best_f1)
-            best_loss = min(test_f1, best_loss)
-
             if train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 1:
                 if test_loss < best_loss:
                     torch.save({'model_state_dict': self.model.state_dict(),
@@ -174,6 +170,13 @@ class import_and_train_model:
                                 'acc': test_acc1,
                                 'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
+
+            else:
+                print('Choose correct metric i.e. based on loss or acc or f1 to save the model')
+
+            best_acc1 = max(test_acc1, best_acc1)
+            best_f1 = max(test_f1, best_f1)
+            best_loss = min(test_f1, best_loss)
 
             train_losses.append(train_loss)
             test_losses.append(test_loss)
