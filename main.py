@@ -169,7 +169,7 @@ class LoadInputParameters:
         for i, elem in enumerate(args.datapaths):
             args.datapaths[i] = elem + '/'
 
-        # args.outpath = args.outpath
+        args.outpath = args.outpath + '/'
         args.training_data = True if args.training_data == 'True' else False
 
         ArgsCheck(args)
@@ -252,6 +252,9 @@ if __name__ == '__main__':
     elif train_params.params.dataset_name == 'birds':
         loaded_data = birds.CreateDataForBirds()
         loaded_data.make_train_test_for_birds(train_params)
+
+    else:
+        print('Choose correct dataset name')
 
     if train_params.params.architecture == 'deit':
         # Model Training

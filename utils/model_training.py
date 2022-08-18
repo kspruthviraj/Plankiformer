@@ -334,6 +334,9 @@ class import_and_train_model:
         print('tune path: {}'.format(model_present_path1))
         print('finetune path: {}'.format(model_present_path2))
 
+        if os.path.exists(model_present_path0):
+            print('I already EXIST')
+
         self.import_deit_models(train_main, data_loader)
         if train_main.params.finetune == 0:
             if not os.path.exists(model_present_path0):
