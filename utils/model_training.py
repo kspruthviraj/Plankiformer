@@ -141,7 +141,7 @@ class import_and_train_model:
             test_accuracy = accuracy_score(test_outputs, test_targets)
 
             if train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 1:
-                if test_loss < best_loss:
+                if test_loss < best_loss or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
                                 'loss': test_loss,
@@ -152,7 +152,7 @@ class import_and_train_model:
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 2:
 
-                if test_f1 > best_f1:
+                if test_f1 > best_f1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
                                 'loss': test_loss,
@@ -162,7 +162,7 @@ class import_and_train_model:
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 3:
-                if test_acc1 > best_acc1:
+                if test_acc1 > best_acc1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
                                 'loss': test_loss,
@@ -190,7 +190,7 @@ class import_and_train_model:
                                                           np.round(train_f1, 3),
                                                           np.round(train_loss, 3),
                                                           np.round(test_accuracy, 3)))
-            print('[Test] Acc:{}, F1:{}, loss:{}, TIME (in mins) :{}, cumulative time (in mins):{}'.format(np.round(test_accuracy, 3),
+            print('[Test] Acc:{}, F1:{}, loss:{}, epoch time (in mins) :{}, cumulative time (in mins):{}'.format(np.round(test_accuracy, 3),
                                                                               np.round(test_f1, 3),
                                                                               np.round(test_loss, 3),
                                                                               np.round(total_mins_per_epoch, 3),
@@ -993,8 +993,8 @@ def cls_train(train_loader, model, criterion, optimizer, clip_grad_norm):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         images, target = images.to(device), target.to(device)
 
-        output, x = model(images)
-        # output = model(images)  # to run it on CSCS and colab
+        # output, x = model(images)
+        output = model(images)  # to run it on CSCS and colab
 
         loss = criterion(output, target.long())
 
