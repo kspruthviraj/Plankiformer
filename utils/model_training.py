@@ -152,7 +152,6 @@ class import_and_train_model:
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 2:
 
                 if test_f1 > best_f1:
-                    print(' I AM in SAVING')
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
                                 'loss': test_loss,
@@ -170,7 +169,6 @@ class import_and_train_model:
                                 'acc': test_acc1,
                                 'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
-
             else:
                 print('Choose correct metric i.e. based on loss or acc or f1 to save the model')
 
@@ -290,8 +288,8 @@ class import_and_train_model:
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.loss = checkpoint['loss']
-        self.f1 = checkpoint['test_f1']
-        self.acc = checkpoint['test_acc1']
+        self.f1 = checkpoint['f1']
+        self.acc = checkpoint['acc']
         self.initial_epoch = checkpoint['epoch']
         self.best_values = [self.loss, self.f1, self.acc]
 
