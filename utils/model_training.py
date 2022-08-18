@@ -277,7 +277,7 @@ class import_and_train_model:
                                                                                               clf_report))
         f.close()
 
-    def resuming_training(self, data_loader, modeltype):
+    def resuming_training(self, train_main, data_loader, modeltype):
         # self.import_deit_models(train_main, data_loader)
 
         if modeltype == 0:
@@ -295,6 +295,25 @@ class import_and_train_model:
         self.acc = checkpoint['acc']
         self.initial_epoch = checkpoint['epoch']
         self.best_values = [self.loss, self.f1, self.acc]
+
+        if modeltype == 0:
+            if self.initial_epoch < train_main.params.epochs:
+                print('Original trained model exists but not completely trained. Therefore resuming the training from '
+                      'previous epochs')
+                self.init_train_predict(train_main, data_loader, 0)
+
+        elif modeltype == 1:
+            if self.initial_epoch < train_main.params.finetune_epochs:
+                print('Tuned trained model exists but not completely trained. Therefore resuming the training from '
+                      'previous epochs')
+                self.init_train_predict(train_main, data_loader, 0)
+
+        elif modeltype == 2:
+            if self.initial_epoch < train_main.params.finetune_epochs:
+                print('Finetuned trained model exists but not completely trained. Therefore resuming the training from '
+                      'previous epochs')
+                self.init_train_predict(train_main, data_loader, 0)
+
 
     def init_train_predict(self, train_main, data_loader, modeltype):
         if modeltype == 0:
@@ -344,39 +363,21 @@ class import_and_train_model:
             if not os.path.exists(model_present_path0):
                 self.train_predict(train_main, data_loader, 0)
             else:
-                self.resuming_training(data_loader, 0)
-                if self.initial_epoch < train_main.params.epochs:
-                    print('Trained model exists but not completely trained. Therefore resuming the training from '
-                          'previous epochs')
-                    self.init_train_predict(train_main, data_loader, 0)
-                else:
-                    print('Trained model already exists!')
+                self.resuming_training(train_main, data_loader, 0)
 
         elif train_main.params.finetune == 1:
             if not os.path.exists(model_present_path0):
                 self.train_predict(train_main, data_loader, 0)
                 self.init_train_predict(train_main, data_loader, 1)
-
             elif not os.path.exists(model_present_path1):
                 print(' I am using trained_model_original.pth as the base')
-
-                self.resuming_training(data_loader, 0)
-                if self.initial_epoch < train_main.params.epochs:
-                    print('Trained model exists but not completely trained. Therefore resuming the training from '
-                          'previous epochs')
-                    self.init_train_predict(train_main, data_loader, 0)
-                print('training tuned model')
+                self.resuming_training(train_main, data_loader, 0)
+                print('Now training tuned model')
                 self.initial_epoch = 0
                 self.init_train_predict(train_main, data_loader, 1)
-
             else:
-                self.resuming_training(data_loader, 1)
-                if self.initial_epoch < train_main.params.finetune_epochs:
-                    print('Trained model exists but not completely trained. Therefore resuming the training from '
-                          'previous epochs')
-                    self.init_train_predict(train_main, data_loader, 1)
-                else:
-                    print('Trained model already exists!')
+                print(' I am using trained_model_tuned.pth as the base')
+                self.resuming_training(train_main, data_loader, 1)
 
         elif train_main.params.finetune == 2:
 
@@ -384,39 +385,25 @@ class import_and_train_model:
                 self.train_predict(train_main, data_loader, 0)
                 self.init_train_predict(train_main, data_loader, 1)
                 self.init_train_predict(train_main, data_loader, 2)
-
             elif not os.path.exists(model_present_path1):
                 print(' I am using trained_model_original.pth as the base')
-                self.resuming_training(data_loader, 0)
-                if self.initial_epoch < train_main.params.epochs:
-                    print('Trained model exists but not completely trained. Therefore resuming the training from '
-                          'previous epochs')
-                    self.init_train_predict(train_main, data_loader, 0)
-                print('training tuned model')
+                self.resuming_training(train_main, data_loader, 0)
+                print('Now training tuned model')
                 self.initial_epoch = 0
                 self.init_train_predict(train_main, data_loader, 1)
+                print('Now training finetuned model')
                 self.initial_epoch = 0
                 self.init_train_predict(train_main, data_loader, 2)
 
             elif not os.path.exists(model_present_path2):
-                self.resuming_training(data_loader, 1)
-                if self.initial_epoch < train_main.params.finetune_epochs:
-                    print('Trained model exists but not completely trained. Therefore resuming the training from '
-                          'previous epochs')
-                    self.init_train_predict(train_main, data_loader, 1)
-                else:
-                    print('Trained model already exists!')
+                print(' I am using trained_model_tuned.pth as the base')
+                self.resuming_training(train_main, data_loader, 1)
+                print('Now training finetuned model')
                 self.initial_epoch = 0
                 self.init_train_predict(train_main, data_loader, 2)
-
             else:
-                self.resuming_training(data_loader, 2)
-                if self.initial_epoch < train_main.params.finetune_epochs:
-                    print('Trained model exists but not completely trained. Therefore resuming the training from '
-                          'previous epochs')
-                    self.init_train_predict(train_main, data_loader, 2)
-                else:
-                    print('Trained model already exists!')
+                print(' I am using trained_model_finetuned.pth as the base')
+                self.resuming_training(train_main, data_loader, 2)
         else:
             print('Choose the correct finetune label')
 
