@@ -272,11 +272,11 @@ class import_and_train_model:
         self.import_deit_models(train_main, data_loader)
 
         if modeltype == 0:
-            PATH = data_loader.checkpoint_path + '/trained_model_original.pth'
+            PATH = data_loader.checkpoint_path + 'trained_model_original.pth'
         elif modeltype == 1:
-            PATH = data_loader.checkpoint_path + '/trained_model_tuned.pth'
+            PATH = data_loader.checkpoint_path + 'trained_model_tuned.pth'
         elif modeltype == 2:
-            PATH = data_loader.checkpoint_path + '/trained_model_finetuned.pth'
+            PATH = data_loader.checkpoint_path + 'trained_model_finetuned.pth'
 
         checkpoint = torch.load(PATH)
         self.model.load_state_dict(checkpoint['model_state_dict'])
@@ -326,9 +326,9 @@ class import_and_train_model:
             self.run_prediction(data_loader, 'finetuned')
 
     def train_and_save(self, train_main, data_loader):
-        model_present_path0 = data_loader.checkpoint_path + '/trained_model_original.pth'
-        model_present_path1 = data_loader.checkpoint_path + '/trained_model_tuned.pth'
-        model_present_path2 = data_loader.checkpoint_path + '/trained_model_finetuned.pth'
+        model_present_path0 = data_loader.checkpoint_path + 'trained_model_original.pth'
+        model_present_path1 = data_loader.checkpoint_path + 'trained_model_tuned.pth'
+        model_present_path2 = data_loader.checkpoint_path + 'trained_model_finetuned.pth'
 
         print('original path: {}'.format(model_present_path0))
         print('tune path: {}'.format(model_present_path1))
