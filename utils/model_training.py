@@ -120,6 +120,7 @@ class import_and_train_model:
         time_begin = time()
 
         for epoch in range(initial_epoch, epochs):
+            time_begin_epoch = time()
             print('EPOCH : {} / {}'.format(epoch + 1, epochs))
 
             adjust_learning_rate(self.optimizer, epoch, lr, train_main.params.warmup,
@@ -183,7 +184,7 @@ class import_and_train_model:
             train_f1s.append(train_f1)
             test_f1s.append(test_f1)
 
-            total_mins_per_epoch = (time() - time_begin) / 60
+            total_mins_per_epoch = (time() - time_begin_epoch) / 60
 
             print('[Train] Acc:{}, F1:{}, loss:{}'.format(np.round(train_accuracy, 3),
                                                           np.round(train_f1, 3),
