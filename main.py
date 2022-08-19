@@ -15,7 +15,6 @@ from utils import for_dogs as dogs
 from utils import for_plankton as fplankton
 from utils import for_wildtrap as wildtrap
 from utils import model_training as mt
-from utils import model_training_cnn as mt_cnn
 from utils import prepare_train_test_data as pdata
 
 
