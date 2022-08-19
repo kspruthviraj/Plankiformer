@@ -1,14 +1,9 @@
+import torch
+
 from utils import for_plankton as fplankton
-from utils import model_training as mt
 from utils import prepare_train_test_data as pdata
 
-import numpy as np
-import torch
-import torchvision.transforms as T
-from torch.utils.data import Dataset
-from torch.utils.data import Dataset
-from torchvision import datasets
-from pathlib import Path
+torch.manual_seed(0)
 
 
 class CreateDataForOthers:

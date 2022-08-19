@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 from torchvision import datasets
 import torchvision.transforms as T
 from torch.utils.data import Dataset
-
+torch.manual_seed(0)
 
 class CreateDataForWildtrap:
     def __init__(self):

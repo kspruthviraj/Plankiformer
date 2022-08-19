@@ -11,7 +11,9 @@ from sklearn.utils import compute_class_weight
 from timm.data.auto_augment import rand_augment_transform
 from torch.utils.data import Dataset
 from torchvision import datasets
-from timm.data.random_erasing import RandomErasing
+
+torch.manual_seed(0)
+
 
 # from auto_augment import AutoAugment, Cutout
 
