@@ -162,6 +162,9 @@ class LoadInputParameters:
                             help="Set this to one if you want to ensemble multiple models else set it to zero")
         parser.add_argument('-predict', type=int, default=None, help='Choose "0" for training anf "1" for predicting')
 
+        # to run it on Google COLAB or CSCS
+        parser.add_argument('-run_cnn_or_on_colab', choices=['yes', 'no'], default='no', )
+
         # # Train from previous saved models
         # parser.add_argument('-train_from_saved', choices=['yes', 'no'], default='no', )
 

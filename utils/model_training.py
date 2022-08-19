@@ -142,7 +142,8 @@ class import_and_train_model:
             adjust_learning_rate(self.optimizer, epoch, lr, train_main.params.warmup,
                                  train_main.params.disable_cos, epochs)
 
-            train_acc1, train_loss, train_outputs, train_targets = cls_train(data_loader.train_dataloader, self.model,
+            train_acc1, train_loss, train_outputs, train_targets = cls_train(train_main, data_loader.train_dataloader,
+                                                                             self.model,
                                                                              self.criterion,
                                                                              self.optimizer,
                                                                              train_main.params.clip_grad_norm)
@@ -206,11 +207,12 @@ class import_and_train_model:
                                                           np.round(train_f1, 3),
                                                           np.round(train_loss, 3),
                                                           np.round(test_accuracy, 3)))
-            print('[Test] Acc:{}, F1:{}, loss:{}, epoch time (in mins) :{}, cumulative time (in mins):{}'.format(np.round(test_accuracy, 3),
-                                                                              np.round(test_f1, 3),
-                                                                              np.round(test_loss, 3),
-                                                                              np.round(total_mins_per_epoch, 3),
-                                                                              np.round(total_mins, 3)))
+            print('[Test] Acc:{}, F1:{}, loss:{}, epoch time (in mins) :{}, cumulative time (in mins):{}'.format(
+                np.round(test_accuracy, 3),
+                np.round(test_f1, 3),
+                np.round(test_loss, 3),
+                np.round(total_mins_per_epoch, 3),
+                np.round(total_mins, 3)))
             if train_main.params.run_lr_scheduler == 'yes':
                 self.lr_scheduler(test_loss)
 
@@ -997,7 +999,7 @@ class EarlyStopping:
                 self.early_stop = True
 
 
-def cls_train(train_loader, model, criterion, optimizer, clip_grad_norm):
+def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_norm):
     model.train()
     loss_val, acc1_val = 0, 0
     n = 0
@@ -1009,8 +1011,10 @@ def cls_train(train_loader, model, criterion, optimizer, clip_grad_norm):
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         images, target = images.to(device), target.to(device)
 
-        output, x = model(images)
-        # output = model(images)  # to run it on CSCS and colab
+        if train_main.params.run_cnn_or_on_colab == 'yes':
+            output = model(images)  # to run it on CSCS and colab
+        else:
+            output, x = model(images)
 
         loss = criterion(output, target.long())
 
