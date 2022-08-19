@@ -3,6 +3,7 @@
 ###########
 
 import argparse
+import os
 import pathlib
 import sys
 
@@ -219,14 +220,21 @@ if __name__ == '__main__':
     loaded_data = None
 
     if train_params.params.dataset_name == 'zoolake':
-        print('Creating dataset using input parameters')
-        prep_data = pdata.CreateDataset()
-        prep_data.LoadData(train_params)
-        prep_data.CreateTrainTestSets(train_params)
-        # For Plankton
-        loaded_data = fplankton.CreateDataForPlankton()
-        loaded_data.make_train_test_for_model(train_params, prep_data)
-        loaded_data.create_data_loaders(train_params)
+
+        if os.path.exists(train_params.params.outpath + '/Data.pickle'):
+            print('USING SAVED DATA!')
+            loaded_data = fplankton.CreateDataForPlankton()
+            loaded_data.make_train_test_for_model(train_params, None)
+            loaded_data.create_data_loaders(train_params)
+        else:
+            print('Creating dataset using input parameters')
+            prep_data = pdata.CreateDataset()
+            prep_data.LoadData(train_params)
+            prep_data.CreateTrainTestSets(train_params)
+            # For Plankton
+            loaded_data = fplankton.CreateDataForPlankton()
+            loaded_data.make_train_test_for_model(train_params, prep_data)
+            loaded_data.create_data_loaders(train_params)
 
     elif train_params.params.dataset_name == 'beetle':
         prep_data = pdata.CreateDataset()

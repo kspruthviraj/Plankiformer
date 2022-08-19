@@ -219,11 +219,11 @@ if __name__ == '__main__':
 
     # For Plankton -- use saved data
     train_params.params.saved_data = 'yes'
-    for_plankton = fplankton.CreateDataForPlankton()
-    for_plankton.make_train_test_for_model(train_params, None)
-    for_plankton.create_data_loaders(train_params)
+    loaded_data = fplankton.CreateDataForPlankton()
+    loaded_data.make_train_test_for_model(train_params, None)
+    loaded_data.create_data_loaders(train_params)
 
     # Model Training
     model_training = mt.import_and_train_model()
     # Run training
-    model_training.train_and_save(train_params, for_plankton)
+    model_training.train_and_save(train_params, loaded_data)
