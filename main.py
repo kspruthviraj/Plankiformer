@@ -222,7 +222,7 @@ if __name__ == '__main__':
     if train_params.params.dataset_name == 'zoolake':
 
         if os.path.exists(train_params.params.outpath + '/Data.pickle'):
-            print('USING SAVED DATA!')
+            print('USING PREVIOUSLY SAVED DATA!')
             loaded_data = fplankton.CreateDataForPlankton()
             loaded_data.make_train_test_for_model(train_params, None)
             loaded_data.create_data_loaders(train_params)
