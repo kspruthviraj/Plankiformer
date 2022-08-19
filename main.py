@@ -264,13 +264,7 @@ if __name__ == '__main__':
     else:
         print('Choose correct dataset name')
 
-    if train_params.params.architecture == 'deit':
-        # Model Training
-        model_training = mt.import_and_train_model()
-        # Run training
-        model_training.train_and_save(train_params, loaded_data)
-    elif train_params.params.architecture == 'cnn':
-        # Model Training
-        model_training = mt_cnn.import_and_train_model()
-        # Run training
-        model_training.train_and_save(train_params, loaded_data)
+    # Model Training
+    model_training = mt.import_and_train_model()
+    # Run training
+    model_training.train_and_save(train_params, loaded_data)

@@ -45,8 +45,15 @@ class import_and_train_model:
 
     def import_deit_models(self, train_main, data_loader):
         classes = data_loader.classes
-        self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
-                                       num_classes=len(np.unique(classes)))
+
+        if train_main.params.architecture == 'deit':
+            self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
+                                           num_classes=len(np.unique(classes)))
+        elif train_main.params.architecture == 'cnn':
+            self.model = timm.create_model('tf_efficientnet_b7', pretrained=True,
+                                           num_classes=len(np.unique(classes)))
+        else:
+            print('This model cannot be imported. Please check from the list of models')
 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model) # to run on multiple GPUs
@@ -78,8 +85,17 @@ class import_and_train_model:
 
     def import_deit_models_for_testing(self, train_main, test_main):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
-        self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
-                                       num_classes=len(np.unique(classes)))
+        # self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
+        #                                num_classes=len(np.unique(classes)))
+        if train_main.params.architecture == 'deit':
+            self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
+                                           num_classes=len(np.unique(classes)))
+        elif train_main.params.architecture == 'cnn':
+            self.model = timm.create_model('tf_efficientnet_b7', pretrained=True,
+                                           num_classes=len(np.unique(classes)))
+        else:
+            print('This model cannot be imported. Please check from the list of models')
+
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model)
         self.model.to(device)
