@@ -349,7 +349,7 @@ class AugmentedDataset(Dataset):
         T.RandomInvert(),
         T.RandomAutocontrast(),
         T.RandomEqualize(),
-        T.AugMix(),
+        # T.AugMix(),
         T.RandomAdjustSharpness(sharpness_factor=2),
         T.ColorJitter(brightness=0.5, hue=0.3),
         T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
