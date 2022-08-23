@@ -343,7 +343,7 @@ class AugmentedDataset(Dataset):
         T.RandomHorizontalFlip(),
         T.RandomVerticalFlip(),
         T.RandAugment(),
-        # T.TrivialAugmentWide(),
+        T.TrivialAugmentWide(),
         # T.AugMix(),
         # T.RandomResizedCrop(size=(224, 224)),
         # T.RandomErasing(),
