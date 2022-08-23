@@ -1267,9 +1267,6 @@ class CTestSet_with_y:
                                          shuffle=True, stratify=self.y)
                 elif valid_set == 'yes':
                     train_ratio = 0.80
-                    validation_ratio = 0.10
-                    test_ratio = 0.10
-                    train_ratio = 0.80
                     validation_ratio = 0.05
                     test_ratio = 0.15
                     self.trainX, test1X, self.trainY, test1Y, self.trainFilenames, test1Filenames = \
