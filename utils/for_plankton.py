@@ -343,7 +343,7 @@ class AugmentedDataset(Dataset):
         T.RandomHorizontalFlip(),
         T.RandomVerticalFlip(),
         T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
-        #         T.RandomPerspective(distortion_scale=0.8, p=0.1),
+        T.RandomPerspective(distortion_scale=0.8, p=0.1),
         T.RandomRotation(degrees=(0, 180)),
         T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3), scale=(0.5, 0.9)),
         T.ToTensor()])
