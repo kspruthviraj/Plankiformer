@@ -987,8 +987,8 @@ class CTrainTestSet:
                         train_test_split(self.X, self.y, self.filenames, test_size=test_size, random_state=random_state,
                                          shuffle=True, stratify=self.y)
                 elif valid_set == 'yes':
-                    train_ratio = 0.70
-                    validation_ratio = 0.15
+                    train_ratio = 0.80
+                    validation_ratio = 0.05
                     test_ratio = 0.15
                     self.trainX, test1X, self.trainY, test1Y, self.trainFilenames, test1Filenames = \
                         train_test_split(self.X, self.y, self.filenames, test_size=1 - train_ratio,
