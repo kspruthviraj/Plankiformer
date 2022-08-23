@@ -364,7 +364,7 @@ class CreateDataset:
 
         if train_main.params.save_data == 'yes':
             with open(train_main.params.outpath + '/Data.pickle', 'wb') as a:
-                pickle.dump(self.Data, a)
+                pickle.dump(self.Data, a, protocol=4)
 
         if train_main.params.balance_weight == 'yes':
             with open(train_main.params.outpath + '/class_weights.pickle', 'wb') as cw:
@@ -437,7 +437,7 @@ class CreateDataset:
 
         if train_main.params.save_data == 'yes':
             with open(train_main.params.outpath + '/Data.pickle', 'wb') as a:
-                pickle.dump(self.Data, a)
+                pickle.dump(self.Data, a, protocol=4)
 
         if train_main.params.balance_weight == 'yes':
             with open(train_main.params.outpath + '/class_weights.pickle', 'wb') as cw:
