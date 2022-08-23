@@ -344,7 +344,7 @@ class AugmentedDataset(Dataset):
         T.RandomVerticalFlip(),
         # T.RandomErasing(),
         # T.Grayscale(),
-        # T.RandomInvert(),
+        T.RandomInvert(),
         T.RandomAutocontrast(),
         T.RandomEqualize(),
         T.RandomAdjustSharpness(sharpness_factor=2),
