@@ -347,7 +347,7 @@ class AugmentedDataset(Dataset):
         # T.AugMix(),
         T.RandomResizedCrop(size=(224, 224)),
         # T.RandomErasing(),
-        T.Grayscale(),
+        # T.Grayscale(),
         T.RandomInvert(),
         T.RandomAutocontrast(),
         T.RandomEqualize(),
