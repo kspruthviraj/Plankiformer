@@ -121,7 +121,7 @@ class import_and_train_model:
         # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
         # Early stopping and lr scheduler
-        self.lr_scheduler = LRScheduler(self.optimizer)
+
         self.early_stopping = EarlyStopping()
 
     def run_training(self, train_main, data_loader, initial_epoch, epochs, lr, name, best_values):
@@ -222,9 +222,6 @@ class import_and_train_model:
                 np.round(test_loss, 3),
                 np.round(total_mins_per_epoch, 3),
                 np.round(total_mins, 3)))
-
-            if train_main.params.run_lr_scheduler == 'yes':
-                self.lr_scheduler(test_loss)
 
             if train_main.params.run_early_stopping == 'yes':
                 self.early_stopping(test_loss)
@@ -934,8 +931,8 @@ class LRScheduler:
         # self.factor = factor
         self.lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=5, eta_min=5e-10)
 
-    def __call__(self, val_loss):
-        self.lr_scheduler.step(val_loss)
+    def __call__(self):
+        self.lr_scheduler.step()
 
 
 # class LRScheduler:
@@ -1010,6 +1007,7 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
     n = 0
     targets = []
     outputs = []
+    lr_scheduler = LRScheduler(optimizer)
 
     for i, (images, target) in enumerate(train_loader):
 
@@ -1039,6 +1037,9 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
 
         outputs.append(output)
         targets.append(target)
+
+    if train_main.params.run_lr_scheduler == 'yes':
+        lr_scheduler()
 
     outputs = torch.cat(outputs)
     outputs = outputs.cpu().detach().numpy()
