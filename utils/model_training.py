@@ -135,100 +135,108 @@ class import_and_train_model:
         print("Beginning training")
         time_begin = time()
 
+        steps = 4
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=10, eta_min=5e-10)
+
         for epoch in range(initial_epoch, epochs):
-            time_begin_epoch = time()
-            print('EPOCH : {} / {}'.format(epoch + 1, epochs))
+            for idx in range(steps):
+                scheduler.step()
+                time_begin_epoch = time()
+                print('EPOCH : {} / {}'.format(epoch + 1, epochs))
 
-            adjust_learning_rate(self.optimizer, epoch, lr, train_main.params.warmup,
-                                 train_main.params.disable_cos, epochs)
+                # adjust_learning_rate(self.optimizer, epoch, lr, train_main.params.warmup,
+                #                      train_main.params.disable_cos, epochs)
 
-            train_acc1, train_loss, train_outputs, train_targets = cls_train(train_main, data_loader.train_dataloader,
-                                                                             self.model,
-                                                                             self.criterion,
-                                                                             self.optimizer,
-                                                                             train_main.params.clip_grad_norm)
-            test_acc1, test_loss, test_outputs, test_targets, total_mins = cls_validate(data_loader.val_dataloader,
-                                                                                        self.model, self.criterion,
-                                                                                        time_begin=time_begin)
+                train_acc1, train_loss, train_outputs, train_targets = cls_train(train_main, data_loader.train_dataloader,
+                                                                                 self.model,
+                                                                                 self.criterion,
+                                                                                 self.optimizer,
+                                                                                 train_main.params.clip_grad_norm)
+                test_acc1, test_loss, test_outputs, test_targets, total_mins = cls_validate(data_loader.val_dataloader,
+                                                                                            self.model, self.criterion,
+                                                                                            time_begin=time_begin)
 
-            train_f1 = f1_score(train_outputs, train_targets, average='macro')
-            train_accuracy = accuracy_score(train_outputs, train_targets)
+                train_f1 = f1_score(train_outputs, train_targets, average='macro')
+                train_accuracy = accuracy_score(train_outputs, train_targets)
 
-            test_f1 = f1_score(test_outputs, test_targets, average='macro')
-            test_accuracy = accuracy_score(test_outputs, test_targets)
+                test_f1 = f1_score(test_outputs, test_targets, average='macro')
+                test_accuracy = accuracy_score(test_outputs, test_targets)
 
-            if epoch == epochs:
-                torch.save({'model_state_dict': self.model.state_dict(),
-                            'optimizer_state_dict': self.optimizer.state_dict(),
-                            'loss': test_loss,
-                            'f1': test_f1,
-                            'acc': test_acc1,
-                            'epoch': epoch},
-                           data_loader.checkpoint_path + '/trained_model_' + name + '_last_epoch.pth')
-
-            if train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 1:
-                if test_loss < best_loss or epoch == 1:
+                if epoch == epochs:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
                                 'loss': test_loss,
                                 'f1': test_f1,
                                 'acc': test_acc1,
                                 'epoch': epoch},
-                               data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
+                               data_loader.checkpoint_path + '/trained_model_' + name + '_last_epoch.pth')
 
-            elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 2:
+                if train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 1:
+                    if test_loss < best_loss or epoch == 1:
+                        torch.save({'model_state_dict': self.model.state_dict(),
+                                    'optimizer_state_dict': self.optimizer.state_dict(),
+                                    'loss': test_loss,
+                                    'f1': test_f1,
+                                    'acc': test_acc1,
+                                    'epoch': epoch},
+                                   data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
-                if test_f1 > best_f1 or epoch == 1:
-                    torch.save({'model_state_dict': self.model.state_dict(),
-                                'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': test_loss,
-                                'f1': test_f1,
-                                'acc': test_acc1,
-                                'epoch': epoch},
-                               data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
+                elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 2:
 
-            elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 3:
-                if test_acc1 > best_acc1 or epoch == 1:
-                    torch.save({'model_state_dict': self.model.state_dict(),
-                                'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': test_loss,
-                                'f1': test_f1,
-                                'acc': test_acc1,
-                                'epoch': epoch},
-                               data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
-            else:
-                print('Choose correct metric i.e. based on loss or acc or f1 to save the model')
+                    if test_f1 > best_f1 or epoch == 1:
+                        torch.save({'model_state_dict': self.model.state_dict(),
+                                    'optimizer_state_dict': self.optimizer.state_dict(),
+                                    'loss': test_loss,
+                                    'f1': test_f1,
+                                    'acc': test_acc1,
+                                    'epoch': epoch},
+                                   data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
-            best_acc1 = max(test_acc1, best_acc1)
-            best_f1 = max(test_f1, best_f1)
-            best_loss = min(test_f1, best_loss)
+                elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 3:
+                    if test_acc1 > best_acc1 or epoch == 1:
+                        torch.save({'model_state_dict': self.model.state_dict(),
+                                    'optimizer_state_dict': self.optimizer.state_dict(),
+                                    'loss': test_loss,
+                                    'f1': test_f1,
+                                    'acc': test_acc1,
+                                    'epoch': epoch},
+                                   data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
+                else:
+                    print('Choose correct metric i.e. based on loss or acc or f1 to save the model')
 
-            train_losses.append(train_loss)
-            test_losses.append(test_loss)
-            train_accuracies.append(train_accuracy)
-            test_accuracies.append(test_accuracy)
-            train_f1s.append(train_f1)
-            test_f1s.append(test_f1)
+                best_acc1 = max(test_acc1, best_acc1)
+                best_f1 = max(test_f1, best_f1)
+                best_loss = min(test_f1, best_loss)
 
-            total_mins_per_epoch = (time() - time_begin_epoch) / 60
+                train_losses.append(train_loss)
+                test_losses.append(test_loss)
+                train_accuracies.append(train_accuracy)
+                test_accuracies.append(test_accuracy)
+                train_f1s.append(train_f1)
+                test_f1s.append(test_f1)
 
-            print('[Train] Acc:{}, F1:{}, loss:{}'.format(np.round(train_accuracy, 3),
-                                                          np.round(train_f1, 3),
-                                                          np.round(train_loss, 3),
-                                                          np.round(test_accuracy, 3)))
-            print('[Test] Acc:{}, F1:{}, loss:{}, epoch time (in mins) :{}, cumulative time (in mins):{}'.format(
-                np.round(test_accuracy, 3),
-                np.round(test_f1, 3),
-                np.round(test_loss, 3),
-                np.round(total_mins_per_epoch, 3),
-                np.round(total_mins, 3)))
-            if train_main.params.run_lr_scheduler == 'yes':
-                self.lr_scheduler(test_loss)
+                total_mins_per_epoch = (time() - time_begin_epoch) / 60
 
-            if train_main.params.run_early_stopping == 'yes':
-                self.early_stopping(test_loss)
-                if self.early_stopping.early_stop:
-                    break
+                print('[Train] Acc:{}, F1:{}, loss:{}'.format(np.round(train_accuracy, 3),
+                                                              np.round(train_f1, 3),
+                                                              np.round(train_loss, 3),
+                                                              np.round(test_accuracy, 3)))
+                print('[Test] Acc:{}, F1:{}, loss:{}, epoch time (in mins) :{}, cumulative time (in mins):{}'.format(
+                    np.round(test_accuracy, 3),
+                    np.round(test_f1, 3),
+                    np.round(test_loss, 3),
+                    np.round(total_mins_per_epoch, 3),
+                    np.round(total_mins, 3)))
+
+                # if train_main.params.run_lr_scheduler == 'yes':
+                #     self.lr_scheduler(test_loss)
+
+                if train_main.params.run_early_stopping == 'yes':
+                    self.early_stopping(test_loss)
+                    if self.early_stopping.early_stop:
+                        break
+
+            scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, steps)
 
         total_mins = (time() - time_begin) / 60
 
@@ -922,21 +930,16 @@ class LRScheduler:
     by given `factor`.
     """
 
-    def __init__(
-            self, optimizer, patience=10, min_lr=1e-10, factor=0.5
-    ):
+    def __init__(self, optimizer):
         """
         new_lr = old_lr * factor
         :param optimizer: the optimizer we are using
-        :param patience: how many epochs to wait before updating the lr
-        :param min_lr: least lr value to reduce to while updating
-        :param factor: factor by which the lr should be updated
         """
         self.optimizer = optimizer
-        self.patience = patience
-        self.min_lr = min_lr
-        self.factor = factor
-        self.lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, 10)
+        # self.patience = patience
+        # self.min_lr = min_lr
+        # self.factor = factor
+        self.lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=10, eta_min=5e-10)
 
     def __call__(self, val_loss):
         self.lr_scheduler.step(val_loss)
