@@ -233,9 +233,9 @@ class import_and_train_model:
         total_mins = (time() - time_begin) / 60
 
         print(f'Script finished in {total_mins:.2f} minutes, '
-              f'best acc top-1: {best_acc1:.2f}, '
-              f'best loss top-1: {best_loss:.2f}, '
-              f'best f1 top-1: {best_f1:.2f}, ')
+              f'best val acc top-1: {best_acc1:.2f}, '
+              f'best val loss top-1: {best_loss:.2f}, '
+              f'best val f1 top-1: {best_f1:.2f}, ')
 
         Logs = [train_losses, train_accuracies, test_losses, test_accuracies, train_f1s, test_f1s]
 
