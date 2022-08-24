@@ -157,6 +157,15 @@ class import_and_train_model:
             test_f1 = f1_score(test_outputs, test_targets, average='macro')
             test_accuracy = accuracy_score(test_outputs, test_targets)
 
+            if epoch == epochs:
+                torch.save({'model_state_dict': self.model.state_dict(),
+                            'optimizer_state_dict': self.optimizer.state_dict(),
+                            'loss': test_loss,
+                            'f1': test_f1,
+                            'acc': test_acc1,
+                            'epoch': epoch},
+                           data_loader.checkpoint_path + '/trained_model_' + name + '_last_epoch.pth')
+
             if train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 1:
                 if test_loss < best_loss or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
