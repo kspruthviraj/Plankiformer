@@ -156,6 +156,8 @@ class import_and_train_model:
 
             test_f1 = f1_score(test_outputs, test_targets, average='macro')
             test_accuracy = accuracy_score(test_outputs, test_targets)
+            print('epoch number is: {}'.format(epoch))
+            print('Total epochs  is: {}'.format(epochs))
 
             if epoch == epochs:
                 torch.save({'model_state_dict': self.model.state_dict(),
