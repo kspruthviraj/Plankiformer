@@ -168,7 +168,7 @@ class import_and_train_model:
             else:
                 pass
 
-            if (epoch + 1) % 10:
+            if (epoch + 1) % 10 == 0:
                 torch.save({'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
                             'loss': test_loss,
