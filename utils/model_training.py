@@ -165,6 +165,8 @@ class import_and_train_model:
                             'acc': test_acc1,
                             'epoch': epoch},
                            data_loader.checkpoint_path + '/trained_model_' + name + '_last_epoch.pth')
+            else:
+                pass
 
             if train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 1:
                 if test_loss < best_loss or epoch == 1:
