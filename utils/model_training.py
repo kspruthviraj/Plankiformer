@@ -159,7 +159,8 @@ class import_and_train_model:
             print('epoch number is: {}'.format(epoch))
             print('Total epochs  is: {}'.format(epochs))
 
-            if epoch == epochs:
+            if epoch + 1 == epochs:
+                print('IAM HERE')
                 torch.save({'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
                             'loss': test_loss,
