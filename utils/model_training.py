@@ -156,11 +156,8 @@ class import_and_train_model:
 
             test_f1 = f1_score(test_outputs, test_targets, average='macro')
             test_accuracy = accuracy_score(test_outputs, test_targets)
-            print('epoch number is: {}'.format(epoch))
-            print('Total epochs  is: {}'.format(epochs))
 
             if epoch + 1 == epochs:
-                print('IAM HERE')
                 torch.save({'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
                             'loss': test_loss,
@@ -168,6 +165,17 @@ class import_and_train_model:
                             'acc': test_acc1,
                             'epoch': epoch},
                            data_loader.checkpoint_path + '/trained_model_' + name + '_last_epoch.pth')
+            else:
+                pass
+
+            if epoch + 1 % 10 == 0:
+                torch.save({'model_state_dict': self.model.state_dict(),
+                            'optimizer_state_dict': self.optimizer.state_dict(),
+                            'loss': test_loss,
+                            'f1': test_f1,
+                            'acc': test_acc1,
+                            'epoch': epoch},
+                           data_loader.checkpoint_path + '/trained_model_' + name + '_' + str(epoch) + '_epoch.pth')
             else:
                 pass
 
