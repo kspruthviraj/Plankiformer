@@ -175,7 +175,7 @@ class import_and_train_model:
                             'f1': test_f1,
                             'acc': test_acc1,
                             'epoch': epoch},
-                           data_loader.checkpoint_path + '/trained_model_' + name + '_' + str(epoch) + '_epoch.pth')
+                           data_loader.checkpoint_path + '/trained_model_' + name + '_' + str(epoch + 1) + '_epoch.pth')
             else:
                 pass
 
