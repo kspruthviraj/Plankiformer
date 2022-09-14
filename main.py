@@ -134,6 +134,7 @@ class LoadInputParameters:
         parser.add_argument('-run_lr_scheduler', choices=['yes', 'no'], default='no', )
         parser.add_argument('-save_best_model_on_loss_or_f1_or_accuracy', type=int, default=2,
                             help='Choose "1" to save model based on loss or "2" based on f1-score or "3" based on accu')
+        parser.add_argument('-use_gpu', choices=['yes', 'no'], default='no', help='Choose "no" to run using cpu')
 
         # Superclass or not
         parser.add_argument('-super_class', choices=['yes', 'no'], default='yes', )
