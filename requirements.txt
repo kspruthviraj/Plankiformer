@@ -11,7 +11,6 @@ google-auth==2.6.5
 google-auth-oauthlib==0.4.6
 google-pasta==0.2.0
 grpcio==1.44.0
-idna==3.3
 importlib-metadata==4.11.3
 joblib==1.1.0
 keras==2.8.0
