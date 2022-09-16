@@ -30,10 +30,13 @@ class CreateDataForPlankton:
         self.params = None
         return
 
-    def make_train_test_for_model(self, train_main, prep_data):
+    def make_train_test_for_model(self, train_main, test_main, prep_data):
         Data = prep_data.Data
-        self.class_weights_tensor = prep_data.tt.class_weights_tensor
+        # self.class_weights_tensor = prep_data.tt.class_weights_tensor
+        # self.Filenames = prep_data.Filenames
+        self.classes = np.load(test_main.params.main_param_path + '/classes.npy')
         self.Filenames = prep_data.Filenames
+        self.class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
 
         if train_main.params.ttkind == 'mixed':
             self.trainFilenames = Data[0]
