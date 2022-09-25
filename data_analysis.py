@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser(description='Plot some figures about data distr
 parser.add_argument('-datapaths', nargs='*', help='path of the dataset')
 parser.add_argument('-outpath', help='path of the output')
 parser.add_argument('-selected_features', nargs='*', help='select the features that you want to analyse')
+parser.add_argument('-n_bins', type=int, help='number of bins in the feature distribution plot')
 args = parser.parse_args()
 
 
@@ -44,7 +45,7 @@ def PlotAbundance(datapaths, outpath):
         plt.show()
     
 
-def PlotFeatureDistribution(datapaths, outpath, selected_features):
+def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
     n_data = len(datapaths) # number of datapaths
 
     for idatapath in datapaths:
@@ -62,7 +63,7 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features):
             ax.set_ylabel('Count')
             # plot feature distributions from all dataset together
             for idatapath in datapaths:
-                plt.hist(df_all_feat[ifeature], histtype='step', density=True, bins=30, stacked=True)
+                plt.hist(df_all_feat[ifeature], histtype='step', density=True, bins=n_bins, stacked=True)
             outpath_feature = outpath + ifeature + '/'
             try:
                 os.mkdir(outpath_feature)
@@ -185,7 +186,7 @@ def ConcatAllFeatures(class_datapath):
 
 if __name__ == '__main__':
     PlotAbundance(args.datapaths, args.outpath)
-    PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features)
+    PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins)
 
 
 # TO DO:
