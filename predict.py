@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     # For Plankton testing
     for_plankton_test = fplankton_test.CreateDataForPlankton()
-    for_plankton_test.make_train_test_for_model(train_params, prep_test_data)
+    for_plankton_test.make_train_test_for_model(train_params, test_params, prep_test_data)
     for_plankton_test.create_data_loaders(train_params)
 
     # initialize model training
