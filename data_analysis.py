@@ -60,7 +60,7 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
             plt.draw()
             ax = plt.subplot(1, 1, 1)
             ax.set_xlabel(ifeature)
-            ax.set_ylabel('Count')
+            ax.set_ylabel('Density')
             # plot feature distributions from all dataset together
             for idatapath in datapaths:
                 plt.hist(df_all_feat[ifeature], histtype='step', density=True, bins=n_bins)
@@ -165,14 +165,14 @@ def ConcatAllFeatures(class_datapath):
         df_feat.loc[i, 'url'] = df_feat.loc[i, 'url'][13:]
     df_feat = df_feat.sort_values(by='url')
     df_feat = df_feat.reset_index(drop=True)
-    df_feat.to_csv(class_datapath + 'features_sorted.tsv') # save sorted original features
+    # df_feat.to_csv(class_datapath + 'features_sorted.tsv') # save sorted original features
     
 
     # load extra features from image
     list_image = os.listdir(class_image_datapath) # list of image names
     df_extra_feat = LoadExtraFeatures(class_image_datapath, list_image)
     df_extra_feat = df_extra_feat.reset_index(drop=True)
-    df_extra_feat.to_csv(class_datapath + 'extra_features.tsv') # save extra features
+    # df_extra_feat.to_csv(class_datapath + 'extra_features.tsv') # save extra features
 
     # original_features = df_feat.columns.to_list()
     # extra_features = df_extra_feat.columns.to_list()
