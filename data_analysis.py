@@ -63,7 +63,7 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
             ax.set_ylabel('Count')
             # plot feature distributions from all dataset together
             for idatapath in datapaths:
-                plt.hist(df_all_feat[ifeature], histtype='step', density=True, bins=n_bins, stacked=True)
+                plt.hist(df_all_feat[ifeature], histtype='step', density=True, bins=n_bins)
             outpath_feature = outpath + ifeature + '/'
             try:
                 os.mkdir(outpath_feature)
