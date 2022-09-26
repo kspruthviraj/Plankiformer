@@ -25,7 +25,11 @@ def PlotAbundance(datapaths, outpath):
         list_n_image_class = []
         # list of the numbers of images in each class
         for iclass in list_class:
-            n_image_class = len(os.listdir(idatapath + '%s/training_data/' % iclass))
+            if os.path.exists(idatapath + '/%s/training_data/' % iclass):
+                n_image_class = len(os.listdir(idatapath + '/%s/training_data/' % iclass))
+            else:
+                n_image_class = len(os.listdir(idatapath + '/%s/' % iclass))
+
             list_n_image_class.append(n_image_class)
 
         dict_class = dict(zip(list_class, list_n_image_class))
@@ -42,35 +46,48 @@ def PlotAbundance(datapaths, outpath):
 
         plt.tight_layout()
         plt.savefig(outpath + 'abundance_set%s.png' % ith)
-        plt.show()
+        ax.clear()
+        # plt.close(ax)
+        # plt.show()
     
 
 def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
     n_data = len(datapaths) # number of datapaths
 
+    list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
+                     'chaoborus', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
+                     'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
+                     'fish', 'fragilaria', 'hydra', 'kellicottia', 'keratella_cochlearis', 'keratella_quadrata', 
+                     'leptodora', 'maybe_cyano', 'nauplius', 'paradileptus', 'polyarthra', 'rotifers', 
+                     'synchaeta', 'trichocerca', 'unknown', 'unknown_plankton', 'uroglena']
+    
+    # find the repetitive classes in selected datasets
     for idatapath in datapaths:
         list_class = os.listdir(idatapath)
-
-    for iclass in list_class:
-        class_datapath = idatapath + iclass +'/' # directory of each class with classname
-        df_all_feat = ConcatAllFeatures(class_datapath)
-
-        # plot feature distribution
+        list_class_rep = list(set(list_class) & set(list_class_rep))
+    print(list_class_rep)
+    
+    # plot feature distribution
+    for iclass in list_class_rep:
         for ifeature in selected_features:
-            plt.draw()
+            # plt.draw()
             ax = plt.subplot(1, 1, 1)
             ax.set_xlabel(ifeature)
             ax.set_ylabel('Density')
             # plot feature distributions from all dataset together
             for idatapath in datapaths:
+                class_datapath = idatapath + iclass + '/' # directory of each class with classname
+                df_all_feat = ConcatAllFeatures(class_datapath)
                 plt.hist(df_all_feat[ifeature], histtype='step', density=True, bins=n_bins)
+                
             outpath_feature = outpath + ifeature + '/'
             try:
                 os.mkdir(outpath_feature)
             except FileExistsError:
                 pass
             plt.savefig(outpath_feature + ifeature + '_' + iclass + '.png')
-            plt.show()
+            ax.clear()
+            # plt.show()
 
     
 def LoadExtraFeatures(class_image_datapath, list_image):
@@ -156,30 +173,38 @@ def LoadExtraFeatures(class_image_datapath, list_image):
 
 
 def ConcatAllFeatures(class_datapath):
-    class_image_datapath = class_datapath + 'training_data/' # folder with images inside
-    df_feat = pd.read_csv(class_datapath + 'features.tsv', sep='\t') # dataframe of original features 
+    if os.path.exists(class_datapath + 'training_data/'):
+        class_image_datapath = class_datapath + 'training_data/' # folder with images inside
+        df_feat = pd.read_csv(class_datapath + 'features.tsv', sep='\t') # dataframe of original features 
 
 
-    # sort the dataframe of original features by image name
-    for i in range(df_feat.shape[0]):
-        df_feat.loc[i, 'url'] = df_feat.loc[i, 'url'][13:]
-    df_feat = df_feat.sort_values(by='url')
-    df_feat = df_feat.reset_index(drop=True)
-    # df_feat.to_csv(class_datapath + 'features_sorted.tsv') # save sorted original features
+        # sort the dataframe of original features by image name
+        for i in range(df_feat.shape[0]):
+            df_feat.loc[i, 'url'] = df_feat.loc[i, 'url'][13:]
+        df_feat = df_feat.sort_values(by='url')
+        df_feat = df_feat.reset_index(drop=True)
+        # df_feat.to_csv(class_datapath + 'features_sorted.tsv') # save sorted original features
+        
+
+        # load extra features from image
+        list_image = os.listdir(class_image_datapath) # list of image names
+        df_extra_feat = LoadExtraFeatures(class_image_datapath, list_image)
+        df_extra_feat = df_extra_feat.reset_index(drop=True)
+        # df_extra_feat.to_csv(class_datapath + 'extra_features.tsv') # save extra features
+
+        # original_features = df_feat.columns.to_list()
+        # extra_features = df_extra_feat.columns.to_list()
+        # all_features = original_features + extra_features
+        # df_all_feat = pd.DataFrame(columns=all_features)
+        
+        df_all_feat = pd.concat([df_feat, df_extra_feat], axis=1) # concatenate orginal and extra features
     
-
-    # load extra features from image
-    list_image = os.listdir(class_image_datapath) # list of image names
-    df_extra_feat = LoadExtraFeatures(class_image_datapath, list_image)
-    df_extra_feat = df_extra_feat.reset_index(drop=True)
-    # df_extra_feat.to_csv(class_datapath + 'extra_features.tsv') # save extra features
-
-    # original_features = df_feat.columns.to_list()
-    # extra_features = df_extra_feat.columns.to_list()
-    # all_features = original_features + extra_features
-    # df_all_feat = pd.DataFrame(columns=all_features)
-    
-    df_all_feat = pd.concat([df_feat, df_extra_feat], axis=1) # concatenate orginal and extra features
+    else:
+        class_image_datapath = class_datapath
+        list_image = os.listdir(class_image_datapath) # list of image names
+        df_extra_feat = LoadExtraFeatures(class_image_datapath, list_image)
+        df_extra_feat = df_extra_feat.reset_index(drop=True)
+        df_all_feat = df_extra_feat
 
     return df_all_feat
 
@@ -189,8 +214,5 @@ if __name__ == '__main__':
     PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins)
 
 
-# TO DO:
-# tune the bin size
-# set y-axis to density
 
 
