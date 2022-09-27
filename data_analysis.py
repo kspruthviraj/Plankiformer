@@ -54,7 +54,7 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
     n_data = len(datapaths) # number of datapaths
 
     list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
-                     'chaoborus', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
+                     'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
                      'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
                      'fish', 'fragilaria', 'hydra', 'kellicottia', 'keratella_cochlearis', 'keratella_quadrata', 
                      'leptodora', 'maybe_cyano', 'nauplius', 'paradileptus', 'polyarthra', 'rotifers', 
