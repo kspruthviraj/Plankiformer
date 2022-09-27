@@ -47,8 +47,7 @@ def PlotAbundance(datapaths, outpath):
         plt.tight_layout()
         plt.savefig(outpath + 'abundance_set%s.png' % ith)
         ax.clear()
-        # plt.close(ax)
-        # plt.show()
+        
     
 
 def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
@@ -70,15 +69,34 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
     # plot feature distribution
     for iclass in list_class_rep:
         for ifeature in selected_features:
-            # plt.draw()
             ax = plt.subplot(1, 1, 1)
             ax.set_xlabel(ifeature)
             ax.set_ylabel('Density')
-            # plot feature distributions from all dataset together
+
+            min_feature = []
+            max_feature = []
+            feature = []
+
             for idatapath in datapaths:
                 class_datapath = idatapath + iclass + '/' # directory of each class with classname
                 df_all_feat = ConcatAllFeatures(class_datapath)
-                plt.hist(df_all_feat[ifeature], histtype='step', density=True, bins=n_bins)
+
+                min_feature.append(min(df_all_feat[ifeature]))
+                max_feature.append(max(df_all_feat[ifeature]))
+                feature.append(df_all_feat[ifeature])
+
+            min_bin = min(min_feature) # find global minimum value of feature in all datasets
+            max_bin = max(max_feature) # find global maximum value of feature in all datasets
+            
+            histogram = plt.hist(feature, histtype='stepfilled', bins=n_bins, range=(min_bin, max_bin), density=True, alpha=0.5)
+            
+            density_1 = histogram[0][0]
+            density_2 = histogram[0][1]
+
+            HD = HellingerDistance(density_1, density_2) # compute the Hellinger distance of feature between 2 datasets
+            
+            plt.title('Hellinger distance = %.3f' % HD)
+            plt.tight_layout()
                 
             outpath_feature = outpath + ifeature + '/'
             try:
@@ -87,7 +105,15 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
                 pass
             plt.savefig(outpath_feature + ifeature + '_' + iclass + '.png')
             ax.clear()
-            # plt.show()
+
+
+
+def HellingerDistance(p, q):
+    p = np.array(p)
+    q = np.array(q)
+    HD = 1 / np.sqrt(2) * np.linalg.norm(np.sqrt(p) - np.sqrt(q))
+    return HD
+
 
     
 def LoadExtraFeatures(class_image_datapath, list_image):
@@ -172,6 +198,7 @@ def LoadExtraFeatures(class_image_datapath, list_image):
     return df_extra_feat
 
 
+
 def ConcatAllFeatures(class_datapath):
     if os.path.exists(class_datapath + 'training_data/'):
         class_image_datapath = class_datapath + 'training_data/' # folder with images inside
@@ -207,6 +234,7 @@ def ConcatAllFeatures(class_datapath):
         df_all_feat = df_extra_feat
 
     return df_all_feat
+
 
 
 if __name__ == '__main__':
