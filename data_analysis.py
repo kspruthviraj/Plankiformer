@@ -111,7 +111,7 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
 def HellingerDistance(p, q):
     p = np.array(p)
     q = np.array(q)
-    HD = 1 / np.sqrt(2) * np.linalg.norm(np.sqrt(p) - np.sqrt(q))
+    HD = np.linalg.norm(np.sqrt(p) - np.sqrt(q)) / np.sqrt(2)
     return HD
 
 
