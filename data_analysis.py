@@ -64,7 +64,7 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
     for idatapath in datapaths:
         list_class = os.listdir(idatapath)
         list_class_rep = list(set(list_class) & set(list_class_rep))
-    print(list_class_rep)
+    print('Repetitive classes of two datasets: {}'.format(list_class_rep))
     
     # plot feature distribution
     for iclass in list_class_rep:
