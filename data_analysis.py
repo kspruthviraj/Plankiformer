@@ -108,6 +108,68 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
 
 
 
+def PlotHDversusBin(datapaths, outpath, selected_features):
+    list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
+                     'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
+                     'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
+                     'fish', 'fragilaria', 'hydra', 'kellicottia', 'keratella_cochlearis', 'keratella_quadrata', 
+                     'leptodora', 'maybe_cyano', 'nauplius', 'paradileptus', 'polyarthra', 'rotifers', 
+                     'synchaeta', 'trichocerca', 'unknown', 'unknown_plankton', 'uroglena']
+
+    # find the repetitive classes in selected datasets
+    for idatapath in datapaths:
+        list_class = os.listdir(idatapath)
+        list_class_rep = list(set(list_class) & set(list_class_rep))
+    print('Repetitive classes of two datasets: {}'.format(list_class_rep))
+
+    list_n_bins = [5, 10, 20, 50, 100, 200, 500]
+    for ifeature in selected_features:
+        ax = plt.subplot(1, 1, 1)
+        
+        for iclass in list_class_rep:
+            list_HD = []
+            for in_bins in list_n_bins:
+                min_feature = []
+                max_feature = []
+                feature = []
+
+                for idatapath in datapaths:
+                    class_datapath = idatapath + iclass + '/' # directory of each class with classname
+                    df_all_feat = ConcatAllFeatures(class_datapath)
+
+                    min_feature.append(min(df_all_feat[ifeature]))
+                    max_feature.append(max(df_all_feat[ifeature]))
+                    feature.append(df_all_feat[ifeature])
+
+                min_bin = min(min_feature) # find global minimum value of feature in all datasets
+                max_bin = max(max_feature) # find global maximum value of feature in all datasets
+
+                histogram_1 = np.histogram(feature[0], bins=in_bins, range=(min_bin, max_bin), density=True)
+                histogram_2 = np.histogram(feature[1], bins=in_bins, range=(min_bin, max_bin), density=True)
+                density_1 = histogram_1[0]
+                density_2 = histogram_2[0]
+
+                HD = HellingerDistance(density_1, density_2) # compute the Hellinger distance of feature between 2 datasets
+                list_HD.append(HD)
+            
+            plt.plot(list_n_bins, list_HD, label=iclass)
+            
+        ax.set_xlabel('Number of bins')
+        ax.set_ylabel('Hellinger Distance')
+        ax.set_title(ifeature)
+        plt.legend(bbox_to_anchor=(1.01, 1.0), borderaxespad=0)
+        plt.tight_layout()
+        
+        outpath_feature = outpath + ifeature + '/'
+        try:
+            os.mkdir(outpath_feature)
+        except FileExistsError:
+            pass
+        plt.savefig(outpath_feature + ifeature + '_HD.png' )
+        ax.clear()
+
+
+
 def HellingerDistance(p, q):
     p = np.array(p)
     q = np.array(q)
@@ -240,3 +302,4 @@ def ConcatAllFeatures(class_datapath):
 if __name__ == '__main__':
     PlotAbundance(args.datapaths, args.outpath)
     PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins)
+    PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
