@@ -116,7 +116,7 @@ def HellingerDistance(p, q):
 
 
     
-def LoadExtraFeatures(class_image_datapath, list_image):
+def LoadExtraFeatures(class_image_datapath):
     df_extra_feat = pd.DataFrame()
     dfFeatExtra1 = pd.DataFrame(columns=['width', 'height', 'w_rot', 'h_rot', 'angle_rot', 'aspect_ratio_2',
                                             'rect_area', 'contour_area', 'contour_perimeter', 'extent',
@@ -127,7 +127,11 @@ def LoadExtraFeatures(class_image_datapath, list_image):
                                             'mu20', 'mu11', 'mu02', 'mu30', 'mu21', 'mu12', 'mu03', 'nu20', 'nu11',
                                             'nu02', 'nu30', 'nu21', 'nu12', 'nu03'])
 
+    list_image = os.listdir(class_image_datapath)
     for img in list_image:
+        if img == 'Thumbs.db':
+            continue
+        
         image = cv2.imread(class_image_datapath + img)
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blur = cv2.blur(gray, (2, 2))  # blur the image
@@ -204,7 +208,6 @@ def ConcatAllFeatures(class_datapath):
         class_image_datapath = class_datapath + 'training_data/' # folder with images inside
         df_feat = pd.read_csv(class_datapath + 'features.tsv', sep='\t') # dataframe of original features 
 
-
         # sort the dataframe of original features by image name
         for i in range(df_feat.shape[0]):
             df_feat.loc[i, 'url'] = df_feat.loc[i, 'url'][13:]
@@ -212,10 +215,8 @@ def ConcatAllFeatures(class_datapath):
         df_feat = df_feat.reset_index(drop=True)
         # df_feat.to_csv(class_datapath + 'features_sorted.tsv') # save sorted original features
         
-
         # load extra features from image
-        list_image = os.listdir(class_image_datapath) # list of image names
-        df_extra_feat = LoadExtraFeatures(class_image_datapath, list_image)
+        df_extra_feat = LoadExtraFeatures(class_image_datapath)
         df_extra_feat = df_extra_feat.reset_index(drop=True)
         # df_extra_feat.to_csv(class_datapath + 'extra_features.tsv') # save extra features
 
@@ -228,8 +229,7 @@ def ConcatAllFeatures(class_datapath):
     
     else:
         class_image_datapath = class_datapath
-        list_image = os.listdir(class_image_datapath) # list of image names
-        df_extra_feat = LoadExtraFeatures(class_image_datapath, list_image)
+        df_extra_feat = LoadExtraFeatures(class_image_datapath)
         df_extra_feat = df_extra_feat.reset_index(drop=True)
         df_all_feat = df_extra_feat
 
@@ -240,7 +240,3 @@ def ConcatAllFeatures(class_datapath):
 if __name__ == '__main__':
     PlotAbundance(args.datapaths, args.outpath)
     PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins)
-
-
-
-
