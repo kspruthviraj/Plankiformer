@@ -1,3 +1,4 @@
+from cmath import log
 import os
 import argparse
 
@@ -15,7 +16,9 @@ parser.add_argument('-n_bins', type=int, help='number of bins in the feature dis
 args = parser.parse_args()
 
 
-def PlotAbundance(datapaths, outpath):
+def PlotAbundanceSep(datapaths, outpath):
+    '''plot the abundance of datasets seperately'''
+    
     ith = 0
     for idatapath in datapaths:
         ith = ith + 1 # this is the i-th set
@@ -47,8 +50,59 @@ def PlotAbundance(datapaths, outpath):
         plt.tight_layout()
         plt.savefig(outpath + 'abundance_set%s.png' % ith)
         ax.clear()
-        
+
+
+
+def PlotAbundance(datapaths, outpath):
+    '''plot the abundance of two datasets together'''
+
+    list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
+                     'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
+                     'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
+                     'fish', 'fragilaria', 'hydra', 'kellicottia', 'keratella_cochlearis', 'keratella_quadrata', 
+                     'leptodora', 'maybe_cyano', 'nauplius', 'paradileptus', 'polyarthra', 'rotifers', 
+                     'synchaeta', 'trichocerca', 'unknown', 'unknown_plankton', 'uroglena']
     
+    # find the repetitive classes in selected datasets
+    for idatapath in datapaths:
+        list_class = os.listdir(idatapath)
+        list_class_rep = list(set(list_class) & set(list_class_rep))
+    print('Repetitive classes of two datasets: {}'.format(list_class_rep))
+
+    list_n_image_class_combined = []
+    for idatapath in datapaths:
+        list_n_image_class = []
+        # list of the numbers of images in each class
+        for iclass in list_class_rep:
+            if os.path.exists(idatapath + '/%s/training_data/' % iclass):
+                n_image_class = len(os.listdir(idatapath + '/%s/training_data/' % iclass))
+            else:
+                n_image_class = len(os.listdir(idatapath + '/%s/' % iclass))
+
+            list_n_image_class.append(n_image_class)
+
+        list_n_image_class_combined.append(list_n_image_class)
+
+    ax = plt.subplot(1, 1, 1)
+    ax.set_xlabel('Class')
+    ax.set_ylabel('Abundance')
+
+    x = np.arange(0,len(list_class_rep) * 2, 2)
+    width = 0.5
+    x1 = x - width / 2
+    x2 = x + width / 2
+    y1 = list_n_image_class_combined[0]
+    y2 = list_n_image_class_combined[1]
+
+    plt.bar(x1, y1, width=0.5, label='train set', log=True)
+    plt.bar(x2, y2, width=0.5, label='test set', log=True)
+    plt.xticks(x, list_class_rep, rotation=90)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(outpath + 'abundance.png')
+    ax.clear()
+
+
 
 def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
     n_data = len(datapaths) # number of datapaths
@@ -303,5 +357,5 @@ def ConcatAllFeatures(class_datapath):
 
 if __name__ == '__main__':
     PlotAbundance(args.datapaths, args.outpath)
-    PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins)
-    PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
+    # PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins)
+    # PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
