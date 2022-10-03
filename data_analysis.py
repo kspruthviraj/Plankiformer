@@ -1,4 +1,3 @@
-from cmath import log
 import os
 import argparse
 
@@ -18,7 +17,7 @@ args = parser.parse_args()
 
 def PlotAbundanceSep(datapaths, outpath):
     '''plot the abundance of datasets seperately'''
-    
+
     ith = 0
     for idatapath in datapaths:
         ith = ith + 1 # this is the i-th set
