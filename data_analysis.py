@@ -173,6 +173,8 @@ def PlotHDversusBin(datapaths, outpath, selected_features):
 def HellingerDistance(p, q):
     p = np.array(p)
     q = np.array(q)
+    p = np.divide(p, len(p))
+    q = np.divide(q, len(q))
     HD = np.linalg.norm(np.sqrt(p) - np.sqrt(q)) / np.sqrt(2)
     return HD
 
