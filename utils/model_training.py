@@ -315,7 +315,7 @@ class import_and_train_model:
             pickle.dump(GT_Pred_GTLabel_PredLabel_Prob, cw)
 
         accuracy_model = accuracy_score(target_label, output_label)
-        clf_report = classification_report(target_label, output_label)
+        clf_report = classification_report(target_label, output_label, labels=np.unique(target_label))
         f1 = f1_score(target_label, output_label, average='macro')
 
         f = open(data_loader.checkpoint_path + 'test_report_' + name + '.txt', 'w')
@@ -669,7 +669,7 @@ class import_and_train_model:
                            fmt='%s')
 
             accuracy_model = accuracy_score(target_label, output_label)
-            clf_report = classification_report(target_label, output_label)
+            clf_report = classification_report(target_label, output_label, labels=np.unique(target_label))
             f1 = f1_score(target_label, output_label, average='macro')
 
             f = open(test_main.params.test_outpath + 'Single_test_report_' + name + '.txt', 'w')
@@ -760,7 +760,7 @@ class import_and_train_model:
                        '.txt', To_write, fmt='%s')
 
             accuracy_model = accuracy_score(GT_label, Ens_DEIT_label)
-            clf_report = classification_report(GT_label, Ens_DEIT_label)
+            clf_report = classification_report(GT_label, Ens_DEIT_label, labels=np.unique(GT_label))
             f1 = f1_score(GT_label, Ens_DEIT_label, average='macro')
 
             f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '.txt', 'w')
@@ -788,7 +788,7 @@ class import_and_train_model:
                        '_thresholded_' + str(test_main.params.threshold) + '.txt', To_write, fmt='%s')
 
             accuracy_model = accuracy_score(GT_label, Ens_DEIT_corrected_label)
-            clf_report = classification_report(GT_label, Ens_DEIT_corrected_label)
+            clf_report = classification_report(GT_label, Ens_DEIT_corrected_label, labels=np.unique(GT_label))
             f1 = f1_score(GT_label, Ens_DEIT_corrected_label, average='macro')
 
             f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '_thresholded_' + str(

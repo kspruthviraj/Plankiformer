@@ -166,7 +166,7 @@ class LoadEnsembleParameters:
         print(classification_report(DEIT_GTLabel_sorted[0], Ens_DEIT_label, digits=2))
 
         accuracy_model = accuracy_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label)
-        clf_report = classification_report(DEIT_GTLabel_sorted[0], Ens_DEIT_label)
+        clf_report = classification_report(DEIT_GTLabel_sorted[0], Ens_DEIT_label, labels=np.unique(DEIT_GTLabel_sorted[0]))
         f1 = f1_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label, average='macro')
 
         Pred_PredLabel_Prob = [DEIT_GTLabel_sorted[0], Ens_DEIT_label, Ens_DEIT]
