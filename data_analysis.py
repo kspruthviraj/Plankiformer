@@ -86,7 +86,7 @@ def PlotAbundance(datapaths, outpath):
     ax.set_xlabel('Class')
     ax.set_ylabel('Abundance')
 
-    x = np.arange(0,len(list_class_rep) * 2, 2)
+    x = np.arange(0, len(list_class_rep) * 2, 2)
     width = 0.5
     x1 = x - width / 2
     x2 = x + width / 2
