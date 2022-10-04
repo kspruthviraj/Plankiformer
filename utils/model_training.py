@@ -818,8 +818,13 @@ class import_and_train_model:
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
 
+            # allClasses = list(set([name for idata in range(len(test_main.params.test_path)) for name in os.listdir(test_main.params.test_path[idata]) if
+            #                os.path.isdir(os.path.join(test_main.params.test_path[idata], name))]))
+            # clf_report = classification_report(GT_label, Ens_DEIT_label, labels=allClasses)
+
             accuracy_model = accuracy_score(GT_label, Ens_DEIT_label)
-            clf_report = classification_report(GT_label, Ens_DEIT_label)
+            # clf_report = classification_report(GT_label, Ens_DEIT_label)
+            clf_report = classification_report(GT_label, Ens_DEIT_label, labels=np.unique(GT_label))
             f1 = f1_score(GT_label, Ens_DEIT_label, average='macro')
 
             f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '.txt', 'w')
