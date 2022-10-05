@@ -316,7 +316,7 @@ class import_and_train_model:
 
         accuracy_model = accuracy_score(target_label, output_label)
         clf_report = classification_report(target_label, output_label, labels=np.unique(target_label))
-        f1 = f1_score(target_label, output_label, average='macro')
+        f1 = f1_score(target_label, output_label, average='macro', labels=np.unique(target_label))
 
         f = open(data_loader.checkpoint_path + 'test_report_' + name + '.txt', 'w')
         f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
@@ -670,7 +670,7 @@ class import_and_train_model:
 
             accuracy_model = accuracy_score(target_label, output_label)
             clf_report = classification_report(target_label, output_label, labels=np.unique(target_label))
-            f1 = f1_score(target_label, output_label, average='macro')
+            f1 = f1_score(target_label, output_label, average='macro', labels=np.unique(target_label))
 
             f = open(test_main.params.test_outpath + 'Single_test_report_' + name + '.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
@@ -761,7 +761,7 @@ class import_and_train_model:
 
             accuracy_model = accuracy_score(GT_label, Ens_DEIT_label)
             clf_report = classification_report(GT_label, Ens_DEIT_label, labels=np.unique(GT_label))
-            f1 = f1_score(GT_label, Ens_DEIT_label, average='macro')
+            f1 = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=np.unique(GT_label))
 
             f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
@@ -789,7 +789,7 @@ class import_and_train_model:
 
             accuracy_model = accuracy_score(GT_label, Ens_DEIT_corrected_label)
             clf_report = classification_report(GT_label, Ens_DEIT_corrected_label, labels=np.unique(GT_label))
-            f1 = f1_score(GT_label, Ens_DEIT_corrected_label, average='macro')
+            f1 = f1_score(GT_label, Ens_DEIT_corrected_label, average='macro', labels=np.unique(GT_label))
 
             f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '_thresholded_' + str(
                 test_main.params.threshold) + '.txt', 'w')
@@ -825,7 +825,7 @@ class import_and_train_model:
             accuracy_model = accuracy_score(GT_label, Ens_DEIT_label)
             # clf_report = classification_report(GT_label, Ens_DEIT_label)
             clf_report = classification_report(GT_label, Ens_DEIT_label, labels=np.unique(GT_label))
-            f1 = f1_score(GT_label, Ens_DEIT_label, average='macro')
+            f1 = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=np.unique(GT_label))
 
             f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,

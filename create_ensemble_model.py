@@ -167,7 +167,7 @@ class LoadEnsembleParameters:
 
         accuracy_model = accuracy_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label)
         clf_report = classification_report(DEIT_GTLabel_sorted[0], Ens_DEIT_label, labels=np.unique(DEIT_GTLabel_sorted[0]))
-        f1 = f1_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label, average='macro')
+        f1 = f1_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label, average='macro', labels=np.unique(DEIT_GTLabel_sorted[0]))
 
         Pred_PredLabel_Prob = [DEIT_GTLabel_sorted[0], Ens_DEIT_label, Ens_DEIT]
         with open(self.params.outpath + '/Ensemble_models_GTLabel_PredLabel_Prob_' + name + '.pickle', 'wb') as cw:
