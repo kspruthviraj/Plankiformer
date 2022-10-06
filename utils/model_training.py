@@ -833,6 +833,20 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
+
+            labels = np.unique(GT_label)
+            unknown_index = np.where(labels=='unknown')[0][0]
+            labels_rm_unknown = np.delete(labels, unknown_index)
+            
+            clf_report_rm_unknown = classification_report(GT_label, Ens_DEIT_label, labels=labels_rm_unknown)
+            f1_rm_unknown = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=labels_rm_unknown)
+
+            f = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_unknown' + name2 + name + '.txt', 'w')
+            f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_unknown,
+                                                                                                  clf_report_rm_unknown))
+            f.close()
+
+
             filenames_out = im_names[0]
             for jj in range(len(filenames_out)):
                 if GT_label[jj] == Ens_DEIT_label[jj]:
