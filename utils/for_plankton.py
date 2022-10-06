@@ -353,7 +353,7 @@ class AugmentedDataset(Dataset):
         T.RandomEqualize(),
         T.RandomAdjustSharpness(sharpness_factor=2),
         T.ColorJitter(brightness=0.3, hue=0.3),
-        T.GaussianBlur(kernel_size=(1, 6), sigma=(0.1, 2)),
+        T.GaussianBlur(kernel_size=(1, 5), sigma=(0.1, 2)),
         # T.RandomPerspective(distortion_scale=0.8, p=0.1),
         T.RandomRotation(degrees=(0, 180)),
         T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3), scale=(0.5, 0.9)),
