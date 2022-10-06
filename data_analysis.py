@@ -1,4 +1,5 @@
 import os
+import time
 import argparse
 
 import cv2
@@ -9,11 +10,55 @@ import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser(description='Plot some figures about data distribution')
 parser.add_argument('-datapaths', nargs='*', help='path of the dataset')
+parser.add_argument('-train_datapath', help='path of train dataset')
 parser.add_argument('-outpath', help='path of the output')
 parser.add_argument('-selected_features', nargs='*', help='select the features that you want to analyse')
 parser.add_argument('-n_bins', type=int, help='number of bins in the feature distribution plot')
 args = parser.parse_args()
 
+
+
+def PlotSamplingDate(train_datapath, outpath):
+    list_class = os.listdir(train_datapath) # list of class names
+
+    list_image = []
+    # list of all image names in the train dataset
+    for iclass in list_class:
+        for img in os.listdir(train_datapath + '/%s/' % iclass):
+            list_image.append(img)
+
+    list_time = []
+    list_date = []
+    for img in list_image:
+        if img == 'Thumbs.db':
+            continue
+
+        timestamp = int(img[15:25])
+        localtime = time.localtime(timestamp)        
+        t = time.strftime('%Y-%m-%d %H:%M:%S', localtime)
+        date = time.strftime('%Y-%m-%d', localtime)
+        list_time.append(t)
+        list_date.append(date)
+    
+    list.sort(list_date)
+
+    df = pd.DataFrame({'date': pd.to_datetime(np.unique(list_date)), 'count': pd.value_counts(list_date).sort_index()})
+    date_range = pd.date_range(start=df['date'].min(), end=df['date'].max(), freq='D')
+
+    df_full = df.set_index('date').reindex(date_range).fillna(0).rename_axis('date').reset_index() # create a full time range and fill the NA with 0
+
+    ax = plt.subplot(1, 1, 1)
+    plt.figure(figsize=(20, 7))
+    plt.xlabel('Date')
+    plt.ylabel('Image')
+    plt.title('Image sampling date in train dataset')
+
+    plt.plot(df_full['date'], df_full['count'])
+    plt.tight_layout()
+    plt.savefig(outpath + 'image_date_train.png')
+    ax.clear()
+
+    
 
 def PlotAbundanceSep(datapaths, outpath):
     '''plot the abundance of datasets seperately'''
@@ -355,6 +400,7 @@ def ConcatAllFeatures(class_datapath):
 
 
 if __name__ == '__main__':
-    PlotAbundance(args.datapaths, args.outpath)
+    PlotSamplingDate(args.train_datapath, args.outpath)
+    # PlotAbundance(args.datapaths, args.outpath)
     # PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins)
     # PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
