@@ -54,6 +54,7 @@ def PlotSamplingDate(train_datapath, outpath):
     plt.title('Image sampling date in train dataset')
 
     plt.plot(df_full['date'], df_full['count'])
+    plt.grid(axis='y')
     plt.tight_layout()
     plt.savefig(outpath + 'image_date_train.png')
     ax.clear()
