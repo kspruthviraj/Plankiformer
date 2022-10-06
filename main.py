@@ -16,6 +16,7 @@ from utils import for_plankton as fplankton
 from utils import for_wildtrap as wildtrap
 from utils import model_training as mt
 from utils import prepare_train_test_data as pdata
+from utils import for_inaturalist as inature
 
 
 def ArgsCheck(args):
@@ -111,7 +112,7 @@ class LoadInputParameters:
         # Choose dataset name
         parser.add_argument('-dataset_name', choices=['zoolake', 'zooscan', 'whoi', 'kaggle',
                                                       'eilat', 'rsmas', 'birds', 'dogs', 'beetle', 'wildtrap',
-                                                      'cifar10'],
+                                                      'cifar10', 'inature'],
                             default='zoolake', help='Choose between different datasets "zoolake", "zooscan", "whoi", '
                                                     '"kaggle", "eilat", "rsmas", "birds", "dogs", "beetle", "wildtrap"')
 
@@ -251,6 +252,10 @@ if __name__ == '__main__':
     elif train_params.params.dataset_name == 'cifar10':
         loaded_data = cifar10.CreateDataForCifar10()
         loaded_data.make_train_test_for_cifar(train_params)
+
+    elif train_params.params.dataset_name == 'inature':
+        loaded_data = inature.CreateDataForinature()
+        loaded_data.make_train_test_for_inature(train_params)
 
     elif train_params.params.dataset_name == 'wildtrap':
         loaded_data = wildtrap.CreateDataForWildtrap()
