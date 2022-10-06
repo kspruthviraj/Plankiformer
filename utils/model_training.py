@@ -841,7 +841,7 @@ class import_and_train_model:
             clf_report_rm_unknown = classification_report(GT_label, Ens_DEIT_label, labels=labels_rm_unknown)
             f1_rm_unknown = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=labels_rm_unknown)
 
-            f = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_unknown' + name2 + name + '.txt', 'w')
+            f = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_unknown_' + name2 + name + '.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_unknown,
                                                                                                   clf_report_rm_unknown))
             f.close()
