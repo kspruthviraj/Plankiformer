@@ -32,7 +32,7 @@ def MakeDatasets_txt(datapath):
                 shutil.copy(datapath + img[16:], datapath + '/0_test/' + iclass)
 
 
-def MakeDatasets_pickle(datapath, split_pickle_file):
+def MakeDatasets_pickle(datapath, outpath, split_pickle_file):
     train_test_val = pickle.load(open(split_pickle_file, 'rb'))
 
     train_filenames = train_test_val[0]
@@ -42,25 +42,25 @@ def MakeDatasets_pickle(datapath, split_pickle_file):
     list_classes = os.listdir(datapath)
 
     for iclass in list_classes:
-        if not os.path.exists(datapath + '/0_train/' + iclass):
-            os.makedirs(datapath + '/0_train/' + iclass)
+        if not os.path.exists(outpath + '/0_train/' + iclass):
+            os.makedirs(outpath + '/0_train/' + iclass)
         for img in train_filenames:
             if iclass in img:
-                shutil.copy(datapath + img[30:], datapath + '/0_train/' + iclass)
+                shutil.copy(datapath + img[50:], outpath + '/0_train/' + iclass)
 
     for iclass in list_classes:
-        if not os.path.exists(datapath + '/0_test/' + iclass):
-            os.makedirs(datapath + '/0_test/' + iclass)
+        if not os.path.exists(outpath + '/0_test/' + iclass):
+            os.makedirs(outpath + '/0_test/' + iclass)
         for img in test_filenames:
             if iclass in img:
-                shutil.copy(datapath + img[30:], datapath + '/0_test/' + iclass)
+                shutil.copy(datapath + img[50:], outpath + '/0_test/' + iclass)
 
     for iclass in list_classes:
-        if not os.path.exists(datapath + '/0_val/' + iclass):
-            os.makedirs(datapath + '/0_val/' + iclass)
+        if not os.path.exists(outpath + '/0_val/' + iclass):
+            os.makedirs(outpath + '/0_val/' + iclass)
         for img in val_filenames:
             if iclass in img:
-                shutil.copy(datapath + img[30:], datapath + '/0_val/' + iclass)
+                shutil.copy(datapath + img[50:], outpath + '/0_val/' + iclass)
 
 
-MakeDatasets_pickle(r'/home/EAWAG/chenchen/data/train_data/new/', r'/home/EAWAG/chenchen/data/train_data/new/Files_used_for_training_testing.pickle')
+MakeDatasets_pickle(r'/home/EAWAG/chenchen/data/train_data/new/training_zooplankton_new_220823/', r'/home/EAWAG/chenchen/data/train_data/new/', r'/home/EAWAG/chenchen/data/train_data/new/Files_used_for_training_testing.pickle')
