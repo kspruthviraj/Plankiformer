@@ -46,6 +46,8 @@ def MakeDatasets_pickle(datapath, outpath, split_pickle_file):
             os.makedirs(outpath + '/0_train/' + iclass)
         for img in train_filenames:
             if iclass in img:
+                if not os.path.exists(datapath + img[50:]):
+                    continue
                 shutil.copy(datapath + img[50:], outpath + '/0_train/' + iclass)
 
     for iclass in list_classes:
@@ -53,6 +55,8 @@ def MakeDatasets_pickle(datapath, outpath, split_pickle_file):
             os.makedirs(outpath + '/0_test/' + iclass)
         for img in test_filenames:
             if iclass in img:
+                if not os.path.exists(datapath + img[50:]):
+                    continue
                 shutil.copy(datapath + img[50:], outpath + '/0_test/' + iclass)
 
     for iclass in list_classes:
@@ -60,6 +64,8 @@ def MakeDatasets_pickle(datapath, outpath, split_pickle_file):
             os.makedirs(outpath + '/0_val/' + iclass)
         for img in val_filenames:
             if iclass in img:
+                if not os.path.exists(datapath + img[50:]):
+                    continue
                 shutil.copy(datapath + img[50:], outpath + '/0_val/' + iclass)
 
 
