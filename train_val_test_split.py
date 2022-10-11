@@ -46,27 +46,27 @@ def MakeDatasets_pickle(datapath, outpath, split_pickle_file):
             os.makedirs(outpath + '/0_train/' + iclass)
         for img in train_filenames:
             if iclass in img:
-                if not os.path.exists(datapath + img[50:]):
+                if not os.path.exists(datapath + '/' + img[50:]):
                     continue
-                shutil.copy(datapath + img[50:], outpath + '/0_train/' + iclass)
+                shutil.copy(datapath + '/' + img[50:], outpath + '/0_train/' + iclass)
 
     for iclass in list_classes:
         if not os.path.exists(outpath + '/0_test/' + iclass):
             os.makedirs(outpath + '/0_test/' + iclass)
         for img in test_filenames:
             if iclass in img:
-                if not os.path.exists(datapath + img[50:]):
+                if not os.path.exists(datapath + '/' + img[50:]):
                     continue
-                shutil.copy(datapath + img[50:], outpath + '/0_test/' + iclass)
+                shutil.copy(datapath + '/' + img[50:], outpath + '/0_test/' + iclass)
 
     for iclass in list_classes:
         if not os.path.exists(outpath + '/0_val/' + iclass):
             os.makedirs(outpath + '/0_val/' + iclass)
         for img in val_filenames:
             if iclass in img:
-                if not os.path.exists(datapath + img[50:]):
+                if not os.path.exists(datapath + '/' + img[50:]):
                     continue
-                shutil.copy(datapath + img[50:], outpath + '/0_val/' + iclass)
+                shutil.copy(datapath + '/' + img[50:], outpath + '/0_val/' + iclass)
 
 
-MakeDatasets_pickle(r'/home/EAWAG/chenchen/data/train_data/new/training_zooplankton_new_220823/', r'/home/EAWAG/chenchen/data/train_data/new/', r'/home/EAWAG/chenchen/data/train_data/new/Files_used_for_training_testing.pickle')
+MakeDatasets_pickle(r'C:\Users\chenchen\thesis\data\train_data\new\training_zooplankton_new_220823', r'C:\Users\chenchen\thesis\data\train_data\new', r'C:\Users\chenchen\thesis\data\train_data\new\Files_used_for_training_testing.pickle')
