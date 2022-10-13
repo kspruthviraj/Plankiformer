@@ -3,7 +3,7 @@ import shutil
 import numpy as np
 import pickle
 
-def MakeDatasets_txt(datapath):
+def SplitFrom_txt(datapath):
     filenames_train = np.loadtxt(datapath + '/zoolake_train_test_val_separated/train_filenames.txt', dtype=str)
     filenames_val = np.loadtxt(datapath + '/zoolake_train_test_val_separated/val_filenames.txt', dtype=str)
     filenames_test = np.loadtxt(datapath + '/zoolake_train_test_val_separated/test_filenames.txt', dtype=str)
@@ -32,7 +32,7 @@ def MakeDatasets_txt(datapath):
                 shutil.copy(datapath + img[16:], datapath + '/0_test/' + iclass)
 
 
-def MakeDatasets_pickle(datapath, outpath, split_pickle_file):
+def SplitFrom_pickle(datapath, outpath, split_pickle_file):
     train_test_val = pickle.load(open(split_pickle_file, 'rb'))
 
     train_filenames = train_test_val[0]
@@ -69,4 +69,30 @@ def MakeDatasets_pickle(datapath, outpath, split_pickle_file):
                 shutil.copy(datapath + '/' + img[50:], outpath + '/0_val/' + iclass)
 
 
-MakeDatasets_pickle(r'C:\Users\chenchen\thesis\data\train_data\new\training_zooplankton_new_220823', r'C:\Users\chenchen\thesis\data\train_data\new', r'C:\Users\chenchen\thesis\data\train_data\new\Files_used_for_training_testing.pickle')
+def SplitByTime(datapath, outpath):
+    list_class = os.listdir(datapath) # list of class names
+
+    list_image = []
+    # list of all image names in the train dataset
+    for iclass in list_class:
+        for img in os.listdir(datapath + '/%s/' % iclass):
+            list_image.append(img)
+
+    for iclass in list_class:
+        if not os.path.exists(outpath + '/before2021/' + iclass):
+            os.makedirs(outpath + '/before2021/' + iclass)
+        if not os.path.exists(outpath + '/after2021/' + iclass):
+            os.makedirs(outpath + '/after2021/' + iclass)
+
+        for img in list_image:
+            if img == 'Thumbs.db':
+                continue
+            if not os.path.exists(datapath + '/' + iclass + '/' + img):
+                continue
+            if int(img[15:25]) < 1609455600:
+                shutil.copy(datapath + '/' + iclass + '/' + img, outpath + '/before2021/' + iclass)
+            else:
+                shutil.copy(datapath + '/' + iclass + '/' + img, outpath + '/after2021/' + iclass)
+
+
+
