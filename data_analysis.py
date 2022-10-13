@@ -57,6 +57,7 @@ def PlotSamplingDate(train_datapath, outpath):
     plt.title('Image sampling date in train dataset')
 
     plt.plot(df_full['date'], df_full['count'])
+    plt.yscale('log')
     plt.grid(axis='y')
     plt.tight_layout()
     plt.savefig(outpath + 'image_date_train.png')
@@ -453,6 +454,6 @@ def ConcatAllFeatures(class_datapath):
 
 if __name__ == '__main__':
     PlotSamplingDate(args.train_datapath, args.outpath)
-    PlotAbundance(args.datapaths, args.outpath, args.datapath_labels)
-    PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins, args.datapath_labels)
-    PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
+    # PlotAbundance(args.datapaths, args.outpath, args.datapath_labels)
+    # PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins, args.datapath_labels)
+    # PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
