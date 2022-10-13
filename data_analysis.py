@@ -452,7 +452,7 @@ def ConcatAllFeatures(class_datapath):
 
 
 if __name__ == '__main__':
-    # PlotSamplingDate(args.train_datapath, args.outpath)
+    PlotSamplingDate(args.train_datapath, args.outpath)
     PlotAbundance(args.datapaths, args.outpath, args.datapath_labels)
     PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins, args.datapath_labels)
-    # PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
+    PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
