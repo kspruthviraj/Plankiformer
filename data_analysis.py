@@ -94,6 +94,7 @@ def PlotAbundanceSep(datapaths, outpath):
 
         plt.tight_layout()
         plt.savefig(outpath + 'abundance_set%s.png' % ith)
+        plt.close()
         ax.clear()
 
 
