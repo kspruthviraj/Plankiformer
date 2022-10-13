@@ -57,6 +57,7 @@ def PlotSamplingDate(train_datapath, outpath):
     plt.grid(axis='y')
     plt.tight_layout()
     plt.savefig(outpath + 'image_date_train.png')
+    plt.clf()
     ax.clear()
 
     
@@ -94,7 +95,6 @@ def PlotAbundanceSep(datapaths, outpath):
 
         plt.tight_layout()
         plt.savefig(outpath + 'abundance_set%s.png' % ith)
-        plt.clf()
         ax.clear()
 
 
