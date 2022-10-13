@@ -1,6 +1,7 @@
 import os
 import time
 import argparse
+from turtle import color
 
 import cv2
 import numpy as np
@@ -135,6 +136,13 @@ def PlotAbundance(datapaths, outpath):
 
         list_n_image_class_combined.append(list_n_image_class)
 
+
+    df_abundance = pd.DataFrame({'class': list_class_rep, 'dataset_1': list_n_image_class_combined[0], 'dataset_2': list_n_image_class_combined[1]})
+    df_abundance['ratio'] = df_abundance['dataset_2'] / df_abundance['dataset_1']
+    df_abundance_sorted = df_abundance.sort_values(by='ratio', ascending=False, ignore_index=True)
+    print(df_abundance_sorted)
+
+    fig = plt.figure(figsize=(11, 8))
     ax = plt.subplot(1, 1, 1)
     ax.set_xlabel('Class')
     ax.set_ylabel('Abundance')
@@ -143,13 +151,19 @@ def PlotAbundance(datapaths, outpath):
     width = 0.5
     x1 = x - width / 2
     x2 = x + width / 2
-    y1 = list_n_image_class_combined[0]
-    y2 = list_n_image_class_combined[1]
 
-    plt.bar(x1, y1, width=0.5, label='train set', log=True)
-    plt.bar(x2, y2, width=0.5, label='test set', log=True)
-    plt.xticks(x, list_class_rep, rotation=90)
-    plt.legend()
+    y1 = df_abundance_sorted['dataset_1']
+    y2 = df_abundance_sorted['dataset_2']
+
+    plt.bar(x1, y1, width=0.5, label='dataset_1', log=True)
+    plt.bar(x2, y2, width=0.5, label='dataset_2', log=True)
+    plt.xticks(x, df_abundance_sorted['class'], rotation=90)
+
+    ax_2 = ax.twinx()
+    ax_2.set_ylabel('Ratio')
+    ax_2.plot(x, df_abundance_sorted['ratio'], label='ratio', color='green', marker='.')
+
+    fig.legend(loc=1, bbox_to_anchor=(1, 1), bbox_transform=ax.transAxes)
     plt.tight_layout()
     plt.savefig(outpath + 'abundance.png')
     ax.clear()
@@ -434,7 +448,7 @@ def ConcatAllFeatures(class_datapath):
 
 
 if __name__ == '__main__':
-    PlotSamplingDate(args.train_datapath, args.outpath)
+    # PlotSamplingDate(args.train_datapath, args.outpath)
     PlotAbundance(args.datapaths, args.outpath)
-    PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins)
-    PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
+    # PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins)
+    # PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
