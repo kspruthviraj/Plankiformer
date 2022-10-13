@@ -57,7 +57,7 @@ def PlotSamplingDate(train_datapath, outpath):
     plt.grid(axis='y')
     plt.tight_layout()
     plt.savefig(outpath + 'image_date_train.png')
-    plt.clf()
+    plt.close()
     ax.clear()
 
     
