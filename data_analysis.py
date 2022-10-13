@@ -169,7 +169,7 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
     for iclass in list_class_rep:
         for ifeature in selected_features:
             ax = plt.subplot(1, 1, 1)
-            ax.set_xlabel(ifeature)
+            ax.set_xlabel(ifeature + ' (normalized)')
             ax.set_ylabel('Density')
 
             min_feature = []
@@ -184,11 +184,12 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
                 max_feature.append(max(df_all_feat[ifeature]))
                 feature.append(df_all_feat[ifeature])
 
-            min_bin = min(min_feature) # find global minimum value of feature in all datasets
-            max_bin = max(max_feature) # find global maximum value of feature in all datasets
-            
-            histogram = plt.hist(feature, histtype='stepfilled', bins=n_bins, range=(min_bin, max_bin), density=True, alpha=0.5)
-            
+            min_bin = np.min(min_feature) # find global minimum value of feature in all datasets
+            max_bin = np.max(max_feature) # find global maximum value of feature in all datasets
+
+            normalized_feature = np.divide((np.array(feature, dtype=object) - min_bin), (max_bin - min_bin))
+
+            histogram = plt.hist(normalized_feature, histtype='stepfilled', bins=n_bins, range=(0, 1), density=True, alpha=0.5)
             density_1 = histogram[0][0]
             density_2 = histogram[0][1]
 
@@ -243,8 +244,10 @@ def PlotHDversusBin(datapaths, outpath, selected_features):
                 min_bin = min(min_feature) # find global minimum value of feature in all datasets
                 max_bin = max(max_feature) # find global maximum value of feature in all datasets
 
-                histogram_1 = np.histogram(feature[0], bins=in_bins, range=(min_bin, max_bin), density=True)
-                histogram_2 = np.histogram(feature[1], bins=in_bins, range=(min_bin, max_bin), density=True)
+                normalized_feature = np.divide((np.array(feature, dtype=object) - min_bin), (max_bin - min_bin))
+
+                histogram_1 = np.histogram(normalized_feature[0], bins=in_bins, range=(0, 1), density=True)
+                histogram_2 = np.histogram(normalized_feature[1], bins=in_bins, range=(0, 1), density=True)
                 density_1 = histogram_1[0]
                 density_2 = histogram_2[0]
 
@@ -266,6 +269,22 @@ def PlotHDversusBin(datapaths, outpath, selected_features):
             pass
         plt.savefig(outpath_feature + ifeature + '_HD.png' )
         ax.clear()
+
+
+
+# def GlobalHD(datapaths):
+#     list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
+#                      'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
+#                      'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
+#                      'fish', 'fragilaria', 'hydra', 'kellicottia', 'keratella_cochlearis', 'keratella_quadrata', 
+#                      'leptodora', 'maybe_cyano', 'nauplius', 'paradileptus', 'polyarthra', 'rotifers', 
+#                      'synchaeta', 'trichocerca', 'unknown', 'unknown_plankton', 'uroglena']
+
+#     # find the repetitive classes in selected datasets
+#     for idatapath in datapaths:
+#         list_class = os.listdir(idatapath)
+#         list_class_rep = list(set(list_class) & set(list_class_rep))
+#     print('Repetitive classes of two datasets: {}'.format(list_class_rep))
 
 
 
@@ -401,7 +420,7 @@ def ConcatAllFeatures(class_datapath):
 
 
 if __name__ == '__main__':
-    PlotSamplingDate(args.train_datapath, args.outpath)
-    PlotAbundance(args.datapaths, args.outpath)
+    # PlotSamplingDate(args.train_datapath, args.outpath)
+    # PlotAbundance(args.datapaths, args.outpath)
     PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins)
-    PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
+    # PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
