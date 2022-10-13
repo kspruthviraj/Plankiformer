@@ -19,6 +19,8 @@ args = parser.parse_args()
 
 
 def PlotSamplingDate(train_datapath, outpath):
+    print('-----------------Now plotting sampling date of training set.-----------------')
+
     list_class = os.listdir(train_datapath) # list of class names
 
     list_image = []
@@ -65,6 +67,8 @@ def PlotSamplingDate(train_datapath, outpath):
 def PlotAbundanceSep(datapaths, outpath):
     '''plot the abundance of datasets seperately'''
 
+    print('-----------------Now plotting abundance distributions of each dataset seperately.-----------------')
+
     ith = 0
     for idatapath in datapaths:
         ith = ith + 1 # this is the i-th set
@@ -102,6 +106,8 @@ def PlotAbundanceSep(datapaths, outpath):
 def PlotAbundance(datapaths, outpath):
     '''plot the abundance of two datasets together'''
 
+    print('-----------------Now plotting abundance distributions of each dataset together.-----------------')
+
     list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
                      'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
                      'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
@@ -113,7 +119,7 @@ def PlotAbundance(datapaths, outpath):
     for idatapath in datapaths:
         list_class = os.listdir(idatapath)
         list_class_rep = list(set(list_class) & set(list_class_rep))
-    print('Repetitive classes of two datasets: {}'.format(list_class_rep))
+    # print('Repetitive classes of two datasets: {}'.format(list_class_rep))
 
     list_n_image_class_combined = []
     for idatapath in datapaths:
@@ -151,6 +157,9 @@ def PlotAbundance(datapaths, outpath):
 
 
 def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
+
+    print('-----------------Now plotting feature distribution for each class and each selected feature.-----------------')
+
     n_data = len(datapaths) # number of datapaths
 
     list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
@@ -164,7 +173,7 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
     for idatapath in datapaths:
         list_class = os.listdir(idatapath)
         list_class_rep = list(set(list_class) & set(list_class_rep))
-    print('Repetitive classes of two datasets: {}'.format(list_class_rep))
+    # print('Repetitive classes of two datasets: {}'.format(list_class_rep))
     
     # plot feature distribution
     for iclass in list_class_rep:
@@ -188,7 +197,7 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
             min_bin = np.min(min_feature) # find global minimum value of feature in all datasets
             max_bin = np.max(max_feature) # find global maximum value of feature in all datasets
 
-            normalized_feature = np.divide((np.array(feature, dtype=object) - min_bin), (max_bin - min_bin))
+            normalized_feature = np.divide((np.array(feature, dtype=object) - min_bin), (max_bin - min_bin)) # normalization of feature values
 
             histogram = plt.hist(normalized_feature, histtype='stepfilled', bins=n_bins, range=(0, 1), density=True, alpha=0.5)
             density_1 = histogram[0][0]
@@ -210,6 +219,9 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
 
 
 def PlotHDversusBin(datapaths, outpath, selected_features):
+
+    print('-----------------Now plotting Hellinger distances v.s. numbers of bin.-----------------')
+
     list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
                      'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
                      'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
@@ -221,11 +233,12 @@ def PlotHDversusBin(datapaths, outpath, selected_features):
     for idatapath in datapaths:
         list_class = os.listdir(idatapath)
         list_class_rep = list(set(list_class) & set(list_class_rep))
-    print('Repetitive classes of two datasets: {}'.format(list_class_rep))
+    # print('Repetitive classes of two datasets: {}'.format(list_class_rep))
 
-    list_n_bins = [5, 10, 20, 50, 100, 200, 500]
+    list_n_bins = [5, 10, 20, 50, 100, 120, 150, 200]
     for ifeature in selected_features:
         ax = plt.subplot(1, 1, 1)
+        plt.figure(figsize=(10, 10))
         
         for iclass in list_class_rep:
             list_HD = []
@@ -245,7 +258,7 @@ def PlotHDversusBin(datapaths, outpath, selected_features):
                 min_bin = min(min_feature) # find global minimum value of feature in all datasets
                 max_bin = max(max_feature) # find global maximum value of feature in all datasets
 
-                normalized_feature = np.divide((np.array(feature, dtype=object) - min_bin), (max_bin - min_bin))
+                normalized_feature = np.divide((np.array(feature, dtype=object) - min_bin), (max_bin - min_bin)) # normalization of feature values
 
                 histogram_1 = np.histogram(normalized_feature[0], bins=in_bins, range=(0, 1), density=True)
                 histogram_2 = np.histogram(normalized_feature[1], bins=in_bins, range=(0, 1), density=True)
