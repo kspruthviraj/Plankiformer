@@ -51,7 +51,7 @@ def PlotSamplingDate(train_datapath, outpath):
     df_full = df.set_index('date').reindex(date_range).fillna(0).rename_axis('date').reset_index() # create a full time range and fill the NA with 0
 
     ax = plt.subplot(1, 1, 1)
-    plt.figure(figsize=(20, 7))
+    plt.figure(figsize=(20, 5))
     plt.xlabel('Date')
     plt.ylabel('Image')
     plt.title('Image sampling date in train dataset')
