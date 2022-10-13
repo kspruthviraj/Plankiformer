@@ -1,7 +1,6 @@
 import os
 import time
 import argparse
-from turtle import color
 
 import cv2
 import numpy as np
@@ -11,6 +10,7 @@ import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser(description='Plot some figures about data distribution')
 parser.add_argument('-datapaths', nargs='*', help='path of the dataset')
+parser.add_argument('-datapath_labels', nargs='*', help='name of the dataset')
 parser.add_argument('-train_datapath', help='path of train dataset')
 parser.add_argument('-outpath', help='path of the output')
 parser.add_argument('-selected_features', nargs='*', help='select the features that you want to analyse')
@@ -100,11 +100,12 @@ def PlotAbundanceSep(datapaths, outpath):
 
         plt.tight_layout()
         plt.savefig(outpath + 'abundance_set%s.png' % ith)
+        plt.close()
         ax.clear()
 
 
 
-def PlotAbundance(datapaths, outpath):
+def PlotAbundance(datapaths, outpath, datapath_labels):
     '''plot the abundance of two datasets together'''
 
     print('-----------------Now plotting abundance distributions of each dataset together.-----------------')
@@ -140,7 +141,6 @@ def PlotAbundance(datapaths, outpath):
     df_abundance = pd.DataFrame({'class': list_class_rep, 'dataset_1': list_n_image_class_combined[0], 'dataset_2': list_n_image_class_combined[1]})
     df_abundance['ratio'] = df_abundance['dataset_2'] / df_abundance['dataset_1']
     df_abundance_sorted = df_abundance.sort_values(by='ratio', ascending=False, ignore_index=True)
-    print(df_abundance_sorted)
 
     fig = plt.figure(figsize=(11, 8))
     ax = plt.subplot(1, 1, 1)
@@ -155,8 +155,8 @@ def PlotAbundance(datapaths, outpath):
     y1 = df_abundance_sorted['dataset_1']
     y2 = df_abundance_sorted['dataset_2']
 
-    plt.bar(x1, y1, width=0.5, label='dataset_1', log=True)
-    plt.bar(x2, y2, width=0.5, label='dataset_2', log=True)
+    plt.bar(x1, y1, width=0.5, label=datapath_labels[0], log=True)
+    plt.bar(x2, y2, width=0.5, label=datapath_labels[1], log=True)
     plt.xticks(x, df_abundance_sorted['class'], rotation=90)
 
     ax_2 = ax.twinx()
@@ -166,11 +166,12 @@ def PlotAbundance(datapaths, outpath):
     fig.legend(loc=1, bbox_to_anchor=(1, 1), bbox_transform=ax.transAxes)
     plt.tight_layout()
     plt.savefig(outpath + 'abundance.png')
+    plt.close()
     ax.clear()
 
 
 
-def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
+def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins, datapath_labels):
 
     print('-----------------Now plotting feature distribution for each class and each selected feature.-----------------')
 
@@ -213,13 +214,14 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
 
             normalized_feature = np.divide((np.array(feature, dtype=object) - min_bin), (max_bin - min_bin)) # normalization of feature values
 
-            histogram = plt.hist(normalized_feature, histtype='stepfilled', bins=n_bins, range=(0, 1), density=True, alpha=0.5)
+            histogram = plt.hist(normalized_feature, histtype='stepfilled', bins=n_bins, range=(0, 1), density=True, alpha=0.5, label=datapath_labels)
             density_1 = histogram[0][0]
             density_2 = histogram[0][1]
 
             HD = HellingerDistance(density_1, density_2) # compute the Hellinger distance of feature between 2 datasets
             
             plt.title('Hellinger distance = %.3f' % HD)
+            plt.legend()
             plt.tight_layout()
                 
             outpath_feature = outpath + ifeature + '/'
@@ -228,6 +230,7 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins):
             except FileExistsError:
                 pass
             plt.savefig(outpath_feature + ifeature + '_' + iclass + '.png')
+            plt.close()
             ax.clear()
 
 
@@ -296,6 +299,7 @@ def PlotHDversusBin(datapaths, outpath, selected_features):
         except FileExistsError:
             pass
         plt.savefig(outpath_feature + ifeature + '_HD.png' )
+        plt.close()
         ax.clear()
 
 
@@ -449,6 +453,6 @@ def ConcatAllFeatures(class_datapath):
 
 if __name__ == '__main__':
     # PlotSamplingDate(args.train_datapath, args.outpath)
-    PlotAbundance(args.datapaths, args.outpath)
-    # PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins)
+    PlotAbundance(args.datapaths, args.outpath, args.datapath_labels)
+    PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins, args.datapath_labels)
     # PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
