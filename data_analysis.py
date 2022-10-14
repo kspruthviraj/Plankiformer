@@ -304,7 +304,7 @@ def PlotHDversusBin(datapaths, outpath, selected_features):
         list.sort(list_class_rep)
     # print('Repetitive classes of two datasets: {}'.format(list_class_rep))
 
-    list_n_bins = [5, 10, 20, 50, 100, 120, 150, 200]
+    list_n_bins = [5, 10, 20, 50, 100, 120, 150, 200, 300, 400, 500]
     for ifeature in selected_features:
         ax = plt.subplot(1, 1, 1)
         plt.figure(figsize=(10, 10))
