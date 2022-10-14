@@ -15,6 +15,7 @@ parser.add_argument('-train_datapath', help='path of train dataset')
 parser.add_argument('-outpath', help='path of the output')
 parser.add_argument('-selected_features', nargs='*', help='select the features that you want to analyse')
 parser.add_argument('-n_bins', type=int, help='number of bins in the feature distribution plot')
+parser.add_argument('-resized_length', type=int, help='length of resized image')
 args = parser.parse_args()
 
 
@@ -356,7 +357,7 @@ def PlotHDversusBin(datapaths, outpath, selected_features):
 
 
 
-def GlobalHD(datapaths, outpath, n_bins):
+def GlobalHD_feature(datapaths, outpath, n_bins):
 
     print('-----------------Now computing global Hellinger distances.-----------------')
 
@@ -555,10 +556,30 @@ def ConcatAllFeatures(class_datapath):
 
 
 
+def LoadPixels(class_image_datapath, resized_length=64):
+    df_pixels = pd.DataFrame()
+
+    list_image = os.listdir(class_image_datapath)
+    for img in list_image:
+        if img == 'Thumbs.db':
+            continue
+        
+        image = cv2.imread(class_image_datapath + '/' + img)
+        image = cv2.resize(image, (resized_length, resized_length), interpolation=cv2.INTER_LANCZOS4)
+        pixels = pd.Series(image.flatten())
+        
+        df_pixels = pd.concat([df_pixels, pixels], axis=1, ignore_index=True)
+
+    df_pixels = df_pixels.transpose()
+
+    return df_pixels
+
+
+
 if __name__ == '__main__':
     # PlotSamplingDate(args.train_datapath, args.outpath)
     # PlotSamplingDateEachClass(args.train_datapath, args.outpath)
     # PlotAbundance(args.datapaths, args.outpath, args.datapath_labels)
     # PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins, args.datapath_labels)
     # PlotHDversusBin(args.datapaths, args.outpath, args.selected_features)
-    GlobalHD(args.datapaths, args.outpath, args.n_bins)
+    GlobalHD_feature(args.datapaths, args.outpath, args.n_bins)
