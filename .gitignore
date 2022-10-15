@@ -1,0 +1,10 @@
+__pycache__/main.cpython-310.pyc
+utils/__pycache__/create_data.cpython-310.pyc
+utils/__pycache__/for_cifar10.cpython-310.pyc
+utils/__pycache__/for_birds.cpython-310.pyc
+utils/__pycache__/for_plankton_test.cpython-310.pyc
+utils/__pycache__/for_plankton.cpython-310.pyc
+utils/__pycache__/for_wildtrap.cpython-310.pyc
+utils/__pycache__/prepare_train_test_data.cpython-310.pyc
+utils/__pycache__/model_training.cpython-310.pyc
+utils/__pycache__/for_dogs.cpython-310.pyc
