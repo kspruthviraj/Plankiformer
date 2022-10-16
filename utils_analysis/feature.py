@@ -78,74 +78,9 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins, datap
 
 
 
-# def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins, datapath_labels):
-
-#     print('-----------------Now plotting feature distribution for each class and each selected feature.-----------------')
-
-#     n_data = len(datapaths) # number of datapaths
-
-#     list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
-#                      'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
-#                      'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
-#                      'fish', 'fragilaria', 'hydra', 'kellicottia', 'keratella_cochlearis', 'keratella_quadrata', 
-#                      'leptodora', 'maybe_cyano', 'nauplius', 'paradileptus', 'polyarthra', 'rotifers', 
-#                      'synchaeta', 'trichocerca', 'unknown', 'unknown_plankton', 'uroglena']
-    
-#     # find the repetitive classes in selected datasets
-#     for idatapath in datapaths:
-#         list_class = os.listdir(idatapath)
-#         list_class_rep = list(set(list_class) & set(list_class_rep))
-#         list.sort(list_class_rep)
-#     # print('Repetitive classes of two datasets: {}'.format(list_class_rep))
-    
-#     # plot feature distribution
-#     for iclass in list_class_rep:
-#         for ifeature in selected_features:
-#             ax = plt.subplot(1, 1, 1)
-#             ax.set_xlabel(ifeature + ' (normalized)')
-#             ax.set_ylabel('Density')
-
-#             min_feature = []
-#             max_feature = []
-#             feature = []
-
-#             for idatapath in datapaths:
-#                 class_datapath = idatapath + iclass + '/' # directory of each class with classname
-#                 df_all_feat = ConcatAllFeatures(class_datapath)
-
-#                 min_feature.append(min(df_all_feat[ifeature]))
-#                 max_feature.append(max(df_all_feat[ifeature]))
-#                 feature.append(df_all_feat[ifeature])
-
-#             min_bin = np.min(min_feature) # find global minimum value of feature in all datasets
-#             max_bin = np.max(max_feature) # find global maximum value of feature in all datasets
-
-#             normalized_feature = np.divide((np.array(feature, dtype=object) - min_bin), (max_bin - min_bin)) # normalization of feature values
-
-#             histogram = plt.hist(normalized_feature, histtype='stepfilled', bins=n_bins, range=(0, 1), density=True, alpha=0.5, label=datapath_labels)
-#             density_1 = histogram[0][0]
-#             density_2 = histogram[0][1]
-
-#             HD = HellingerDistance(density_1, density_2) # compute the Hellinger distance of feature between 2 datasets
-            
-#             plt.title('Hellinger distance = %.3f' % HD)
-#             plt.legend()
-#             plt.tight_layout()
-                
-#             outpath_feature = outpath + ifeature + '/'
-#             try:
-#                 os.mkdir(outpath_feature)
-#             except FileExistsError:
-#                 pass
-#             plt.savefig(outpath_feature + ifeature + '_' + iclass + '.png')
-#             plt.close()
-#             ax.clear()
-
-
-
 def PlotFeatureHDversusBin(datapaths, outpath, selected_features):
 
-    print('-----------------Now plotting Hellinger distances v.s. numbers of bin.-----------------')
+    print('-----------------Now plotting Hellinger distances of feature v.s. numbers of bin.-----------------')
 
     list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
                      'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
@@ -162,29 +97,37 @@ def PlotFeatureHDversusBin(datapaths, outpath, selected_features):
     # print('Repetitive classes of two datasets: {}'.format(list_class_rep))
 
     list_n_bins = [5, 10, 20, 50, 100, 125, 150, 175, 200, 300, 400, 500]
+    all_features = [([0] * len(datapaths)) for i in range(len(list_class_rep))]
+    
+    for i, iclass in enumerate(list_class_rep):
+
+        for j, idatapath in enumerate(datapaths):
+            class_datapath = idatapath + iclass + '/'
+            df_all_feat = ConcatAllFeatures(class_datapath)
+            all_features[i][j] = df_all_feat
+
     for ifeature in selected_features:
         ax = plt.subplot(1, 1, 1)
         plt.figure(figsize=(10, 10))
         
-        for iclass in list_class_rep:
+        for i, iclass in enumerate(list_class_rep):
             list_HD = []
             for in_bins in list_n_bins:
                 min_feature = []
                 max_feature = []
-                feature = []
+                features = []
 
-                for idatapath in datapaths:
-                    class_datapath = idatapath + iclass + '/' # directory of each class with classname
-                    df_all_feat = ConcatAllFeatures(class_datapath)
+                for j, idatapath in enumerate(datapaths):
+                    feature = all_features[i][j][ifeature]
 
-                    min_feature.append(min(df_all_feat[ifeature]))
-                    max_feature.append(max(df_all_feat[ifeature]))
-                    feature.append(df_all_feat[ifeature])
+                    min_feature.append(min(feature))
+                    max_feature.append(max(feature))
+                    features.append(feature)
 
                 min_bin = min(min_feature) # find global minimum value of feature in all datasets
                 max_bin = max(max_feature) # find global maximum value of feature in all datasets
 
-                normalized_feature = np.divide((np.array(feature, dtype=object) - min_bin), (max_bin - min_bin)) # normalization of feature values
+                normalized_feature = np.divide((np.array(features, dtype=object) - min_bin), (max_bin - min_bin)) # normalization of feature values
 
                 histogram_1 = np.histogram(normalized_feature[0], bins=in_bins, range=(0, 1), density=True)
                 histogram_2 = np.histogram(normalized_feature[1], bins=in_bins, range=(0, 1), density=True)
@@ -284,74 +227,6 @@ def GlobalHD_feature(datapaths, outpath, n_bins):
     global_HD = np.average(list_global_HD)
     with open(outpath + 'Global_HD_feature.txt', 'a') as f:
         f.write(f'\n Global Hellinger Distance: {global_HD}')
-
-
-
-# def GlobalHD_feature(datapaths, outpath, n_bins):
-
-#     print('-----------------Now computing global Hellinger distances on feature.-----------------')
-
-#     list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
-#                      'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
-#                      'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
-#                      'fish', 'fragilaria', 'hydra', 'kellicottia', 'keratella_cochlearis', 'keratella_quadrata', 
-#                      'leptodora', 'maybe_cyano', 'nauplius', 'paradileptus', 'polyarthra', 'rotifers', 
-#                      'synchaeta', 'trichocerca', 'unknown', 'unknown_plankton', 'uroglena']
-
-#     # find the repetitive classes in selected datasets
-#     for idatapath in datapaths:
-#         list_class = os.listdir(idatapath)
-#         list_class_rep = list(set(list_class) & set(list_class_rep))
-#         list.sort(list_class_rep)
-#     # print('Repetitive classes of two datasets: {}'.format(list_class_rep))
-
-#     list_features = ['width', 'height', 'w_rot', 'h_rot', 'angle_rot', 'aspect_ratio_2',
-#                     'rect_area', 'contour_area', 'contour_perimeter', 'extent',
-#                     'compactness', 'formfactor', 'hull_area', 'solidity_2', 'hull_perimeter',
-#                     'ESD', 'Major_Axis', 'Minor_Axis', 'Angle', 'Eccentricity1', 'Eccentricity2',
-#                     'Convexity', 'Roundness', 'm00', 'm10', 'm01', 'm20', 'm11', 'm02', 'm30', 'm21', 'm12', 'm03',
-#                     'mu20', 'mu11', 'mu02', 'mu30', 'mu21', 'mu12', 'mu03', 'nu20', 'nu11',
-#                     'nu02', 'nu30', 'nu21', 'nu12', 'nu03']
-
-#     list_global_HD = []
-#     for iclass in list_class_rep:
-#         list_HD = []
-
-#         for ifeature in list_features:
-#             min_feature = []
-#             max_feature = []
-#             feature = []
-
-#             for idatapath in datapaths:
-#                 class_datapath = idatapath + iclass + '/' # directory of each class with classname
-#                 df_all_feat = ConcatAllFeatures(class_datapath)
-
-#                 min_feature.append(min(df_all_feat[ifeature]))
-#                 max_feature.append(max(df_all_feat[ifeature]))
-#                 feature.append(df_all_feat[ifeature])
-
-#             min_bin = min(min_feature) # find global minimum value of feature in all datasets
-#             max_bin = max(max_feature) # find global maximum value of feature in all datasets
-
-#             normalized_feature = np.divide((np.array(feature, dtype=object) - min_bin), (max_bin - min_bin)) # normalization of feature values
-
-#             histogram_1 = np.histogram(normalized_feature[0], bins=n_bins, range=(0, 1), density=True)
-#             histogram_2 = np.histogram(normalized_feature[1], bins=n_bins, range=(0, 1), density=True)
-#             density_1 = histogram_1[0]
-#             density_2 = histogram_2[0]
-
-#             HD = HellingerDistance(density_1, density_2) # compute the Hellinger distance of feature between 2 datasets
-#             list_HD.append(HD)
-
-#         global_HD_each_class = np.average(list_HD)
-#         list_global_HD.append(global_HD_each_class)
-        
-#         with open(outpath + 'Global_HD_feature.txt', 'a') as f:
-#             f.write('{}: {}\n'.format(iclass, global_HD_each_class))
-
-#     global_HD = np.average(list_global_HD)
-#     with open(outpath + 'Global_HD_feature.txt', 'a') as f:
-#         f.write(f'\n Global Hellinger Distance: {global_HD}')
 
 
 

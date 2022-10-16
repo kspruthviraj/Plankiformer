@@ -8,3 +8,7 @@ utils/__pycache__/for_wildtrap.cpython-310.pyc
 utils/__pycache__/prepare_train_test_data.cpython-310.pyc
 utils/__pycache__/model_training.cpython-310.pyc
 utils/__pycache__/for_dogs.cpython-310.pyc
+utils_analysis/__pycache__/abundance.cpython-310.pyc
+utils_analysis/__pycache__/sampling_date.cpython-310.pyc
+utils_analysis/__pycache__/pixel.cpython-310.pyc
+utils_analysis/__pycache__/feature.cpython-310.pyc
