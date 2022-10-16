@@ -1,7 +1,6 @@
 import os
 import time
 import argparse
-from xml.sax.handler import all_features
 
 import cv2
 import numpy as np
