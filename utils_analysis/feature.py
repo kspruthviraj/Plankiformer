@@ -278,7 +278,8 @@ def GlobalHD_feature(datapaths, outpath, n_bins):
         list_global_HD.append(global_HD_each_class)
         
         with open(outpath + 'Global_HD_feature.txt', 'a') as f:
-            f.write('{}: {}\n'.format(iclass, global_HD_each_class))
+            # f.write('{}: {}\n'.format(iclass, global_HD_each_class))
+            f.write('%-20s%-20f\n' % (iclass, global_HD_each_class))
 
     global_HD = np.average(list_global_HD)
     with open(outpath + 'Global_HD_feature.txt', 'a') as f:

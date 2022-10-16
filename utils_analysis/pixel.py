@@ -180,7 +180,8 @@ def GlobalHD_pixel(datapaths, outpath, n_bins, resized_length=64):
         list_global_HD.append(global_HD_each_class)
 
         with open(outpath + 'Global_HD_pixel.txt', 'a') as f:
-            f.write('{}: {}\n'.format(iclass, global_HD_each_class))
+            # f.write('{}: {}\n'.format(iclass, global_HD_each_class))
+            f.write('%-20s%-20f\n' % (iclass, global_HD_each_class))
 
     global_HD = np.average(list_global_HD)
     with open(outpath + 'Global_HD_pixel.txt', 'a') as f:
