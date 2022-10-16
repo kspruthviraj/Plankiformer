@@ -6,6 +6,130 @@ import matplotlib.pyplot as plt
 import cv2
 
 
+
+def PlotPixelDistribution(datapaths, outpath, selected_pixels, n_bins, datapath_labels, resized_length=64):
+
+    print('-----------------Now plotting pixel distribution for each class and each selected feature.-----------------')
+
+    list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
+                     'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
+                     'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
+                     'fish', 'fragilaria', 'hydra', 'kellicottia', 'keratella_cochlearis', 'keratella_quadrata', 
+                     'leptodora', 'maybe_cyano', 'nauplius', 'paradileptus', 'polyarthra', 'rotifers', 
+                     'synchaeta', 'trichocerca', 'unknown', 'unknown_plankton', 'uroglena']
+    
+    # find the repetitive classes in selected datasets
+    for idatapath in datapaths:
+        list_class = os.listdir(idatapath)
+        list_class_rep = list(set(list_class) & set(list_class_rep))
+        list.sort(list_class_rep)
+    # print('Repetitive classes of two datasets: {}'.format(list_class_rep))
+    
+    all_pixels = [([0] * len(datapaths)) for i in range(len(list_class_rep))]
+    for i, iclass in enumerate(list_class_rep):
+
+        for j, idatapath in enumerate(datapaths):
+            class_datapath = idatapath + iclass + '/' # directory of each class with classname
+            df_pixels = LoadPixels(class_datapath, resized_length)
+            all_pixels[i][j] = df_pixels
+
+        for ipixel in selected_pixels:
+            ax = plt.subplot(1, 1, 1)
+            ax.set_xlabel(ipixel + ' (normalized)')
+            ax.set_ylabel('Density')
+
+            pixels = []
+
+            for j, idatapath in enumerate(datapaths):
+                pixel = all_pixels[i][j][int(ipixel)]
+                pixels.append(pixel)
+
+            pixels = np.divide(np.array(pixels, dtype=object), 255)
+
+            histogram = plt.hist(pixels, histtype='stepfilled', bins=n_bins, range=(0, 1), density=True, alpha=0.5, label=datapath_labels)
+            density_1 = histogram[0][0]
+            density_2 = histogram[0][1]
+
+            HD = HellingerDistance(density_1, density_2)
+
+            plt.title('Hellinger distance = %.3f' % HD)
+            plt.legend()
+            plt.tight_layout()
+
+            outpath_pixel = outpath + ipixel + '/'
+            try:
+                os.mkdir(outpath_pixel)
+            except FileExistsError:
+                pass
+            plt.savefig(outpath_pixel + ipixel + '_' + iclass + '.png')
+            plt.close()
+            ax.clear()
+
+
+
+def PlotPixelHDversusBin(datapaths, outpath, selected_pixels, resized_length=64):
+
+    print('-----------------Now plotting Hellinger distances v.s. numbers of bin.-----------------')
+
+    list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
+                     'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
+                     'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
+                     'fish', 'fragilaria', 'hydra', 'kellicottia', 'keratella_cochlearis', 'keratella_quadrata', 
+                     'leptodora', 'maybe_cyano', 'nauplius', 'paradileptus', 'polyarthra', 'rotifers', 
+                     'synchaeta', 'trichocerca', 'unknown', 'unknown_plankton', 'uroglena']
+
+    # find the repetitive classes in selected datasets
+    for idatapath in datapaths:
+        list_class = os.listdir(idatapath)
+        list_class_rep = list(set(list_class) & set(list_class_rep))
+        list.sort(list_class_rep)
+    # print('Repetitive classes of two datasets: {}'.format(list_class_rep))
+
+    list_n_bins = [5, 10, 20, 50, 100, 125, 150, 175, 200, 300, 400, 500]
+    for ipixel in selected_pixels:
+        ax = plt.subplot(1, 1, 1)
+        plt.figure(figsize=(10, 10))
+
+        for iclass in list_class_rep:
+            list_HD = []
+            for in_bins in list_n_bins:
+                pixel = []
+
+                for idatapath in datapaths:
+                    class_datapath = idatapath + iclass + '/' # directory of each class with classname
+                    df_pixels = LoadPixels(class_datapath, resized_length)
+
+                    pixel.append(df_pixels[int(ipixel)])
+
+                pixel = np.divide(np.array(pixel, dtype=object), 255)
+
+                histogram_1 = np.histogram(pixel[0], bins=in_bins, range=(0, 1), density=True)
+                histogram_2 = np.histogram(pixel[1], bins=in_bins, range=(0, 1), density=True)
+                density_1 = histogram_1[0]
+                density_2 = histogram_2[0]
+
+                HD = HellingerDistance(density_1, density_2) # compute the Hellinger distance of feature between 2 datasets
+                list_HD.append(HD)
+
+            plt.plot(list_n_bins, list_HD, label=iclass)
+
+        ax.set_xlabel('Number of bins')
+        ax.set_ylabel('Hellinger Distance')
+        ax.set_title(ipixel)
+        plt.legend(bbox_to_anchor=(1.01, 1.0), borderaxespad=0)
+        plt.tight_layout()
+
+        outpath_feature = outpath + ipixel + '/'
+        try:
+            os.mkdir(outpath_feature)
+        except FileExistsError:
+            pass
+        plt.savefig(outpath_feature + ipixel + '_HD.png' )
+        plt.close()
+        ax.clear()
+
+
+
 def GlobalHD_pixel(datapaths, outpath, n_bins, resized_length=64):
     
     print('-----------------Now computing global Hellinger distances on pixel.-----------------')
