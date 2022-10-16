@@ -60,6 +60,7 @@ def PlotSamplingDateEachClass(train_datapath, outpath):
     print('-----------------Now plotting sampling date for each class.-----------------')
 
     list_class = os.listdir(train_datapath) # list of class names
+    list_class.sort()
 
     ax = plt.subplot(1, 1, 1)
     plt.figure(figsize=(20, 8))
