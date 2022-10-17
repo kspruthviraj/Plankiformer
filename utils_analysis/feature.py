@@ -156,6 +156,100 @@ def PlotFeatureHDversusBin(datapaths, outpath, selected_features):
 
 
 
+def PlotGlobalHDversusBin_feature(datapaths, outpath):
+
+    print('-----------------Now plotting global Hellinger distances of feature v.s. numbers of bin.-----------------')
+
+    list_class_rep = ['aphanizomenon', 'asplanchna', 'asterionella', 'bosmina', 'brachionus', 'ceratium',
+                     'chaoborus', 'collotheca', 'conochilus', 'copepod_skins', 'cyclops', 'daphnia', 'daphnia_skins', 
+                     'diaphanosoma', 'diatom_chain', 'dinobryon', 'dirt', 'eudiaptomus', 'filament', 
+                     'fish', 'fragilaria', 'hydra', 'kellicottia', 'keratella_cochlearis', 'keratella_quadrata', 
+                     'leptodora', 'maybe_cyano', 'nauplius', 'paradileptus', 'polyarthra', 'rotifers', 
+                     'synchaeta', 'trichocerca', 'unknown', 'unknown_plankton', 'uroglena']
+
+    # find the repetitive classes in selected datasets
+    for idatapath in datapaths:
+        list_class = os.listdir(idatapath)
+        list_class_rep = list(set(list_class) & set(list_class_rep))
+        list.sort(list_class_rep)
+    # print('Repetitive classes of two datasets: {}'.format(list_class_rep))
+
+    list_features = ['width', 'height', 'w_rot', 'h_rot', 'angle_rot', 'aspect_ratio_2',
+                    'rect_area', 'contour_area', 'contour_perimeter', 'extent',
+                    'compactness', 'formfactor', 'hull_area', 'solidity_2', 'hull_perimeter',
+                    'ESD', 'Major_Axis', 'Minor_Axis', 'Angle', 'Eccentricity1', 'Eccentricity2',
+                    'Convexity', 'Roundness', 'm00', 'm10', 'm01', 'm20', 'm11', 'm02', 'm30', 'm21', 'm12', 'm03',
+                    'mu20', 'mu11', 'mu02', 'mu30', 'mu21', 'mu12', 'mu03', 'nu20', 'nu11',
+                    'nu02', 'nu30', 'nu21', 'nu12', 'nu03']
+
+    
+    list_n_bins = [5, 10, 20, 50, 100, 125, 150, 175, 200, 300, 400, 500, 750, 1000]
+    all_features = [([0] * len(datapaths)) for i in range(len(list_class_rep))]
+
+    df_global_HD = pd.DataFrame(columns=[in_bins for in_bins in list_n_bins], index=[iclass for iclass in list_class_rep])
+    for in_bins in list_n_bins:
+        list_global_HD = []
+        for i, iclass in enumerate(list_class_rep):
+            list_HD = []
+
+            for j, idatapath in enumerate(datapaths):
+                class_datapath = idatapath + iclass + '/'
+                df_all_feat = ConcatAllFeatures(class_datapath)
+                all_features[i][j] = df_all_feat
+
+            for ifeature in list_features:
+                min_feature = []
+                max_feature = []
+                features = []
+
+                for j, idatapath in enumerate(datapaths):
+                    feature = all_features[i][j][ifeature]
+                    min_feature.append(min(feature))
+                    max_feature.append(max(feature))
+                    features.append(feature)
+
+                min_bin = min(min_feature) # find global minimum value of feature in all datasets
+                max_bin = max(max_feature) # find global maximum value of feature in all datasets
+
+                normalized_feature = np.divide((np.array(features, dtype=object) - min_bin), (max_bin - min_bin)) # normalization of feature values
+
+                histogram_1 = np.histogram(normalized_feature[0], bins=in_bins, range=(0, 1), density=True)
+                histogram_2 = np.histogram(normalized_feature[1], bins=in_bins, range=(0, 1), density=True)
+                density_1 = histogram_1[0]
+                density_2 = histogram_2[0]
+
+                HD = HellingerDistance(density_1, density_2) # compute the Hellinger distance of feature between 2 datasets
+                list_HD.append(HD)
+
+            global_HD_each_class = np.average(list_HD)
+            list_global_HD.append(global_HD_each_class)
+        
+        df_global_HD[in_bins] = list_global_HD
+
+    df_global_HD = df_global_HD.transpose()
+
+    ax = plt.subplot(1, 1, 1)
+    ax.set_xlabel('Number of bins')
+    ax.set_ylabel('Hellinger Distance')
+    plt.figure(figsize=(10, 10))
+    
+    for iclass in list_class_rep:
+        plt.plot(list_n_bins, df_global_HD[iclass], label=iclass)
+
+    plt.legend(bbox_to_anchor=(1.01, 1.0), borderaxespad=0)
+    plt.tight_layout()
+
+    outpath_feature = outpath
+    try:
+        os.mkdir(outpath_feature)
+    except FileExistsError:
+        pass
+    plt.savefig(outpath_feature + 'HD_bin_feature.png' )
+    plt.close()
+    ax.clear()
+    
+
+
 def GlobalHD_feature(datapaths, outpath, n_bins):
 
     print('-----------------Now computing global Hellinger distances on feature.-----------------')
