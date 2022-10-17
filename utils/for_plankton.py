@@ -228,7 +228,7 @@ class CreateDataForPlankton:
         Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
         if train_main.params.test_set == 'yes' and train_main.params.valid_set == 'yes':
-            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.aug_type)
+            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.params.aug_type)
             self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                                pin_memory=True)
 
@@ -240,11 +240,11 @@ class CreateDataForPlankton:
             self.val_dataloader = DataLoader(val_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                              pin_memory=True)
         elif train_main.params.test_set == 'no':
-            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.aug_type)
+            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.params.aug_type)
             self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                                pin_memory=True)
         elif train_main.params.test_set == 'yes' and train_main.params.valid_set == 'no':
-            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.aug_type)
+            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.params.aug_type)
             self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                                pin_memory=True)
 
