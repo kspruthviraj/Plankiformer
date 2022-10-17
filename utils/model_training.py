@@ -77,8 +77,12 @@ class import_and_train_model:
             self.criterion = self.criterion.cuda(train_main.params.gpu_id)
 
         # Observe that all parameters are being optimized
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+        # self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+        #                                    weight_decay=train_main.params.weight_decay)
+
+        self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()), lr=train_main.params.lr,
                                            weight_decay=train_main.params.weight_decay)
+
 
         # Decay LR by a factor of 0.1 every 7 epochs
         # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
