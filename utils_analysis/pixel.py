@@ -7,7 +7,7 @@ import cv2
 
 
 
-def PlotPixelDistribution(datapaths, outpath, selected_pixels, n_bins, datapath_labels, resized_length=64):
+def PlotPixelDistribution(datapaths, outpath, selected_pixels, n_bins_pixel, datapath_labels, resized_length=64):
 
     print('-----------------Now plotting pixel distribution for each class and each selected feature.-----------------')
 
@@ -46,7 +46,7 @@ def PlotPixelDistribution(datapaths, outpath, selected_pixels, n_bins, datapath_
 
             pixels = np.divide(np.array(pixels, dtype=object), 255)
 
-            histogram = plt.hist(pixels, histtype='stepfilled', bins=n_bins, range=(0, 1), density=True, alpha=0.5, label=datapath_labels)
+            histogram = plt.hist(pixels, histtype='stepfilled', bins=n_bins_pixel, range=(0, 1), density=True, alpha=0.5, label=datapath_labels)
             density_1 = histogram[0][0]
             density_2 = histogram[0][1]
 
@@ -217,7 +217,7 @@ def PlotGlobalHDversusBin_pixel(datapaths, outpath, resized_length=64):
 
 
 
-def GlobalHD_pixel(datapaths, outpath, n_bins, resized_length=64):
+def GlobalHD_pixel(datapaths, outpath, n_bins_pixel, resized_length=64):
     
     print('-----------------Now computing global Hellinger distances on pixel.-----------------')
 
@@ -255,8 +255,8 @@ def GlobalHD_pixel(datapaths, outpath, n_bins, resized_length=64):
 
             pixels = np.divide(np.array(pixels, dtype=object), 255)
 
-            histogram_1 = np.histogram(pixels[0], bins=n_bins, range=(0, 1), density=True)
-            histogram_2 = np.histogram(pixels[1], bins=n_bins, range=(0, 1), density=True)
+            histogram_1 = np.histogram(pixels[0], bins=n_bins_pixel, range=(0, 1), density=True)
+            histogram_2 = np.histogram(pixels[1], bins=n_bins_pixel, range=(0, 1), density=True)
             density_1 = histogram_1[0]
             density_2 = histogram_2[0]
 

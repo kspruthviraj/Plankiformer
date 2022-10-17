@@ -7,7 +7,7 @@ import cv2
 
 
 
-def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins, datapath_labels):
+def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins_feature, datapath_labels):
 
     print('-----------------Now plotting feature distribution for each class and each selected feature.-----------------')
 
@@ -57,7 +57,7 @@ def PlotFeatureDistribution(datapaths, outpath, selected_features, n_bins, datap
 
             normalized_feature = np.divide((np.array(features, dtype=object) - min_bin), (max_bin - min_bin)) # normalization of feature values
 
-            histogram = plt.hist(normalized_feature, histtype='stepfilled', bins=n_bins, range=(0, 1), density=True, alpha=0.5, label=datapath_labels)
+            histogram = plt.hist(normalized_feature, histtype='stepfilled', bins=n_bins_feature, range=(0, 1), density=True, alpha=0.5, label=datapath_labels)
             density_1 = histogram[0][0]
             density_2 = histogram[0][1]
 
@@ -250,7 +250,7 @@ def PlotGlobalHDversusBin_feature(datapaths, outpath):
     
 
 
-def GlobalHD_feature(datapaths, outpath, n_bins):
+def GlobalHD_feature(datapaths, outpath, n_bins_feature):
 
     print('-----------------Now computing global Hellinger distances on feature.-----------------')
 
@@ -303,8 +303,8 @@ def GlobalHD_feature(datapaths, outpath, n_bins):
 
             normalized_feature = np.divide((np.array(features, dtype=object) - min_bin), (max_bin - min_bin)) # normalization of feature values
 
-            histogram_1 = np.histogram(normalized_feature[0], bins=n_bins, range=(0, 1), density=True)
-            histogram_2 = np.histogram(normalized_feature[1], bins=n_bins, range=(0, 1), density=True)
+            histogram_1 = np.histogram(normalized_feature[0], bins=n_bins_feature, range=(0, 1), density=True)
+            histogram_2 = np.histogram(normalized_feature[1], bins=n_bins_feature, range=(0, 1), density=True)
             density_1 = histogram_1[0]
             density_2 = histogram_2[0]
 
