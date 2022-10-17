@@ -91,6 +91,8 @@ class LoadInputParameters:
                             help="Which data to use in the test and training sets: features, images, or both")
         parser.add_argument('-training_data', choices=['True', 'False'], default='False',
                             help="This is to cope with the different directory structures")
+        parser.add_argument('-aug_type', choices=['low', 'medium', 'high'],
+                            default='low', help='Choose the augmentations intensity levels ( "low", "medium", "high")')
 
         # Preprocessing Images
         parser.add_argument('-resize_images', type=int, default=1,
