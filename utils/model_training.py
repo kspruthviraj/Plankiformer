@@ -60,6 +60,9 @@ class import_and_train_model:
         # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
+        for param in self.model.parameters():
+            param.requires_grad = False
+
         # total parameters and trainable parameters
         total_params = sum(p.numel() for p in self.model.parameters())
         print(f"{total_params:,} total parameters.")
@@ -375,6 +378,9 @@ class import_and_train_model:
         elif modeltype == 1:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.lr / 10)
+            for param in self.model.parameters():
+                param.requires_grad = True
+
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.lr / 10, "tuned", self.best_values)
             self.run_prediction(data_loader, 'tuned')
@@ -382,6 +388,9 @@ class import_and_train_model:
         elif modeltype == 2:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.lr / 100)
+            for param in self.model.parameters():
+                param.requires_grad = True
+
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.lr / 100, "finetuned", self.best_values)
             self.run_prediction(data_loader, 'finetuned')
