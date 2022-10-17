@@ -333,7 +333,7 @@ class AugmentedDataset(Dataset):
         # Select sample
         image = self.X[index]
         label = self.y[index]
-        aug_type = self.aug_type[index]
+        aug_type = self.aug_type
         if aug_type == 'high':
             X = self.transform1(image)
         elif aug_type == 'medium':
