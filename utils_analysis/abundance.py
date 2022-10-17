@@ -80,7 +80,7 @@ def PlotAbundance(datapaths, outpath, datapath_labels):
 
     df_abundance = pd.DataFrame({'class': list_class_rep, 'dataset_1': list_n_image_class_combined[0], 'dataset_2': list_n_image_class_combined[1]})
     df_abundance['ratio'] = df_abundance['dataset_2'] / df_abundance['dataset_1']
-    df_abundance_sorted = df_abundance.sort_values(by='ratio', ascending=False, ignore_index=True)
+    df_abundance_sorted = df_abundance.sort_values(by='dataset_1', ascending=False, ignore_index=True)
 
     fig = plt.figure(figsize=(11, 8))
     ax = plt.subplot(1, 1, 1)
