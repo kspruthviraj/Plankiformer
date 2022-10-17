@@ -6,14 +6,12 @@ import matplotlib.pyplot as plt
 
 
 
-def PlotAbundanceSep(datapaths, outpath):
+def PlotAbundanceSep(datapaths, outpath, datapath_labels):
     '''plot the abundance of datasets seperately'''
 
     print('-----------------Now plotting abundance distributions of each dataset seperately.-----------------')
 
-    ith = 0
-    for idatapath in datapaths:
-        ith = ith + 1 # this is the i-th set
+    for j, idatapath in enumerate(datapaths):
         n_class = len(os.listdir(idatapath)) # count the number of classes in dataset
         list_class = os.listdir(idatapath) # list of class names
 
@@ -40,7 +38,7 @@ def PlotAbundanceSep(datapaths, outpath):
             plt.xticks(rotation=90)
 
         plt.tight_layout()
-        plt.savefig(outpath + 'abundance_set%s.png' % ith)
+        plt.savefig(outpath + 'abundance_%s.png' % datapath_labels[j])
         plt.close()
         ax.clear()
 
