@@ -60,6 +60,15 @@ class import_and_train_model:
         # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
+        for param in self.model.parameters():
+            param.requires_grad = False ### CHANGED HERE
+
+        i = 1
+        for param in self.model.parameters():
+            if i > 150:
+                param.requires_grad = True
+            i = i + 1
+
         # total parameters and trainable parameters
         total_params = sum(p.numel() for p in self.model.parameters())
         print(f"{total_params:,} total parameters.")
@@ -74,8 +83,12 @@ class import_and_train_model:
             self.criterion = self.criterion.cuda(train_main.params.gpu_id)
 
         # Observe that all parameters are being optimized
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+        # self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+        #                                    weight_decay=train_main.params.weight_decay)
+
+        self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()), lr=train_main.params.lr,
                                            weight_decay=train_main.params.weight_decay)
+
 
         # Decay LR by a factor of 0.1 every 7 epochs
         # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
@@ -129,7 +142,7 @@ class import_and_train_model:
 
         self.early_stopping = EarlyStopping()
 
-    def run_training(self, train_main, data_loader, initial_epoch, epochs, lr, name, best_values):
+    def run_training(self, train_main, data_loader, initial_epoch, epochs, lr, name, best_values, modeltype):
 
         best_loss, best_f1, best_acc1 = best_values[0], best_values[1], best_values[2]
 
@@ -151,7 +164,8 @@ class import_and_train_model:
                                                                              self.model,
                                                                              self.criterion,
                                                                              self.optimizer,
-                                                                             train_main.params.clip_grad_norm)
+                                                                             train_main.params.clip_grad_norm,
+                                                                             modeltype)
             test_acc1, test_loss, test_outputs, test_targets, total_mins = cls_validate(train_main,
                                                                                         data_loader.val_dataloader,
                                                                                         self.model, self.criterion,
@@ -369,37 +383,43 @@ class import_and_train_model:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.lr)
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.epochs,
-                              train_main.params.lr, "original", self.best_values)
+                              train_main.params.lr, "original", self.best_values, modeltype)
             self.run_prediction(data_loader, 'original')
 
         elif modeltype == 1:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.lr / 10)
+            for param in self.model.parameters():
+                param.requires_grad = True
+
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 10, "tuned", self.best_values)
+                              train_main.params.lr / 10, "tuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'tuned')
 
         elif modeltype == 2:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.lr / 100)
+            for param in self.model.parameters():
+                param.requires_grad = True
+
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 100, "finetuned", self.best_values)
+                              train_main.params.lr / 100, "finetuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'finetuned')
 
     def train_predict(self, train_main, data_loader, modeltype):
         if modeltype == 0:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.epochs,
-                              train_main.params.lr, "original", self.best_values)
+                              train_main.params.lr, "original", self.best_values, modeltype)
             self.run_prediction(data_loader, 'original')
 
         elif modeltype == 1:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 10, "tuned", self.best_values)
+                              train_main.params.lr / 10, "tuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'tuned')
 
         elif modeltype == 2:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 100, "finetuned", self.best_values)
+                              train_main.params.lr / 100, "finetuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'finetuned')
 
     def train_and_save(self, train_main, data_loader):
@@ -974,28 +994,6 @@ def accuracy(output, target):
         return res
 
 
-class LRScheduler:
-    """
-    Learning rate scheduler. If the validation loss does not decrease for the
-    given number of `patience` epochs, then the learning rate will decrease by
-    by given `factor`.
-    """
-
-    def __init__(self, optimizer):
-        """
-        new_lr = old_lr * factor
-        :param optimizer: the optimizer we are using
-        """
-        self.optimizer = optimizer
-        # self.patience = patience
-        # self.min_lr = min_lr
-        # self.factor = factor
-        self.lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=5, eta_min=5e-10)
-
-    def __call__(self):
-        self.lr_scheduler.step()
-
-
 # class LRScheduler:
 #     """
 #     Learning rate scheduler. If the validation loss does not decrease for the
@@ -1003,31 +1001,53 @@ class LRScheduler:
 #     by given `factor`.
 #     """
 #
-#     def __init__(
-#             self, optimizer, patience=10, min_lr=1e-10, factor=0.5
-#     ):
+#     def __init__(self, optimizer):
 #         """
 #         new_lr = old_lr * factor
 #         :param optimizer: the optimizer we are using
-#         :param patience: how many epochs to wait before updating the lr
-#         :param min_lr: least lr value to reduce to while updating
-#         :param factor: factor by which the lr should be updated
 #         """
 #         self.optimizer = optimizer
-#         self.patience = patience
-#         self.min_lr = min_lr
-#         self.factor = factor
-#         self.lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-#             self.optimizer,
-#             mode='min',
-#             patience=self.patience,
-#             factor=self.factor,
-#             min_lr=self.min_lr,
-#             verbose=True
-#         )
+#         # self.patience = patience
+#         # self.min_lr = min_lr
+#         # self.factor = factor
+#         self.lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=5, eta_min=5e-10)
 #
-#     def __call__(self, val_loss):
-#         self.lr_scheduler.step(val_loss)
+#     def __call__(self):
+#         self.lr_scheduler.step()
+
+
+class LRScheduler:
+    """
+    Learning rate scheduler. If the validation loss does not decrease for the
+    given number of `patience` epochs, then the learning rate will decrease by
+    by given `factor`.
+    """
+
+    def __init__(
+            self, optimizer, patience=4, min_lr=1e-10, factor=0.5
+    ):
+        """
+        new_lr = old_lr * factor
+        :param optimizer: the optimizer we are using
+        :param patience: how many epochs to wait before updating the lr
+        :param min_lr: least lr value to reduce to while updating
+        :param factor: factor by which the lr should be updated
+        """
+        self.optimizer = optimizer
+        self.patience = patience
+        self.min_lr = min_lr
+        self.factor = factor
+        self.lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            self.optimizer,
+            mode='min',
+            patience=self.patience,
+            factor=self.factor,
+            min_lr=self.min_lr,
+            verbose=True
+        )
+
+    def __call__(self, val_loss):
+        self.lr_scheduler.step(val_loss)
 
 
 class EarlyStopping:
@@ -1036,7 +1056,7 @@ class EarlyStopping:
     certain epochs.
     """
 
-    def __init__(self, patience=100, min_delta=0):
+    def __init__(self, patience=5, min_delta=0):
         """
         :param patience: how many epochs to wait before stopping when loss is
                not improving
@@ -1062,7 +1082,7 @@ class EarlyStopping:
                 self.early_stop = True
 
 
-def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_norm):
+def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_norm, modeltype):
     model.train()
     loss_val, acc1_val = 0, 0
     n = 0
@@ -1101,8 +1121,9 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
         outputs.append(output)
         targets.append(target)
 
-    if train_main.params.run_lr_scheduler == 'yes':
-        lr_scheduler()
+    if modeltype == 'yes':
+        if train_main.params.run_lr_scheduler == 'yes':
+            lr_scheduler(loss)
 
     outputs = torch.cat(outputs)
     outputs = outputs.cpu().detach().numpy()

@@ -228,7 +228,7 @@ class CreateDataForPlankton:
         Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
         if train_main.params.test_set == 'yes' and train_main.params.valid_set == 'yes':
-            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
+            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.params.aug_type)
             self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                                pin_memory=True)
 
@@ -240,11 +240,11 @@ class CreateDataForPlankton:
             self.val_dataloader = DataLoader(val_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                              pin_memory=True)
         elif train_main.params.test_set == 'no':
-            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
+            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.params.aug_type)
             self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                                pin_memory=True)
         elif train_main.params.test_set == 'yes' and train_main.params.valid_set == 'no':
-            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
+            train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.params.aug_type)
             self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                                pin_memory=True)
 
@@ -302,7 +302,7 @@ class CreateDataForPlankton:
         self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
         Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
-        train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train)
+        train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.aug_type)
         self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
                                            pin_memory=True)
 
@@ -318,10 +318,11 @@ class CreateDataForPlankton:
 class AugmentedDataset(Dataset):
     """Characterizes a dataset for PyTorch"""
 
-    def __init__(self, X, y):
+    def __init__(self, X, y, aug_type):
         """Initialization"""
         self.X = X
         self.y = y
+        self.aug_type = aug_type
 
     def __len__(self):
         """Denotes the total number of samples"""
@@ -332,33 +333,85 @@ class AugmentedDataset(Dataset):
         # Select sample
         image = self.X[index]
         label = self.y[index]
-        X = self.transform(image)
+        aug_type = self.aug_type
+        if aug_type == 'high':
+            X = self.transform1(image)
+        elif aug_type == 'medium':
+            X = self.transform2(image)
+        else:
+            X = self.transform3(image)
         y = label
         sample = [X, y]
         return sample
 
-    transform = T.Compose([
-        T.ToPILImage(),
-        T.Resize(224),
-        T.RandomHorizontalFlip(),
-        T.RandomVerticalFlip(),
-        # T.RandAugment(),
-        # T.TrivialAugmentWide(),
-        # T.AugMix(),
-        # T.RandomResizedCrop(size=(224, 224)),
-        # T.RandomErasing(),
-        # T.Grayscale(),
-        # T.RandomInvert(),
-        T.RandomAutocontrast(),
-        T.RandomEqualize(),
-        T.RandomAdjustSharpness(sharpness_factor=2),
-        T.ColorJitter(brightness=0.3, hue=0.3),
-        T.GaussianBlur(kernel_size=(1, 5), sigma=(0.1, 2)),
-        # T.RandomPerspective(distortion_scale=0.8, p=0.1),
-        T.RandomRotation(degrees=(0, 180)),
-        T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3), scale=(0.5, 0.9)),
-        T.ToTensor()])
-    transform_y = T.Compose([T.ToTensor()])
+    transform1 = T.Compose([
+            T.ToPILImage(),
+            T.Resize(224),
+            T.RandomHorizontalFlip(),
+            T.RandomVerticalFlip(),
+            T.RandAugment(),
+            T.TrivialAugmentWide(),
+            # T.AugMix(),
+            # T.RandomResizedCrop(size=(224, 224)),
+            T.RandomErasing(),
+            T.Grayscale(),
+            T.RandomInvert(),
+            T.RandomAutocontrast(),
+            T.RandomEqualize(),
+            T.RandomAdjustSharpness(sharpness_factor=2),
+            T.ColorJitter(brightness=0.3, hue=0.3),
+            T.GaussianBlur(kernel_size=(1, 5), sigma=(0.1, 2)),
+            T.RandomPerspective(distortion_scale=0.8, p=0.1),
+            T.RandomRotation(degrees=(0, 180)),
+            T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3), scale=(0.5, 0.9)),
+            T.ToTensor()])
+    transform1_y = T.Compose([T.ToTensor()])
+
+    transform2 = T.Compose([
+            T.ToPILImage(),
+            T.Resize(224),
+            T.RandomHorizontalFlip(),
+            T.RandomVerticalFlip(),
+            # T.RandAugment(),
+            # T.TrivialAugmentWide(),
+            # T.AugMix(),
+            # T.RandomResizedCrop(size=(224, 224)),
+            # T.RandomErasing(),
+            # T.Grayscale(),
+            # T.RandomInvert(),
+            T.RandomAutocontrast(),
+            T.RandomEqualize(),
+            T.RandomAdjustSharpness(sharpness_factor=2),
+            T.ColorJitter(brightness=0.3, hue=0.3),
+            T.GaussianBlur(kernel_size=(1, 5), sigma=(0.1, 2)),
+            # T.RandomPerspective(distortion_scale=0.8, p=0.1),
+            T.RandomRotation(degrees=(0, 180)),
+            T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3), scale=(0.5, 0.9)),
+            T.ToTensor()])
+    transform2_y = T.Compose([T.ToTensor()])
+
+    transform3 = T.Compose([
+            T.ToPILImage(),
+            T.Resize(224),
+            T.RandomHorizontalFlip(),
+            T.RandomVerticalFlip(),
+            # T.RandAugment(),
+            # T.TrivialAugmentWide(),
+            # T.AugMix(),
+            # T.RandomResizedCrop(size=(224, 224)),
+            # T.RandomErasing(),
+            # T.Grayscale(),
+            # T.RandomInvert(),
+            # T.RandomAutocontrast(),
+            # T.RandomEqualize(),
+            # T.RandomAdjustSharpness(sharpness_factor=2),
+            # T.ColorJitter(brightness=0.3, hue=0.3),
+            T.GaussianBlur(kernel_size=(1, 5), sigma=(0.1, 2)),
+            # T.RandomPerspective(distortion_scale=0.8, p=0.1),
+            T.RandomRotation(degrees=(0, 180)),
+            T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3), scale=(0.5, 0.9)),
+            T.ToTensor()])
+    transform3_y = T.Compose([T.ToTensor()])
 
 
 class CreateDataset(Dataset):

@@ -91,6 +91,8 @@ class LoadInputParameters:
                             help="Which data to use in the test and training sets: features, images, or both")
         parser.add_argument('-training_data', choices=['True', 'False'], default='False',
                             help="This is to cope with the different directory structures")
+        parser.add_argument('-aug_type', choices=['low', 'medium', 'high'],
+                            default='low', help='Choose the augmentations intensity levels ( "low", "medium", "high")')
 
         # Preprocessing Images
         parser.add_argument('-resize_images', type=int, default=1,
@@ -126,10 +128,10 @@ class LoadInputParameters:
         # parser.add_argument('-initial_epoch', type=int, default=0, help="set the initial epoch value")
         parser.add_argument('-gpu_id', type=int, default=0, help="select the gpu id ")
         parser.add_argument('-lr', type=float, default=1e-4, help="starting learning rate")
-        parser.add_argument('-warmup', type=int, default=5, help="starting learning rate")
-        parser.add_argument('-weight_decay', type=float, default=0.05, help="weight decay")
+        parser.add_argument('-warmup', type=int, default=10, help="starting learning rate")
+        parser.add_argument('-weight_decay', type=float, default=3e-2, help="weight decay")
         parser.add_argument('-clip_grad_norm', type=float, default=0, help="clip gradient norm")
-        parser.add_argument('-disable_cos', choices=[True, False], default=False,
+        parser.add_argument('-disable_cos', choices=[True, False], default=True,
                             help="Disable cos. Choose from Yes or No")
         parser.add_argument('-run_early_stopping', choices=['yes', 'no'], default='no', )
         parser.add_argument('-run_lr_scheduler', choices=['yes', 'no'], default='no', )
