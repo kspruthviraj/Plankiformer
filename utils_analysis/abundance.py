@@ -96,8 +96,8 @@ def PlotAbundance(datapaths, outpath, datapath_labels):
     y1 = df_abundance_sorted['dataset_1']
     y2 = df_abundance_sorted['dataset_2']
 
-    plt.bar(x1, y1, width=0.5, label=datapath_labels[0], log=True)
-    plt.bar(x2, y2, width=0.5, label=datapath_labels[1], log=True)
+    plt.bar(x1, y1, width=0.5, label=datapath_labels[0])
+    plt.bar(x2, y2, width=0.5, label=datapath_labels[1])
     plt.xticks(x, df_abundance_sorted['class'], rotation=90)
 
     ax_2 = ax.twinx()
