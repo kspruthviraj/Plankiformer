@@ -61,7 +61,7 @@ class import_and_train_model:
         self.model.to(device)
 
         for param in self.model.parameters():
-            param.requires_grad = True
+            param.requires_grad = True ### CHANGED HERE
 
         # total parameters and trainable parameters
         total_params = sum(p.numel() for p in self.model.parameters())
@@ -968,28 +968,6 @@ def accuracy(output, target):
         return res
 
 
-class LRScheduler:
-    """
-    Learning rate scheduler. If the validation loss does not decrease for the
-    given number of `patience` epochs, then the learning rate will decrease by
-    by given `factor`.
-    """
-
-    def __init__(self, optimizer):
-        """
-        new_lr = old_lr * factor
-        :param optimizer: the optimizer we are using
-        """
-        self.optimizer = optimizer
-        # self.patience = patience
-        # self.min_lr = min_lr
-        # self.factor = factor
-        self.lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=5, eta_min=5e-10)
-
-    def __call__(self):
-        self.lr_scheduler.step()
-
-
 # class LRScheduler:
 #     """
 #     Learning rate scheduler. If the validation loss does not decrease for the
@@ -997,31 +975,53 @@ class LRScheduler:
 #     by given `factor`.
 #     """
 #
-#     def __init__(
-#             self, optimizer, patience=10, min_lr=1e-10, factor=0.5
-#     ):
+#     def __init__(self, optimizer):
 #         """
 #         new_lr = old_lr * factor
 #         :param optimizer: the optimizer we are using
-#         :param patience: how many epochs to wait before updating the lr
-#         :param min_lr: least lr value to reduce to while updating
-#         :param factor: factor by which the lr should be updated
 #         """
 #         self.optimizer = optimizer
-#         self.patience = patience
-#         self.min_lr = min_lr
-#         self.factor = factor
-#         self.lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-#             self.optimizer,
-#             mode='min',
-#             patience=self.patience,
-#             factor=self.factor,
-#             min_lr=self.min_lr,
-#             verbose=True
-#         )
+#         # self.patience = patience
+#         # self.min_lr = min_lr
+#         # self.factor = factor
+#         self.lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, T_max=5, eta_min=5e-10)
 #
-#     def __call__(self, val_loss):
-#         self.lr_scheduler.step(val_loss)
+#     def __call__(self):
+#         self.lr_scheduler.step()
+
+
+class LRScheduler:
+    """
+    Learning rate scheduler. If the validation loss does not decrease for the
+    given number of `patience` epochs, then the learning rate will decrease by
+    by given `factor`.
+    """
+
+    def __init__(
+            self, optimizer, patience=4, min_lr=1e-10, factor=0.5
+    ):
+        """
+        new_lr = old_lr * factor
+        :param optimizer: the optimizer we are using
+        :param patience: how many epochs to wait before updating the lr
+        :param min_lr: least lr value to reduce to while updating
+        :param factor: factor by which the lr should be updated
+        """
+        self.optimizer = optimizer
+        self.patience = patience
+        self.min_lr = min_lr
+        self.factor = factor
+        self.lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            self.optimizer,
+            mode='min',
+            patience=self.patience,
+            factor=self.factor,
+            min_lr=self.min_lr,
+            verbose=True
+        )
+
+    def __call__(self, val_loss):
+        self.lr_scheduler.step(val_loss)
 
 
 class EarlyStopping:
@@ -1030,7 +1030,7 @@ class EarlyStopping:
     certain epochs.
     """
 
-    def __init__(self, patience=100, min_delta=0):
+    def __init__(self, patience=5, min_delta=0):
         """
         :param patience: how many epochs to wait before stopping when loss is
                not improving
