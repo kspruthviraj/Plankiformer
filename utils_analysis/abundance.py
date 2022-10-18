@@ -77,15 +77,16 @@ def PlotAbundance(datapaths, outpath, datapath_labels):
 
         list_n_image_class_combined.append(list_n_image_class)
 
-
-    df_abundance = pd.DataFrame({'class': list_class_rep, 'dataset_1': list_n_image_class_combined[0], 'dataset_2': list_n_image_class_combined[1]})
+    total_image_1 = np.sum(list_n_image_class_combined[0])
+    total_image_2 = np.sum(list_n_image_class_combined[1])
+    df_abundance = pd.DataFrame({'class': list_class_rep, 'dataset_1': np.divide(list_n_image_class_combined[0], total_image_1), 'dataset_2': np.divide(list_n_image_class_combined[1], total_image_2)})
     df_abundance['ratio'] = df_abundance['dataset_2'] / df_abundance['dataset_1']
     df_abundance_sorted = df_abundance.sort_values(by='dataset_1', ascending=False, ignore_index=True)
 
     fig = plt.figure(figsize=(11, 8))
     ax = plt.subplot(1, 1, 1)
     ax.set_xlabel('Class')
-    ax.set_ylabel('Abundance')
+    ax.set_ylabel('Abundance (percentage)')
 
     x = np.arange(0, len(list_class_rep) * 2, 2)
     width = 0.5
@@ -100,7 +101,7 @@ def PlotAbundance(datapaths, outpath, datapath_labels):
     plt.xticks(x, df_abundance_sorted['class'], rotation=90)
 
     ax_2 = ax.twinx()
-    ax_2.set_ylabel('Ratio')
+    ax_2.set_ylabel('Ratio of two datasets')
     ax_2.plot(x, df_abundance_sorted['ratio'], label='ratio', color='green', marker='.')
 
     fig.legend(loc=1, bbox_to_anchor=(1, 1), bbox_transform=ax.transAxes)
