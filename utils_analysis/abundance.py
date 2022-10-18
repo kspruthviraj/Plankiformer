@@ -1,4 +1,5 @@
 import os
+from cv2 import log
 
 import numpy as np
 import pandas as pd
@@ -80,6 +81,7 @@ def PlotAbundance(datapaths, outpath, datapath_labels):
     total_image_1 = np.sum(list_n_image_class_combined[0])
     total_image_2 = np.sum(list_n_image_class_combined[1])
     df_abundance = pd.DataFrame({'class': list_class_rep, 'dataset_1': np.divide(list_n_image_class_combined[0], total_image_1), 'dataset_2': np.divide(list_n_image_class_combined[1], total_image_2)})
+    # df_abundance = pd.DataFrame({'class': list_class_rep, 'dataset_1': list_n_image_class_combined[0], 'dataset_2': list_n_image_class_combined[1]})
     df_abundance['ratio'] = df_abundance['dataset_2'] / df_abundance['dataset_1']
     df_abundance_sorted = df_abundance.sort_values(by='dataset_1', ascending=False, ignore_index=True)
 
@@ -87,6 +89,7 @@ def PlotAbundance(datapaths, outpath, datapath_labels):
     ax = plt.subplot(1, 1, 1)
     ax.set_xlabel('Class')
     ax.set_ylabel('Abundance (percentage)')
+    # ax.set_ylabel('Abundance')
 
     x = np.arange(0, len(list_class_rep) * 2, 2)
     width = 0.5
@@ -98,6 +101,8 @@ def PlotAbundance(datapaths, outpath, datapath_labels):
 
     plt.bar(x1, y1, width=0.5, label=datapath_labels[0])
     plt.bar(x2, y2, width=0.5, label=datapath_labels[1])
+    # plt.bar(x1, y1, width=0.5, label=datapath_labels[0], log=True)
+    # plt.bar(x2, y2, width=0.5, label=datapath_labels[1], log=True)
     plt.xticks(x, df_abundance_sorted['class'], rotation=90)
 
     ax_2 = ax.twinx()
