@@ -136,7 +136,7 @@ class import_and_train_model:
 
         self.early_stopping = EarlyStopping()
 
-    def run_training(self, train_main, data_loader, initial_epoch, epochs, lr, name, best_values):
+    def run_training(self, train_main, data_loader, initial_epoch, epochs, lr, name, best_values, modeltype):
 
         best_loss, best_f1, best_acc1 = best_values[0], best_values[1], best_values[2]
 
@@ -158,7 +158,8 @@ class import_and_train_model:
                                                                              self.model,
                                                                              self.criterion,
                                                                              self.optimizer,
-                                                                             train_main.params.clip_grad_norm)
+                                                                             train_main.params.clip_grad_norm,
+                                                                             modeltype)
             test_acc1, test_loss, test_outputs, test_targets, total_mins = cls_validate(train_main,
                                                                                         data_loader.val_dataloader,
                                                                                         self.model, self.criterion,
@@ -376,7 +377,7 @@ class import_and_train_model:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.lr)
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.epochs,
-                              train_main.params.lr, "original", self.best_values)
+                              train_main.params.lr, "original", self.best_values, modeltype)
             self.run_prediction(data_loader, 'original')
 
         elif modeltype == 1:
@@ -386,7 +387,7 @@ class import_and_train_model:
                 param.requires_grad = True
 
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 10, "tuned", self.best_values)
+                              train_main.params.lr / 10, "tuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'tuned')
 
         elif modeltype == 2:
@@ -396,7 +397,7 @@ class import_and_train_model:
                 param.requires_grad = True
 
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 100, "finetuned", self.best_values)
+                              train_main.params.lr / 100, "finetuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'finetuned')
 
     def train_predict(self, train_main, data_loader, modeltype):
@@ -1056,7 +1057,7 @@ class EarlyStopping:
                 self.early_stop = True
 
 
-def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_norm):
+def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_norm, modeltype):
     model.train()
     loss_val, acc1_val = 0, 0
     n = 0
@@ -1095,8 +1096,9 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
         outputs.append(output)
         targets.append(target)
 
-    if train_main.params.run_lr_scheduler == 'yes':
-        lr_scheduler()
+    if modeltype == 'yes':
+        if train_main.params.run_lr_scheduler == 'yes':
+            lr_scheduler(loss)
 
     outputs = torch.cat(outputs)
     outputs = outputs.cpu().detach().numpy()
