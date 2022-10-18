@@ -403,17 +403,17 @@ class import_and_train_model:
     def train_predict(self, train_main, data_loader, modeltype):
         if modeltype == 0:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.epochs,
-                              train_main.params.lr, "original", self.best_values)
+                              train_main.params.lr, "original", self.best_values, modeltype)
             self.run_prediction(data_loader, 'original')
 
         elif modeltype == 1:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 10, "tuned", self.best_values)
+                              train_main.params.lr / 10, "tuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'tuned')
 
         elif modeltype == 2:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 100, "finetuned", self.best_values)
+                              train_main.params.lr / 100, "finetuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'finetuned')
 
     def train_and_save(self, train_main, data_loader):
