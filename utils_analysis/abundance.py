@@ -111,7 +111,7 @@ def PlotAbundance(datapaths, outpath, datapath_labels):
 
     fig.legend(loc=1, bbox_to_anchor=(1, 1), bbox_transform=ax.transAxes)
     plt.tight_layout()
-    plt.savefig(outpath + 'abundance_percentage.png')
+    plt.savefig(outpath + 'abundance_relative.png')
     # plt.savefig(outpath + 'abundance.png')
     plt.close()
     ax.clear()
