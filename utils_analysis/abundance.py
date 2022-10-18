@@ -88,7 +88,7 @@ def PlotAbundance(datapaths, outpath, datapath_labels):
     fig = plt.figure(figsize=(11, 8))
     ax = plt.subplot(1, 1, 1)
     ax.set_xlabel('Class')
-    ax.set_ylabel('Abundance (percentage)')
+    ax.set_ylabel('Relative abundance')
     # ax.set_ylabel('Abundance')
 
     x = np.arange(0, len(list_class_rep) * 2, 2)
