@@ -171,6 +171,7 @@ class LoadInputParameters:
 
         # Train from previous saved models or not
         parser.add_argument('-resume_from_saved', choices=['yes', 'no'], default='no', )
+        parser.add_argument('-last_layer_finetune', choices=['yes', 'no'], default='no', )
 
         args = parser.parse_args(string)
 

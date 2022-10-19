@@ -18,6 +18,8 @@ from scipy.stats import gmean
 from sklearn.metrics import f1_score, accuracy_score, classification_report
 from torchvision.utils import make_grid
 import copy
+
+
 # import streamlit as st
 
 
@@ -61,8 +63,7 @@ class import_and_train_model:
         self.model.to(device)
 
         for param in self.model.parameters():
-            param.requires_grad = False ### CHANGED HERE
-
+            param.requires_grad = False
         i = 1
         for param in self.model.parameters():
             if i > 150:
@@ -86,9 +87,9 @@ class import_and_train_model:
         # self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
         #                                    weight_decay=train_main.params.weight_decay)
 
-        self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()), lr=train_main.params.lr,
+        self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
+                                           lr=train_main.params.lr,
                                            weight_decay=train_main.params.weight_decay)
-
 
         # Decay LR by a factor of 0.1 every 7 epochs
         # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
@@ -413,8 +414,24 @@ class import_and_train_model:
         elif modeltype == 1:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.finetune_lr)
-            for param in self.model.parameters():
-                param.requires_grad = True
+
+            if train_main.params.last_layer_finetune == 'yes':
+                for param in self.model.parameters():
+                    param.requires_grad = False  ### CHANGED HERE
+
+                i = 1
+                for param in self.model.parameters():
+                    if i > 150:
+                        param.requires_grad = True
+                    i = i + 1
+
+            else:
+                for param in self.model.parameters():
+                    param.requires_grad = True
+
+            total_trainable_params = sum(
+                p.numel() for p in self.model.parameters() if p.requires_grad)
+            print(f"{total_trainable_params:,} training parameters.")
 
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.finetune_lr, "tuned", self.best_values, modeltype)
@@ -423,8 +440,24 @@ class import_and_train_model:
         elif modeltype == 2:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.finetune_lr / 10)
-            for param in self.model.parameters():
-                param.requires_grad = True
+
+            if train_main.params.last_layer_finetune == 'yes':
+                for param in self.model.parameters():
+                    param.requires_grad = False  ### CHANGED HERE
+
+                i = 1
+                for param in self.model.parameters():
+                    if i > 150:
+                        param.requires_grad = True
+                    i = i + 1
+
+            else:
+                for param in self.model.parameters():
+                    param.requires_grad = True
+
+            total_trainable_params = sum(
+                p.numel() for p in self.model.parameters() if p.requires_grad)
+            print(f"{total_trainable_params:,} training parameters.")
 
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.finetune_lr / 10, "finetuned", self.best_values, modeltype)
