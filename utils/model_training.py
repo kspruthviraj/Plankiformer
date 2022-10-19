@@ -18,6 +18,8 @@ from scipy.stats import gmean
 from sklearn.metrics import f1_score, accuracy_score, classification_report
 from torchvision.utils import make_grid
 import copy
+
+
 # import streamlit as st
 
 
@@ -61,8 +63,7 @@ class import_and_train_model:
         self.model.to(device)
 
         for param in self.model.parameters():
-            param.requires_grad = False ### CHANGED HERE
-
+            param.requires_grad = False
         i = 1
         for param in self.model.parameters():
             if i > 150:
@@ -86,9 +87,9 @@ class import_and_train_model:
         # self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
         #                                    weight_decay=train_main.params.weight_decay)
 
-        self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()), lr=train_main.params.lr,
+        self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
+                                           lr=train_main.params.lr,
                                            weight_decay=train_main.params.weight_decay)
-
 
         # Decay LR by a factor of 0.1 every 7 epochs
         # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
@@ -338,6 +339,29 @@ class import_and_train_model:
                                                                                               clf_report))
         f.close()
 
+    def load_trained_model(self, train_main, data_loader, modeltype):
+        # self.import_deit_models(train_main, data_loader)
+
+        if modeltype == 0:
+            PATH = data_loader.checkpoint_path + 'trained_model_original.pth'
+        elif modeltype == 1:
+            PATH = data_loader.checkpoint_path + 'trained_model_tuned.pth'
+        elif modeltype == 2:
+            PATH = data_loader.checkpoint_path + 'trained_model_finetuned.pth'
+
+        if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
+            checkpoint = torch.load(PATH)
+        else:
+            checkpoint = torch.load(PATH, map_location='cpu')
+
+        self.model.load_state_dict(checkpoint['model_state_dict'])
+        self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        self.loss = checkpoint['loss']
+        self.f1 = checkpoint['f1']
+        self.acc = checkpoint['acc']
+        self.initial_epoch = checkpoint['epoch']
+        self.best_values = [self.loss, self.f1, self.acc]
+
     def resuming_training(self, train_main, data_loader, modeltype):
         # self.import_deit_models(train_main, data_loader)
 
@@ -352,6 +376,7 @@ class import_and_train_model:
             checkpoint = torch.load(PATH)
         else:
             checkpoint = torch.load(PATH, map_location='cpu')
+
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.loss = checkpoint['loss']
@@ -388,22 +413,54 @@ class import_and_train_model:
 
         elif modeltype == 1:
             self.initialize_model(train_main=train_main, test_main=None,
-                                  data_loader=data_loader, lr=train_main.params.lr / 10)
-            for param in self.model.parameters():
-                param.requires_grad = True
+                                  data_loader=data_loader, lr=train_main.params.finetune_lr)
+
+            if train_main.params.last_layer_finetune == 'yes':
+                for param in self.model.parameters():
+                    param.requires_grad = False  ### CHANGED HERE
+
+                i = 1
+                for param in self.model.parameters():
+                    if i > 150:
+                        param.requires_grad = True
+                    i = i + 1
+
+            else:
+                for param in self.model.parameters():
+                    param.requires_grad = True
+
+            total_trainable_params = sum(
+                p.numel() for p in self.model.parameters() if p.requires_grad)
+            print(f"{total_trainable_params:,} training parameters.")
 
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 10, "tuned", self.best_values, modeltype)
+                              train_main.params.finetune_lr, "tuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'tuned')
 
         elif modeltype == 2:
             self.initialize_model(train_main=train_main, test_main=None,
-                                  data_loader=data_loader, lr=train_main.params.lr / 100)
-            for param in self.model.parameters():
-                param.requires_grad = True
+                                  data_loader=data_loader, lr=train_main.params.finetune_lr / 10)
+
+            if train_main.params.last_layer_finetune == 'yes':
+                for param in self.model.parameters():
+                    param.requires_grad = False  ### CHANGED HERE
+
+                i = 1
+                for param in self.model.parameters():
+                    if i > 150:
+                        param.requires_grad = True
+                    i = i + 1
+
+            else:
+                for param in self.model.parameters():
+                    param.requires_grad = True
+
+            total_trainable_params = sum(
+                p.numel() for p in self.model.parameters() if p.requires_grad)
+            print(f"{total_trainable_params:,} training parameters.")
 
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 100, "finetuned", self.best_values, modeltype)
+                              train_main.params.finetune_lr / 10, "finetuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'finetuned')
 
     def train_predict(self, train_main, data_loader, modeltype):
@@ -414,12 +471,12 @@ class import_and_train_model:
 
         elif modeltype == 1:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 10, "tuned", self.best_values, modeltype)
+                              train_main.params.finetune_lr, "tuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'tuned')
 
         elif modeltype == 2:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
-                              train_main.params.lr / 100, "finetuned", self.best_values, modeltype)
+                              train_main.params.finetune_lr / 10, "finetuned", self.best_values, modeltype)
             self.run_prediction(data_loader, 'finetuned')
 
     def train_and_save(self, train_main, data_loader):
@@ -428,53 +485,98 @@ class import_and_train_model:
         model_present_path2 = data_loader.checkpoint_path + 'trained_model_finetuned.pth'
 
         self.import_deit_models(train_main, data_loader)
-        if train_main.params.finetune == 0:
-            if not os.path.exists(model_present_path0):
-                self.train_predict(train_main, data_loader, 0)
+
+        if train_main.params.resume_from_saved == 'no':
+            if train_main.params.finetune == 2:
+                if not os.path.exists(model_present_path0):
+                    self.train_predict(train_main, data_loader, 0)
+                    self.init_train_predict(train_main, data_loader, 1)
+                    self.init_train_predict(train_main, data_loader, 2)
+                elif not os.path.exists(model_present_path1):
+                    print(' I am using trained_model_original.pth as the base')
+                    self.load_trained_model(train_main, data_loader, 0)
+                    print('Now training tuned model')
+                    self.initial_epoch = 0
+                    self.init_train_predict(train_main, data_loader, 1)
+                    print('Now training finetuned model')
+                    self.initial_epoch = 0
+                    self.init_train_predict(train_main, data_loader, 2)
+                elif not os.path.exists(model_present_path2):
+                    print(' I am using trained_model_tuned.pth as the base')
+                    self.load_trained_model(train_main, data_loader, 1)
+                    print('Now training finetuned model')
+                    self.initial_epoch = 0
+                    self.init_train_predict(train_main, data_loader, 2)
+                else:
+                    print('If you want to retrain then set "resume from saved" to "yes"')
+
+            elif train_main.params.finetune == 0:
+                if not os.path.exists(model_present_path0):
+                    self.train_predict(train_main, data_loader, 0)
+                else:
+                    print('If you want to retrain then set "resume from saved" to "yes"')
+
+            elif train_main.params.finetune == 1:
+                if not os.path.exists(model_present_path0):
+                    self.train_predict(train_main, data_loader, 0)
+                    self.init_train_predict(train_main, data_loader, 1)
+                elif not os.path.exists(model_present_path1):
+                    print(' I am using trained_model_original.pth as the base')
+                    self.load_trained_model(train_main, data_loader, 0)
+                    print('Now training tuned model')
+                    self.initial_epoch = 0
+                    self.init_train_predict(train_main, data_loader, 1)
+                else:
+                    print('If you want to retrain then set "resume from saved" to "yes"')
+
+        elif train_main.params.resume_from_saved == 'yes':
+            if train_main.params.finetune == 0:
+                if not os.path.exists(model_present_path0):
+                    self.train_predict(train_main, data_loader, 0)
+                else:
+                    self.resuming_training(train_main, data_loader, 0)
+
+            elif train_main.params.finetune == 1:
+                if not os.path.exists(model_present_path0):
+                    self.train_predict(train_main, data_loader, 0)
+                    self.init_train_predict(train_main, data_loader, 1)
+                elif not os.path.exists(model_present_path1):
+                    print(' I am using trained_model_original.pth as the base')
+                    self.resuming_training(train_main, data_loader, 0)
+                    print('Now training tuned model')
+                    self.initial_epoch = 0
+                    self.init_train_predict(train_main, data_loader, 1)
+                else:
+                    print(' I am using trained_model_tuned.pth as the base')
+                    self.resuming_training(train_main, data_loader, 1)
+
+            elif train_main.params.finetune == 2:
+
+                if not os.path.exists(model_present_path0):
+                    self.train_predict(train_main, data_loader, 0)
+                    self.init_train_predict(train_main, data_loader, 1)
+                    self.init_train_predict(train_main, data_loader, 2)
+                elif not os.path.exists(model_present_path1):
+                    print(' I am using trained_model_original.pth as the base')
+                    self.resuming_training(train_main, data_loader, 0)
+                    print('Now training tuned model')
+                    self.initial_epoch = 0
+                    self.init_train_predict(train_main, data_loader, 1)
+                    print('Now training finetuned model')
+                    self.initial_epoch = 0
+                    self.init_train_predict(train_main, data_loader, 2)
+
+                elif not os.path.exists(model_present_path2):
+                    print(' I am using trained_model_tuned.pth as the base')
+                    self.resuming_training(train_main, data_loader, 1)
+                    print('Now training finetuned model')
+                    self.initial_epoch = 0
+                    self.init_train_predict(train_main, data_loader, 2)
+                else:
+                    print(' I am using trained_model_finetuned.pth as the base')
+                    self.resuming_training(train_main, data_loader, 2)
             else:
-                self.resuming_training(train_main, data_loader, 0)
-
-        elif train_main.params.finetune == 1:
-            if not os.path.exists(model_present_path0):
-                self.train_predict(train_main, data_loader, 0)
-                self.init_train_predict(train_main, data_loader, 1)
-            elif not os.path.exists(model_present_path1):
-                print(' I am using trained_model_original.pth as the base')
-                self.resuming_training(train_main, data_loader, 0)
-                print('Now training tuned model')
-                self.initial_epoch = 0
-                self.init_train_predict(train_main, data_loader, 1)
-            else:
-                print(' I am using trained_model_tuned.pth as the base')
-                self.resuming_training(train_main, data_loader, 1)
-
-        elif train_main.params.finetune == 2:
-
-            if not os.path.exists(model_present_path0):
-                self.train_predict(train_main, data_loader, 0)
-                self.init_train_predict(train_main, data_loader, 1)
-                self.init_train_predict(train_main, data_loader, 2)
-            elif not os.path.exists(model_present_path1):
-                print(' I am using trained_model_original.pth as the base')
-                self.resuming_training(train_main, data_loader, 0)
-                print('Now training tuned model')
-                self.initial_epoch = 0
-                self.init_train_predict(train_main, data_loader, 1)
-                print('Now training finetuned model')
-                self.initial_epoch = 0
-                self.init_train_predict(train_main, data_loader, 2)
-
-            elif not os.path.exists(model_present_path2):
-                print(' I am using trained_model_tuned.pth as the base')
-                self.resuming_training(train_main, data_loader, 1)
-                print('Now training finetuned model')
-                self.initial_epoch = 0
-                self.init_train_predict(train_main, data_loader, 2)
-            else:
-                print(' I am using trained_model_finetuned.pth as the base')
-                self.resuming_training(train_main, data_loader, 2)
-        else:
-            print('Choose the correct finetune label')
+                print('Choose the correct finetune label')
 
     def run_prediction_on_unseen(self, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
