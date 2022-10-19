@@ -128,6 +128,7 @@ class LoadInputParameters:
         # parser.add_argument('-initial_epoch', type=int, default=0, help="set the initial epoch value")
         parser.add_argument('-gpu_id', type=int, default=0, help="select the gpu id ")
         parser.add_argument('-lr', type=float, default=1e-4, help="starting learning rate")
+        parser.add_argument('-finetune_lr', type=float, default=1e-5, help="starting finetuning learning rate")
         parser.add_argument('-warmup', type=int, default=10, help="starting learning rate")
         parser.add_argument('-weight_decay', type=float, default=3e-2, help="weight decay")
         parser.add_argument('-clip_grad_norm', type=float, default=0, help="clip gradient norm")
@@ -168,8 +169,9 @@ class LoadInputParameters:
         # to run it on Google COLAB or CSCS
         parser.add_argument('-run_cnn_or_on_colab', choices=['yes', 'no'], default='no', )
 
-        # # Train from previous saved models
-        # parser.add_argument('-train_from_saved', choices=['yes', 'no'], default='no', )
+        # Train from previous saved models or not
+        parser.add_argument('-resume_from_saved', choices=['yes', 'no'], default='no', )
+        parser.add_argument('-last_layer_finetune', choices=['yes', 'no'], default='no', )
 
         args = parser.parse_args(string)
 
