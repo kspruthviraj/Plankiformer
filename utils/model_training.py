@@ -62,19 +62,13 @@ class import_and_train_model:
         # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
-        if train_main.params.last_layer_finetune == 'yes':
-            for param in self.model.parameters():
-                param.requires_grad = False  ### CHANGED HERE
-
-            i = 1
-            for param in self.model.parameters():
-                if i > 150:
-                    param.requires_grad = True
-                i = i + 1
-
-        else:
-            for param in self.model.parameters():
+        for param in self.model.parameters():
+            param.requires_grad = False
+        i = 1
+        for param in self.model.parameters():
+            if i > 150:
                 param.requires_grad = True
+            i = i + 1
 
         # total parameters and trainable parameters
         total_params = sum(p.numel() for p in self.model.parameters())
