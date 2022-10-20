@@ -46,7 +46,7 @@ def PrincipalComponentAnalysis(dataframe, n_components):
 
     pca = PCA(n_components=n_components)
     principal_components = pca.fit_transform(dataframe.iloc[:, :-1].values)
-    df_pca = pd.DataFrame(data=principal_components, columns=['principal_components_{}'.format(i+1) for i in range(n_components)])
+    df_pca = pd.DataFrame(data=principal_components, columns=['principal_component_{}'.format(i+1) for i in range(n_components)])
     df_pca['class'] = dataframe['class']
     # print(pca.explained_variance_ratio_)
 
@@ -58,7 +58,7 @@ def PCA_train_val_test(dataframe, pca):
     '''Implement PCA on in-distribution datasets.'''
 
     principal_components = pca.fit_transform(dataframe.iloc[:, :-1].values)
-    df_pca_split = pd.DataFrame(data=principal_components, columns=['principal_components_{}'.format(i+1) for i in range(np.shape(principal_components)[1])])
+    df_pca_split = pd.DataFrame(data=principal_components, columns=['principal_component_{}'.format(i+1) for i in range(np.shape(principal_components)[1])])
     df_pca_split['class'] = dataframe['class']
 
     return df_pca_split
@@ -69,7 +69,7 @@ def PCA_OOD(dataframe_OOD, pca):
     '''Implement PCA on out-of-distribution datasets.'''
 
     principal_components = pca.fit_transform(dataframe_OOD.iloc[:, :-1].values)
-    df_pca_OOD = pd.DataFrame(data=principal_components, columns=['principal_components_{}'.format(i+1) for i in range(np.shape(principal_components)[1])])
+    df_pca_OOD = pd.DataFrame(data=principal_components, columns=['principal_component_{}'.format(i+1) for i in range(np.shape(principal_components)[1])])
     df_pca_OOD['class'] = dataframe_OOD['class']
 
     return df_pca_OOD
@@ -89,14 +89,16 @@ if __name__ == '__main__':
     df = ConcactAllClasses(args.Zoolake2_datapath)
     df_standardized = Standardize(df)
     pca, df_pca = PrincipalComponentAnalysis(df_standardized, n_components=args.n_components)
-    # np.savetxt(args.outpath + 'PCA_Zoolake2.txt', df_pca)
     df_pca.to_csv(args.outpath + 'PCA_Zoolake2.csv')
 
-    # plt.plot(np.cumsum(pca.explained_variance_ratio_))
-    # plt.xlabel('Number of components')
-    # plt.ylabel('Explained variance ratio')
-    # plt.grid()
-    # plt.show()
+    np.savetxt(args.outpath + 'PCA_explained_variance_ratio.txt', pca.explained_variance_ratio_)
+
+    plt.plot(np.cumsum(pca.explained_variance_ratio_))
+    plt.xlabel('Number of components')
+    plt.ylabel('Explained variance ratio')
+    plt.grid()
+    plt.tight_layout()
+    plt.savefig(args.outpath + 'PCA_explained_variance_ratio.png')
 
     
     df_train = ConcactAllClasses(args.in_distribution_datapaths[0])
@@ -116,5 +118,4 @@ if __name__ == '__main__':
         df_OOD = ConcactAllClasses(args.OOD_datapaths[i])
         df_OOD_standardized = Standardize(df_OOD)
         df_pca_OOD = PCA_OOD(df_OOD_standardized, pca)
-        # np.savetxt(args.outpath + 'PCA_OOD{}.txt'.format(i + 1), df_pca_OOD)
         df_pca_OOD.to_csv(args.outpath + 'PCA_OOD{}.csv'.format(i + 1))

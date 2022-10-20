@@ -244,7 +244,7 @@ def PlotGlobalHDversusBin_feature(datapaths, outpath):
         os.mkdir(outpath_feature)
     except FileExistsError:
         pass
-    plt.savefig(outpath_feature + 'HD_bin_feature.png' )
+    plt.savefig(outpath_feature + 'HD_bin_feature.png')
     plt.close()
     ax.clear()
     
