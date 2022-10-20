@@ -53,6 +53,17 @@ def PrincipalComponentAnalysis(dataframe, n_components):
     return pca, df_pca
 
 
+def PCA_train_val_test(dataframe, pca):
+
+    '''Implement PCA on in-distribution datasets.'''
+
+    principal_components = pca.fit_transform(dataframe.iloc[:, :-1].values)
+    df_pca_split = pd.DataFrame(data=principal_components, columns=['principal_components_{}'.format(i+1) for i in range(np.shape(principal_components)[1])])
+    df_pca_split['class'] = dataframe['class']
+
+    return df_pca_split
+
+
 def PCA_OOD(dataframe_OOD, pca):
 
     '''Implement PCA on out-of-distribution datasets.'''
@@ -65,15 +76,17 @@ def PCA_OOD(dataframe_OOD, pca):
 
 
 parser = argparse.ArgumentParser(description='Principal component analysis on datasets')
-parser.add_argument('-datapaths', nargs='*', help='paths of the dataset')
-parser.add_argument('-outpath')
+parser.add_argument('-Zoolake2_datapath', help='path of the Zoolake2 dataset')
+parser.add_argument('-in_distribution_datapaths', nargs='*', help='paths of the in-domain datasets, in an order of: train_val_test')
+parser.add_argument('-OOD_datapaths', nargs='*', help='paths of the out-of-distribution datasets')
+parser.add_argument('-outpath', help='path for saving output csv')
 parser.add_argument('-n_components', type=int, help='number of principal components')
 args = parser.parse_args()
 
 
 if __name__ == '__main__':
 
-    df = ConcactAllClasses(args.datapaths[0])
+    df = ConcactAllClasses(args.Zoolake2_datapath)
     df_standardized = Standardize(df)
     pca, df_pca = PrincipalComponentAnalysis(df_standardized, n_components=args.n_components)
     # np.savetxt(args.outpath + 'PCA_Zoolake2.txt', df_pca)
@@ -85,8 +98,22 @@ if __name__ == '__main__':
     # plt.grid()
     # plt.show()
 
-    for i in range(len(args.datapaths) - 1):
-        df_OOD = ConcactAllClasses(args.datapaths[i + 1])
+    
+    df_train = ConcactAllClasses(args.in_distribution_datapaths[0])
+    df_val = ConcactAllClasses(args.in_distribution_datapaths[1])
+    df_test = ConcactAllClasses(args.in_distribution_datapaths[2])
+    df_train_standardized = Standardize(df_train)
+    df_val_standardized = Standardize(df_val)
+    df_test_standardized = Standardize(df_test)
+    df_pca_train = PCA_train_val_test(df_train_standardized, pca)
+    df_pca_val = PCA_train_val_test(df_val_standardized, pca)
+    df_pca_test = PCA_train_val_test(df_test_standardized, pca)
+    df_pca_train.to_csv(args.outpath + 'PCA_train.csv')
+    df_pca_val.to_csv(args.outpath + 'PCA_val.csv')
+    df_pca_test.to_csv(args.outpath + 'PCA_test.csv')
+
+    for i in range(len(args.OOD_datapaths)):
+        df_OOD = ConcactAllClasses(args.OOD_datapaths[i])
         df_OOD_standardized = Standardize(df_OOD)
         df_pca_OOD = PCA_OOD(df_OOD_standardized, pca)
         # np.savetxt(args.outpath + 'PCA_OOD{}.txt'.format(i + 1), df_pca_OOD)
