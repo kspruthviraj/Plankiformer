@@ -189,16 +189,17 @@ class import_and_train_model:
             else:
                 pass
 
-            if (epoch + 1) % 10 == 0:
-                torch.save({'model_state_dict': self.model.state_dict(),
-                            'optimizer_state_dict': self.optimizer.state_dict(),
-                            'loss': test_loss,
-                            'f1': test_f1,
-                            'acc': test_acc1,
-                            'epoch': epoch},
-                           data_loader.checkpoint_path + '/trained_model_' + name + '_' + str(epoch + 1) + '_epoch.pth')
-            else:
-                pass
+            if train_main.params.save_intermediate_epochs == 'yes':
+                if (epoch + 1) % 10 == 0:
+                    torch.save({'model_state_dict': self.model.state_dict(),
+                                'optimizer_state_dict': self.optimizer.state_dict(),
+                                'loss': test_loss,
+                                'f1': test_f1,
+                                'acc': test_acc1,
+                                'epoch': epoch},
+                               data_loader.checkpoint_path + '/trained_model_' + name + '_' + str(epoch + 1) + '_epoch.pth')
+                else:
+                    pass
 
             if train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 1:
                 if test_loss < best_loss or epoch == 1:
