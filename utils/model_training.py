@@ -424,7 +424,7 @@ class import_and_train_model:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.finetune_lr)
 
-            if train_main.params.last_layer_finetune == 'yes':
+            if train_main.params.last_layer_finetune_1 == 'yes':
                 for param in self.model.parameters():
                     param.requires_grad = False  ### CHANGED HERE
 
@@ -450,7 +450,7 @@ class import_and_train_model:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.finetune_lr / 10)
 
-            if train_main.params.last_layer_finetune == 'yes':
+            if train_main.params.last_layer_finetune_2 == 'yes':
                 for param in self.model.parameters():
                     param.requires_grad = False  ### CHANGED HERE
 
