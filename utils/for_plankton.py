@@ -340,7 +340,7 @@ class AugmentedDataset(Dataset):
             X = self.transform2(image)
         else:
             X = self.transform3(image)
-            print(' I am USING TRANSFORM_3')
+            # print(' I am USING TRANSFORM_3')
         y = label
         sample = [X, y]
         return sample
