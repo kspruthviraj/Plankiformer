@@ -5,9 +5,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def PlotFeatureDistribution_PCA(PCA_files, outpath, selected_components, n_bins_feature, data_labels):
+def PlotPixelDistribution_PCA(PCA_files, outpath, selected_components_pixel, n_bins_pixel, data_labels):
 
-    print('-----------------Now plotting PCA feature distribution for each class and each selected feature.-----------------')
+    print('-----------------Now plotting PCA pixel distribution for each class and each selected component.-----------------')
     
     df_pca_1 = pd.read_csv(PCA_files[0], sep=',', index_col=0)
     df_pca_2 = pd.read_csv(PCA_files[1], sep=',', index_col=0)
@@ -21,7 +21,7 @@ def PlotFeatureDistribution_PCA(PCA_files, outpath, selected_components, n_bins_
         df_pca_1_class = df_pca_1[df_pca_1['class']==iclass].drop(['class'], axis=1).reset_index()
         df_pca_2_class = df_pca_2[df_pca_2['class']==iclass].drop(['class'], axis=1).reset_index()
 
-        for ipc in selected_components:
+        for ipc in selected_components_pixel:
             ax = plt.subplot(1, 1, 1)
             ax.set_xlabel(ipc + ' (normalized)')
             ax.set_ylabel('Density')
@@ -35,7 +35,7 @@ def PlotFeatureDistribution_PCA(PCA_files, outpath, selected_components, n_bins_
 
             normalized_component = np.divide((np.array(components, dtype=object) - min_bin), (max_bin - min_bin))
 
-            histogram = plt.hist(normalized_component, histtype='stepfilled', bins=n_bins_feature, range=(0, 1), density=True, alpha=0.5, label=data_labels)
+            histogram = plt.hist(normalized_component, histtype='stepfilled', bins=n_bins_pixel, range=(0, 1), density=True, alpha=0.5, label=data_labels)
             density_1 = histogram[0][0]
             density_2 = histogram[0][1]
 
@@ -55,9 +55,9 @@ def PlotFeatureDistribution_PCA(PCA_files, outpath, selected_components, n_bins_
             ax.clear()
 
 
-def PlotGlobalHDversusBin_feature_PCA(PCA_files, outpath, explained_variance_ratio):
+def PlotGlobalHDversusBin_pixel_PCA(PCA_files, outpath, explained_variance_ratio_pixel):
 
-    print('-----------------Now plotting global Hellinger distances of PCA feature v.s. numbers of bin.-----------------')
+    print('-----------------Now plotting global Hellinger distances of PCA pixel v.s. numbers of bin.-----------------')
 
     df_pca_1 = pd.read_csv(PCA_files[0], sep=',', index_col=0)
     df_pca_2 = pd.read_csv(PCA_files[1], sep=',', index_col=0)
@@ -68,7 +68,7 @@ def PlotGlobalHDversusBin_feature_PCA(PCA_files, outpath, explained_variance_rat
     list.sort(list_class_rep)
 
     list_principal_components = df_pca_1.columns.to_list()[:-1]
-    list_explained_variance_ratio = np.loadtxt(explained_variance_ratio)
+    list_explained_variance_ratio = np.loadtxt(explained_variance_ratio_pixel)
     list_n_bins = [5, 10, 20, 50, 100, 125, 150, 175, 200, 300, 400, 500, 750, 1000]
 
     df_global_HD = pd.DataFrame(columns=[in_bins for in_bins in list_n_bins], index=[iclass for iclass in list_class_rep])
@@ -118,14 +118,14 @@ def PlotGlobalHDversusBin_feature_PCA(PCA_files, outpath, explained_variance_rat
         os.mkdir(outpath)
     except FileExistsError:
         pass
-    plt.savefig(outpath + 'HD_bin_feature_PCA.png')
+    plt.savefig(outpath + 'HD_bin_pixel_PCA.png')
     plt.close()
     ax.clear()
     
 
-def GlobalHD_feature(PCA_files, outpath, n_bins_feature, explained_variance_ratio):
+def GlobalHD_pixel(PCA_files, outpath, n_bins_pixel, explained_variance_ratio_pixel):
 
-    print('-----------------Now computing global Hellinger distances on PCA feature.-----------------')
+    print('-----------------Now computing global Hellinger distances on PCA pixel.-----------------')
 
     df_pca_1 = pd.read_csv(PCA_files[0], sep=',', index_col=0)
     df_pca_2 = pd.read_csv(PCA_files[1], sep=',', index_col=0)
@@ -136,7 +136,7 @@ def GlobalHD_feature(PCA_files, outpath, n_bins_feature, explained_variance_rati
     list.sort(list_class_rep)
 
     list_principal_components = df_pca_1.columns.to_list()[:-1]
-    list_explained_variance_ratio = np.loadtxt(explained_variance_ratio)
+    list_explained_variance_ratio = np.loadtxt(explained_variance_ratio_pixel)
 
     list_global_HD = []
     for iclass in list_class_rep:
@@ -153,8 +153,8 @@ def GlobalHD_feature(PCA_files, outpath, n_bins_feature, explained_variance_rati
 
             normalized_component = np.divide((np.array(components, dtype=object) - min_bin), (max_bin - min_bin))
 
-            histogram_1 = np.histogram(normalized_component[0], bins=n_bins_feature, range=(0, 1), density=True)
-            histogram_2 = np.histogram(normalized_component[1], bins=n_bins_feature, range=(0, 1), density=True)
+            histogram_1 = np.histogram(normalized_component[0], bins=n_bins_pixel, range=(0, 1), density=True)
+            histogram_2 = np.histogram(normalized_component[1], bins=n_bins_pixel, range=(0, 1), density=True)
             density_1 = histogram_1[0]
             density_2 = histogram_2[0]
 
@@ -164,11 +164,11 @@ def GlobalHD_feature(PCA_files, outpath, n_bins_feature, explained_variance_rati
         global_HD_each_class = np.average(list_HD, weights=list_explained_variance_ratio)
         list_global_HD.append(global_HD_each_class)
 
-        with open(outpath + 'Global_HD_feature_PCA.txt', 'a') as f:
+        with open(outpath + 'Global_HD_pixel_PCA.txt', 'a') as f:
             f.write('%-20s%-20f\n' % (iclass, global_HD_each_class))
 
     global_HD = np.average(list_global_HD)
-    with open(outpath + 'Global_HD_feature_PCA.txt', 'a') as f:
+    with open(outpath + 'Global_HD_pixel_PCA.txt', 'a') as f:
         f.write(f'\n Global Hellinger Distance: {global_HD}')
 
 
@@ -179,4 +179,3 @@ def HellingerDistance(p, q):
     q = np.divide(q, len(q))
     HD = np.linalg.norm(np.sqrt(p) - np.sqrt(q)) / np.sqrt(2)
     return HD
-

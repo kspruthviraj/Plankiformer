@@ -48,7 +48,6 @@ def PrincipalComponentAnalysis(dataframe, n_components):
     principal_components = pca.fit_transform(dataframe.iloc[:, :-1].values)
     df_pca = pd.DataFrame(data=principal_components, columns=['principal_component_{}'.format(i+1) for i in range(n_components)])
     df_pca['class'] = dataframe['class']
-    # print(pca.explained_variance_ratio_)
 
     return pca, df_pca
 
@@ -89,16 +88,16 @@ if __name__ == '__main__':
     df = ConcactAllClasses(args.Zoolake2_datapath)
     df_standardized = Standardize(df)
     pca, df_pca = PrincipalComponentAnalysis(df_standardized, n_components=args.n_components)
-    df_pca.to_csv(args.outpath + 'PCA_Zoolake2.csv')
+    df_pca.to_csv(args.outpath + 'PCA_Zoolake2_feature.csv')
 
-    np.savetxt(args.outpath + 'PCA_explained_variance_ratio.txt', pca.explained_variance_ratio_)
+    np.savetxt(args.outpath + 'PCA_explained_variance_ratio_feature.txt', pca.explained_variance_ratio_)
 
     plt.plot(np.cumsum(pca.explained_variance_ratio_))
     plt.xlabel('Number of components')
     plt.ylabel('Explained variance ratio')
     plt.grid()
     plt.tight_layout()
-    plt.savefig(args.outpath + 'PCA_explained_variance_ratio.png')
+    plt.savefig(args.outpath + 'PCA_explained_variance_ratio_feature.png')
 
     
     df_train = ConcactAllClasses(args.in_distribution_datapaths[0])
@@ -110,12 +109,12 @@ if __name__ == '__main__':
     df_pca_train = PCA_train_val_test(df_train_standardized, pca)
     df_pca_val = PCA_train_val_test(df_val_standardized, pca)
     df_pca_test = PCA_train_val_test(df_test_standardized, pca)
-    df_pca_train.to_csv(args.outpath + 'PCA_train.csv')
-    df_pca_val.to_csv(args.outpath + 'PCA_val.csv')
-    df_pca_test.to_csv(args.outpath + 'PCA_test.csv')
+    df_pca_train.to_csv(args.outpath + 'PCA_train_feature.csv')
+    df_pca_val.to_csv(args.outpath + 'PCA_val_feature.csv')
+    df_pca_test.to_csv(args.outpath + 'PCA_test_feature.csv')
 
     for i in range(len(args.OOD_datapaths)):
         df_OOD = ConcactAllClasses(args.OOD_datapaths[i])
         df_OOD_standardized = Standardize(df_OOD)
         df_pca_OOD = PCA_OOD(df_OOD_standardized, pca)
-        df_pca_OOD.to_csv(args.outpath + 'PCA_OOD{}.csv'.format(i + 1))
+        df_pca_OOD.to_csv(args.outpath + 'PCA_OOD{}_feature.csv'.format(i + 1))

@@ -12,3 +12,5 @@ utils_analysis/__pycache__/abundance.cpython-310.pyc
 utils_analysis/__pycache__/sampling_date.cpython-310.pyc
 utils_analysis/__pycache__/pixel.cpython-310.pyc
 utils_analysis/__pycache__/feature.cpython-310.pyc
+utils_analysis/__pycache__/feature_components.cpython-310.pyc
+utils_analysis/__pycache__/pixel_components.cpython-310.pyc
