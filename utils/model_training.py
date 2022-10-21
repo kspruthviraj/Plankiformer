@@ -91,8 +91,7 @@ class import_and_train_model:
 
         if train_main.params.last_layer_finetune == 'yes':
             self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
-                                           lr=train_main.params.lr,
-                                           weight_decay=train_main.params.weight_decay)
+                                               lr=train_main.params.lr, weight_decay=train_main.params.weight_decay)
         else:
             self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
                                                weight_decay=train_main.params.weight_decay)
