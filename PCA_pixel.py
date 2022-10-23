@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-# from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
 from utils_analysis import pixel as p
@@ -25,20 +25,6 @@ def ConcactAllClasses(datapath, resized_length):
         df_all_pixel = pd.concat([df_all_pixel, df_class_pixel], ignore_index=True)
     
     return df_all_pixel
-
-
-# def Standardize(dataframe):
-
-#     '''Standardize an input pandas dataframe.'''
-
-#     data = dataframe.iloc[:, :-1].values
-#     data = StandardScaler().fit_transform(data)
-#     cols = dataframe.columns[:-1]
-#     cols = [i + '_standardized' for i in cols]
-#     df_standardized = pd.DataFrame(data, columns=cols)
-#     df_standardized['class'] = dataframe['class']
-
-#     return df_standardized
 
 
 def PrincipalComponentAnalysis(dataframe, n_components):
@@ -88,7 +74,7 @@ args = parser.parse_args()
 if __name__ == '__main__':
 
     df = ConcactAllClasses(args.Zoolake2_datapath, args.resized_length)
-    # df_standardized = Standardize(df)
+
     pca, df_pca = PrincipalComponentAnalysis(df, n_components=args.n_components)
     df_pca.to_csv(args.outpath + 'PCA_Zoolake2_pixel.csv')
 
@@ -105,9 +91,7 @@ if __name__ == '__main__':
     df_train = ConcactAllClasses(args.in_distribution_datapaths[0], args.resized_length)
     df_val = ConcactAllClasses(args.in_distribution_datapaths[1], args.resized_length)
     df_test = ConcactAllClasses(args.in_distribution_datapaths[2], args.resized_length)
-    # df_train_standardized = Standardize(df_train)
-    # df_val_standardized = Standardize(df_val)
-    # df_test_standardized = Standardize(df_test)
+
     df_pca_train = PCA_train_val_test(df_train, pca)
     df_pca_val = PCA_train_val_test(df_val, pca)
     df_pca_test = PCA_train_val_test(df_test, pca)
@@ -117,6 +101,6 @@ if __name__ == '__main__':
 
     for i in range(len(args.OOD_datapaths)):
         df_OOD = ConcactAllClasses(args.OOD_datapaths[i], args.resized_length)
-        # df_OOD_standardized = Standardize(df_OOD)
+
         df_pca_OOD = PCA_OOD(df_OOD, pca)
         df_pca_OOD.to_csv(args.outpath + 'PCA_OOD{}_pixel.csv'.format(i + 1))

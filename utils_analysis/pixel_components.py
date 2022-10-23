@@ -21,6 +21,9 @@ def PlotPixelDistribution_PCA(PCA_files, outpath, selected_components_pixel, n_b
         df_pca_1_class = df_pca_1[df_pca_1['class']==iclass].drop(['class'], axis=1).reset_index()
         df_pca_2_class = df_pca_2[df_pca_2['class']==iclass].drop(['class'], axis=1).reset_index()
 
+        if not (df_pca_1_class.shape[0] >= 10 and df_pca_2_class.shape[0] >= 10):
+            continue
+
         for ipc in selected_components_pixel:
             ax = plt.subplot(1, 1, 1)
             ax.set_xlabel(ipc + ' (normalized)')
@@ -77,6 +80,10 @@ def PlotGlobalHDversusBin_pixel_PCA(PCA_files, outpath, explained_variance_ratio
         for iclass in list_class_rep:
             df_pca_1_class = df_pca_1[df_pca_1['class']==iclass].drop(['class'], axis=1).reset_index()
             df_pca_2_class = df_pca_2[df_pca_2['class']==iclass].drop(['class'], axis=1).reset_index()
+
+            if not (df_pca_1_class.shape[0] >= 10 and df_pca_2_class.shape[0] >= 10):
+                continue
+
             list_HD = []
             for ipc in list_principal_components:
                 component_1 = df_pca_1_class[ipc]
@@ -96,7 +103,8 @@ def PlotGlobalHDversusBin_pixel_PCA(PCA_files, outpath, explained_variance_ratio
                 HD = HellingerDistance(density_1, density_2)
                 list_HD.append(HD)
 
-            global_HD_each_class = np.average(list_HD, weights=list_explained_variance_ratio)
+            # global_HD_each_class = np.average(list_HD, weights=list_explained_variance_ratio)
+            global_HD_each_class = np.average(list_HD)
             list_global_HD.append(global_HD_each_class)
 
         df_global_HD[in_bins] = list_global_HD
@@ -142,6 +150,10 @@ def GlobalHD_pixel(PCA_files, outpath, n_bins_pixel, explained_variance_ratio_pi
     for iclass in list_class_rep:
         df_pca_1_class = df_pca_1[df_pca_1['class']==iclass].drop(['class'], axis=1).reset_index()
         df_pca_2_class = df_pca_2[df_pca_2['class']==iclass].drop(['class'], axis=1).reset_index()
+
+        if not (df_pca_1_class.shape[0] >= 10 and df_pca_2_class.shape[0] >= 10):
+            continue
+        
         list_HD = []
         for ipc in list_principal_components:
             component_1 = df_pca_1_class[ipc]
@@ -161,7 +173,8 @@ def GlobalHD_pixel(PCA_files, outpath, n_bins_pixel, explained_variance_ratio_pi
             HD = HellingerDistance(density_1, density_2)
             list_HD.append(HD)
 
-        global_HD_each_class = np.average(list_HD, weights=list_explained_variance_ratio)
+        # global_HD_each_class = np.average(list_HD, weights=list_explained_variance_ratio)
+        global_HD_each_class = np.average(list_HD)
         list_global_HD.append(global_HD_each_class)
 
         with open(outpath + 'Global_HD_pixel_PCA.txt', 'a') as f:
