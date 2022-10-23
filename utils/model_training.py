@@ -64,14 +64,12 @@ class import_and_train_model:
 
         if train_main.params.last_layer_finetune == 'yes':
             for param in self.model.parameters():
-                param.requires_grad = False  ### CHANGED HERE
-
+                param.requires_grad = False
             i = 1
             for param in self.model.parameters():
                 if i > 150:
                     param.requires_grad = True
                 i = i + 1
-
         else:
             for param in self.model.parameters():
                 param.requires_grad = True
@@ -90,12 +88,13 @@ class import_and_train_model:
             self.criterion = self.criterion.cuda(train_main.params.gpu_id)
 
         # Observe that all parameters are being optimized
-        # self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
-        #                                    weight_decay=train_main.params.weight_decay)
 
-        self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
-                                           lr=train_main.params.lr,
-                                           weight_decay=train_main.params.weight_decay)
+        if train_main.params.last_layer_finetune == 'yes':
+            self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
+                                               lr=train_main.params.lr, weight_decay=train_main.params.weight_decay)
+        else:
+            self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+                                               weight_decay=train_main.params.weight_decay)
 
         # Decay LR by a factor of 0.1 every 7 epochs
         # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
@@ -264,6 +263,9 @@ class import_and_train_model:
                 np.round(total_mins_per_epoch, 3),
                 np.round(total_mins, 3)))
 
+            # if train_main.params.run_lr_scheduler == 'yes':
+            #     self.lr_scheduler(test_loss)
+
             if train_main.params.run_early_stopping == 'yes':
                 self.early_stopping(test_loss)
                 if self.early_stopping.early_stop:
@@ -422,7 +424,7 @@ class import_and_train_model:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.finetune_lr)
 
-            if train_main.params.last_layer_finetune == 'yes':
+            if train_main.params.last_layer_finetune_1 == 'yes':
                 for param in self.model.parameters():
                     param.requires_grad = False  ### CHANGED HERE
 
@@ -448,7 +450,7 @@ class import_and_train_model:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.finetune_lr / 10)
 
-            if train_main.params.last_layer_finetune == 'yes':
+            if train_main.params.last_layer_finetune_2 == 'yes':
                 for param in self.model.parameters():
                     param.requires_grad = False  ### CHANGED HERE
 
@@ -1011,7 +1013,12 @@ class import_and_train_model:
             self.model.cuda(train_main.params.gpu_id)
             self.criterion = self.criterion.cuda(train_main.params.gpu_id)
         # Observe that all parameters are being optimized
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=lr, weight_decay=train_main.params.weight_decay)
+        if train_main.params.last_layer_finetune == 'yes':
+            self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
+                                               lr=train_main.params.lr, weight_decay=train_main.params.weight_decay)
+        else:
+            self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+                                               weight_decay=train_main.params.weight_decay)
 
     def load_model_and_run_prediction(self, train_main, test_main, data_loader):
         self.import_deit_models_for_testing(train_main, test_main)
@@ -1230,7 +1237,7 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
         outputs.append(output)
         targets.append(target)
 
-    if modeltype == 'yes':
+    if modeltype == 0:
         if train_main.params.run_lr_scheduler == 'yes':
             lr_scheduler(loss)
 
