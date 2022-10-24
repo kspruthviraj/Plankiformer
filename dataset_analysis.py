@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     # sdate.PlotSamplingDate(args.train_datapath, args.outpath)
     # sdate.PlotSamplingDateEachClass(args.train_datapath, args.outpath)
-    abundance.PlotAbundance(args.datapaths, args.outpath, args.datapath_labels)
+    # abundance.PlotAbundance(args.datapaths, args.outpath, args.datapath_labels)
     # abundance.PlotAbundanceSep(args.datapaths, args.outpath, args.datapath_labels)
 
     if args.PCA == 'no':
