@@ -188,7 +188,7 @@ def GlobalHD_pixel(PCA_files_pixel, outpath, n_bins_pixel, explained_variance_ra
 
     global_HD = np.average(list_global_HD)
     with open(outpath + 'Global_HD_pixel_PCA.txt', 'a') as f:
-        f.write(f'\n Global Hellinger Distance: {global_HD}')
+        f.write(f'\n Global Hellinger Distance: {global_HD}\n')
 
 
 def HellingerDistance(p, q):

@@ -188,7 +188,7 @@ def GlobalHD_feature(PCA_files_feature, outpath, n_bins_feature, explained_varia
 
     global_HD = np.average(list_global_HD)
     with open(outpath + 'Global_HD_feature_PCA.txt', 'a') as f:
-        f.write(f'\n Global Hellinger Distance: {global_HD}')
+        f.write(f'\n Global Hellinger Distance: {global_HD}\n')
 
 
 def HellingerDistance(p, q):
