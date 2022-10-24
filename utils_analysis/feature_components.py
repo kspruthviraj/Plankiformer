@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def PlotFeatureDistribution_PCA(PCA_files, outpath, selected_components_feature, n_bins_feature, data_labels):
+def PlotFeatureDistribution_PCA(PCA_files, outpath, selected_components_feature, n_bins_feature, data_labels, image_threshold):
 
     print('-----------------Now plotting PCA feature distribution for each class and each selected component.-----------------')
     
@@ -21,7 +21,7 @@ def PlotFeatureDistribution_PCA(PCA_files, outpath, selected_components_feature,
         df_pca_1_class = df_pca_1[df_pca_1['class']==iclass].drop(['class'], axis=1).reset_index()
         df_pca_2_class = df_pca_2[df_pca_2['class']==iclass].drop(['class'], axis=1).reset_index()
 
-        if not (df_pca_1_class.shape[0] >= 10 and df_pca_2_class.shape[0] >= 10):
+        if not (df_pca_1_class.shape[0] >= image_threshold and df_pca_2_class.shape[0] >= image_threshold):
             continue
 
         for ipc in selected_components_feature:
@@ -58,7 +58,7 @@ def PlotFeatureDistribution_PCA(PCA_files, outpath, selected_components_feature,
             ax.clear()
 
 
-def PlotGlobalHDversusBin_feature_PCA(PCA_files, outpath, explained_variance_ratio_feature):
+def PlotGlobalHDversusBin_feature_PCA(PCA_files, outpath, explained_variance_ratio_feature, image_threshold):
 
     print('-----------------Now plotting global Hellinger distances of PCA feature v.s. numbers of bin.-----------------')
 
@@ -74,8 +74,8 @@ def PlotGlobalHDversusBin_feature_PCA(PCA_files, outpath, explained_variance_rat
     class_2 = df_pca_2['class'].to_list()
     df_count_1 = pd.DataFrame(np.unique(class_1, return_counts=True)).transpose()
     df_count_2 = pd.DataFrame(np.unique(class_2, return_counts=True)).transpose()
-    list_class_1 = df_count_1[df_count_1.iloc[:, 1]>=10].iloc[:, 0].to_list()
-    list_class_2 = df_count_2[df_count_2.iloc[:, 1]>=10].iloc[:, 0].to_list()
+    list_class_1 = df_count_1[df_count_1.iloc[:, 1]>=image_threshold].iloc[:, 0].to_list()
+    list_class_2 = df_count_2[df_count_2.iloc[:, 1]>=image_threshold].iloc[:, 0].to_list()
     list_class_rep = list(set(list_class_1) & set(list_class_2))
     list.sort(list_class_rep)
 
@@ -137,7 +137,7 @@ def PlotGlobalHDversusBin_feature_PCA(PCA_files, outpath, explained_variance_rat
     ax.clear()
     
 
-def GlobalHD_feature(PCA_files, outpath, n_bins_feature, explained_variance_ratio_feature):
+def GlobalHD_feature(PCA_files, outpath, n_bins_feature, explained_variance_ratio_feature, image_threshold):
 
     print('-----------------Now computing global Hellinger distances on PCA feature.-----------------')
 
@@ -157,7 +157,7 @@ def GlobalHD_feature(PCA_files, outpath, n_bins_feature, explained_variance_rati
         df_pca_1_class = df_pca_1[df_pca_1['class']==iclass].drop(['class'], axis=1).reset_index()
         df_pca_2_class = df_pca_2[df_pca_2['class']==iclass].drop(['class'], axis=1).reset_index()
 
-        if not (df_pca_1_class.shape[0] >= 10 and df_pca_2_class.shape[0] >= 10):
+        if not (df_pca_1_class.shape[0] >= image_threshold and df_pca_2_class.shape[0] >= image_threshold):
             continue
 
         list_HD = []

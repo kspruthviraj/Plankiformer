@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def PlotPixelDistribution_PCA(PCA_files, outpath, selected_components_pixel, n_bins_pixel, data_labels):
+def PlotPixelDistribution_PCA(PCA_files, outpath, selected_components_pixel, n_bins_pixel, data_labels, image_threshold):
 
     print('-----------------Now plotting PCA pixel distribution for each class and each selected component.-----------------')
     
@@ -21,7 +21,7 @@ def PlotPixelDistribution_PCA(PCA_files, outpath, selected_components_pixel, n_b
         df_pca_1_class = df_pca_1[df_pca_1['class']==iclass].drop(['class'], axis=1).reset_index()
         df_pca_2_class = df_pca_2[df_pca_2['class']==iclass].drop(['class'], axis=1).reset_index()
 
-        if not (df_pca_1_class.shape[0] >= 10 and df_pca_2_class.shape[0] >= 10):
+        if not (df_pca_1_class.shape[0] >= image_threshold and df_pca_2_class.shape[0] >= image_threshold):
             continue
 
         for ipc in selected_components_pixel:
@@ -58,7 +58,7 @@ def PlotPixelDistribution_PCA(PCA_files, outpath, selected_components_pixel, n_b
             ax.clear()
 
 
-def PlotGlobalHDversusBin_pixel_PCA(PCA_files, outpath, explained_variance_ratio_pixel):
+def PlotGlobalHDversusBin_pixel_PCA(PCA_files, outpath, explained_variance_ratio_pixel, image_threshold):
 
     print('-----------------Now plotting global Hellinger distances of PCA pixel v.s. numbers of bin.-----------------')
 
@@ -74,8 +74,8 @@ def PlotGlobalHDversusBin_pixel_PCA(PCA_files, outpath, explained_variance_ratio
     class_2 = df_pca_2['class'].to_list()
     df_count_1 = pd.DataFrame(np.unique(class_1, return_counts=True)).transpose()
     df_count_2 = pd.DataFrame(np.unique(class_2, return_counts=True)).transpose()
-    list_class_1 = df_count_1[df_count_1.iloc[:, 1]>=10].iloc[:, 0].to_list()
-    list_class_2 = df_count_2[df_count_2.iloc[:, 1]>=10].iloc[:, 0].to_list()
+    list_class_1 = df_count_1[df_count_1.iloc[:, 1]>=image_threshold].iloc[:, 0].to_list()
+    list_class_2 = df_count_2[df_count_2.iloc[:, 1]>=image_threshold].iloc[:, 0].to_list()
     list_class_rep = list(set(list_class_1) & set(list_class_2))
     list.sort(list_class_rep)
 
@@ -137,7 +137,7 @@ def PlotGlobalHDversusBin_pixel_PCA(PCA_files, outpath, explained_variance_ratio
     ax.clear()
     
 
-def GlobalHD_pixel(PCA_files, outpath, n_bins_pixel, explained_variance_ratio_pixel):
+def GlobalHD_pixel(PCA_files, outpath, n_bins_pixel, explained_variance_ratio_pixel, image_threshold):
 
     print('-----------------Now computing global Hellinger distances on PCA pixel.-----------------')
 
@@ -157,7 +157,7 @@ def GlobalHD_pixel(PCA_files, outpath, n_bins_pixel, explained_variance_ratio_pi
         df_pca_1_class = df_pca_1[df_pca_1['class']==iclass].drop(['class'], axis=1).reset_index()
         df_pca_2_class = df_pca_2[df_pca_2['class']==iclass].drop(['class'], axis=1).reset_index()
 
-        if not (df_pca_1_class.shape[0] >= 10 and df_pca_2_class.shape[0] >= 10):
+        if not (df_pca_1_class.shape[0] >= image_threshold and df_pca_2_class.shape[0] >= image_threshold):
             continue
         
         list_HD = []
