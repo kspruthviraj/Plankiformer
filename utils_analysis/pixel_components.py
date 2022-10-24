@@ -65,8 +65,17 @@ def PlotGlobalHDversusBin_pixel_PCA(PCA_files, outpath, explained_variance_ratio
     df_pca_1 = pd.read_csv(PCA_files[0], sep=',', index_col=0)
     df_pca_2 = pd.read_csv(PCA_files[1], sep=',', index_col=0)
 
-    list_class_1 = np.unique(df_pca_1['class'])
-    list_class_2 = np.unique(df_pca_2['class'])
+    # list_class_1 = np.unique(df_pca_1['class'])
+    # list_class_2 = np.unique(df_pca_2['class'])
+    # list_class_rep = list(set(list_class_1) & set(list_class_2))
+    # list.sort(list_class_rep)
+
+    class_1 = df_pca_1['class'].to_list()
+    class_2 = df_pca_2['class'].to_list()
+    df_count_1 = pd.DataFrame(np.unique(class_1, return_counts=True)).transpose()
+    df_count_2 = pd.DataFrame(np.unique(class_2, return_counts=True)).transpose()
+    list_class_1 = df_count_1[df_count_1.iloc[:, 1]>=10].iloc[:, 0].to_list()
+    list_class_2 = df_count_2[df_count_2.iloc[:, 1]>=10].iloc[:, 0].to_list()
     list_class_rep = list(set(list_class_1) & set(list_class_2))
     list.sort(list_class_rep)
 
@@ -80,9 +89,6 @@ def PlotGlobalHDversusBin_pixel_PCA(PCA_files, outpath, explained_variance_ratio
         for iclass in list_class_rep:
             df_pca_1_class = df_pca_1[df_pca_1['class']==iclass].drop(['class'], axis=1).reset_index()
             df_pca_2_class = df_pca_2[df_pca_2['class']==iclass].drop(['class'], axis=1).reset_index()
-
-            if not (df_pca_1_class.shape[0] >= 10 and df_pca_2_class.shape[0] >= 10):
-                continue
 
             list_HD = []
             for ipc in list_principal_components:
