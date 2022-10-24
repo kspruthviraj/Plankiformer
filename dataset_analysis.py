@@ -30,7 +30,7 @@ parser.add_argument('-explained_variance_ratio_feature', help='explained varianc
 parser.add_argument('-explained_variance_ratio_pixel', help='explained variance ratio file of pixel components')
 parser.add_argument('-PCA', choices=['yes', 'no'], default='yes', help='apply PCA or not')
 parser.add_argument('-feature_or_pixel', choices=['feature', 'pixel', 'both'], default='both', help='analysis on features or pixels')
-parser.add_argument('-image_threshold', help='minimum number of images of each class for calculating Hellinger Distance')
+parser.add_argument('-image_threshold', type=int, help='minimum number of images of each class for calculating Hellinger Distance')
 args = parser.parse_args()
 
 
