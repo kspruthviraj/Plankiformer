@@ -5,12 +5,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def PlotFeatureDistribution_PCA(PCA_files, outpath, selected_components_feature, n_bins_feature, data_labels, image_threshold):
+def PlotFeatureDistribution_PCA(PCA_files_feature, outpath, selected_components_feature, n_bins_feature, data_labels, image_threshold):
 
     print('-----------------Now plotting PCA feature distribution for each class and each selected component.-----------------')
     
-    df_pca_1 = pd.read_csv(PCA_files[0], sep=',', index_col=0)
-    df_pca_2 = pd.read_csv(PCA_files[1], sep=',', index_col=0)
+    df_pca_1 = pd.read_csv(PCA_files_feature[0], sep=',', index_col=0)
+    df_pca_2 = pd.read_csv(PCA_files_feature[1], sep=',', index_col=0)
 
     list_class_1 = np.unique(df_pca_1['class'])
     list_class_2 = np.unique(df_pca_2['class'])
@@ -58,12 +58,12 @@ def PlotFeatureDistribution_PCA(PCA_files, outpath, selected_components_feature,
             ax.clear()
 
 
-def PlotGlobalHDversusBin_feature_PCA(PCA_files, outpath, explained_variance_ratio_feature, image_threshold):
+def PlotGlobalHDversusBin_feature_PCA(PCA_files_feature, outpath, explained_variance_ratio_feature, image_threshold):
 
     print('-----------------Now plotting global Hellinger distances of PCA feature v.s. numbers of bin.-----------------')
 
-    df_pca_1 = pd.read_csv(PCA_files[0], sep=',', index_col=0)
-    df_pca_2 = pd.read_csv(PCA_files[1], sep=',', index_col=0)
+    df_pca_1 = pd.read_csv(PCA_files_feature[0], sep=',', index_col=0)
+    df_pca_2 = pd.read_csv(PCA_files_feature[1], sep=',', index_col=0)
 
     # list_class_1 = np.unique(df_pca_1['class'])
     # list_class_2 = np.unique(df_pca_2['class'])
@@ -137,12 +137,12 @@ def PlotGlobalHDversusBin_feature_PCA(PCA_files, outpath, explained_variance_rat
     ax.clear()
     
 
-def GlobalHD_feature(PCA_files, outpath, n_bins_feature, explained_variance_ratio_feature, image_threshold):
+def GlobalHD_feature(PCA_files_feature, outpath, n_bins_feature, explained_variance_ratio_feature, image_threshold):
 
     print('-----------------Now computing global Hellinger distances on PCA feature.-----------------')
 
-    df_pca_1 = pd.read_csv(PCA_files[0], sep=',', index_col=0)
-    df_pca_2 = pd.read_csv(PCA_files[1], sep=',', index_col=0)
+    df_pca_1 = pd.read_csv(PCA_files_feature[0], sep=',', index_col=0)
+    df_pca_2 = pd.read_csv(PCA_files_feature[1], sep=',', index_col=0)
 
     list_class_1 = np.unique(df_pca_1['class'])
     list_class_2 = np.unique(df_pca_2['class'])

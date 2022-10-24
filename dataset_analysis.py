@@ -19,14 +19,17 @@ parser.add_argument('-n_bins_feature', type=int, help='number of bins in the fea
 parser.add_argument('-n_bins_pixel', type=int, help='number of bins in the pixel distribution plot')
 parser.add_argument('-resized_length', type=int, help='length of resized image')
 
-parser.add_argument('-PCA_files', nargs='*', help='principal components file of all datasets')
+parser.add_argument('-PCA_files_feature', nargs='*', help='principal components file of all datasets')
+parser.add_argument('-PCA_files_pixel', nargs='*', help='principal components file of all datasets')
+parser.add_argument('-outpath_feature', help='path of the output')
+parser.add_argument('-outpath_pixel', help='path of the output')
 parser.add_argument('-selected_components_feature', nargs='*', help='select the feature components that you want to analyse')
 parser.add_argument('-selected_components_pixel', nargs='*', help='select the pixel components that you want to analyse')
 parser.add_argument('-data_labels', nargs='*', help='name of the dataset')
 parser.add_argument('-explained_variance_ratio_feature', help='explained variance ratio file of feature components')
 parser.add_argument('-explained_variance_ratio_pixel', help='explained variance ratio file of pixel components')
 parser.add_argument('-PCA', choices=['yes', 'no'], default='yes', help='apply PCA or not')
-parser.add_argument('-feature_or_pixel', help='analysis on features or pixels')
+parser.add_argument('-feature_or_pixel', choices=['feature', 'pixel', 'both'], default='both', help='analysis on features or pixels')
 parser.add_argument('-image_threshold', help='minimum number of images of each class for calculating Hellinger Distance')
 args = parser.parse_args()
 
@@ -49,11 +52,20 @@ if __name__ == '__main__':
         pixel.GlobalHD_pixel(args.datapaths, args.outpath, args.n_bins_pixel, args.resized_length)
 
     if args.PCA == 'yes':
-        if args.feature_or_pixel == 'feature':
-            fc.PlotFeatureDistribution_PCA(args.PCA_files, args.outpath, args.selected_components_feature, args.n_bins_feature, args.data_labels, args.image_threshold)
-            fc.PlotGlobalHDversusBin_feature_PCA(args.PCA_files, args.outpath, args.explained_variance_ratio_feature, args.image_threshold)
-            fc.GlobalHD_feature(args.PCA_files, args.outpath, args.n_bins_feature, args.explained_variance_ratio_feature, args.image_threshold)
-        if args.feature_or_pixel == 'pixel':
-            pc.PlotPixelDistribution_PCA(args.PCA_files, args.outpath, args.selected_components_pixel, args.n_bins_pixel, args.data_labels, args.image_threshold)
-            pc.PlotGlobalHDversusBin_pixel_PCA(args.PCA_files, args.outpath, args.explained_variance_ratio_pixel, args.image_threshold)
-            pc.GlobalHD_pixel(args.PCA_files, args.outpath, args.n_bins_pixel, args.explained_variance_ratio_pixel, args.image_threshold)
+        if args.feature_or_pixel == 'both':
+            fc.PlotFeatureDistribution_PCA(args.PCA_files_feature, args.outpath_feature, args.selected_components_feature, args.n_bins_feature, args.data_labels, args.image_threshold)
+            fc.PlotGlobalHDversusBin_feature_PCA(args.PCA_files_feature, args.outpath_feature, args.explained_variance_ratio_feature, args.image_threshold)
+            fc.GlobalHD_feature(args.PCA_files_feature, args.outpath_feature, args.n_bins_feature, args.explained_variance_ratio_feature, args.image_threshold)
+            pc.PlotPixelDistribution_PCA(args.PCA_files_pixel, args.outpath_pixel, args.selected_components_pixel, args.n_bins_pixel, args.data_labels, args.image_threshold)
+            pc.PlotGlobalHDversusBin_pixel_PCA(args.PCA_files_pixel, args.outpath_pixel, args.explained_variance_ratio_pixel, args.image_threshold)
+            pc.GlobalHD_pixel(args.PCA_files_pixel, args.outpath_pixel, args.n_bins_pixel, args.explained_variance_ratio_pixel, args.image_threshold)
+
+        elif args.feature_or_pixel == 'feature':
+            fc.PlotFeatureDistribution_PCA(args.PCA_files_feature, args.outpath_feature, args.selected_components_feature, args.n_bins_feature, args.data_labels, args.image_threshold)
+            fc.PlotGlobalHDversusBin_feature_PCA(args.PCA_files_feature, args.outpath_feature, args.explained_variance_ratio_feature, args.image_threshold)
+            fc.GlobalHD_feature(args.PCA_files_feature, args.outpath_feature, args.n_bins_feature, args.explained_variance_ratio_feature, args.image_threshold)
+        
+        elif args.feature_or_pixel == 'pixel':
+            pc.PlotPixelDistribution_PCA(args.PCA_files_pixel, args.outpath_pixel, args.selected_components_pixel, args.n_bins_pixel, args.data_labels, args.image_threshold)
+            pc.PlotGlobalHDversusBin_pixel_PCA(args.PCA_files_pixel, args.outpath_pixel, args.explained_variance_ratio_pixel, args.image_threshold)
+            pc.GlobalHD_pixel(args.PCA_files_pixel, args.outpath_pixel, args.n_bins_pixel, args.explained_variance_ratio_pixel, args.image_threshold)

@@ -5,12 +5,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-def PlotPixelDistribution_PCA(PCA_files, outpath, selected_components_pixel, n_bins_pixel, data_labels, image_threshold):
+def PlotPixelDistribution_PCA(PCA_files_pixel, outpath, selected_components_pixel, n_bins_pixel, data_labels, image_threshold):
 
     print('-----------------Now plotting PCA pixel distribution for each class and each selected component.-----------------')
     
-    df_pca_1 = pd.read_csv(PCA_files[0], sep=',', index_col=0)
-    df_pca_2 = pd.read_csv(PCA_files[1], sep=',', index_col=0)
+    df_pca_1 = pd.read_csv(PCA_files_pixel[0], sep=',', index_col=0)
+    df_pca_2 = pd.read_csv(PCA_files_pixel[1], sep=',', index_col=0)
 
     list_class_1 = np.unique(df_pca_1['class'])
     list_class_2 = np.unique(df_pca_2['class'])
@@ -58,12 +58,12 @@ def PlotPixelDistribution_PCA(PCA_files, outpath, selected_components_pixel, n_b
             ax.clear()
 
 
-def PlotGlobalHDversusBin_pixel_PCA(PCA_files, outpath, explained_variance_ratio_pixel, image_threshold):
+def PlotGlobalHDversusBin_pixel_PCA(PCA_files_pixel, outpath, explained_variance_ratio_pixel, image_threshold):
 
     print('-----------------Now plotting global Hellinger distances of PCA pixel v.s. numbers of bin.-----------------')
 
-    df_pca_1 = pd.read_csv(PCA_files[0], sep=',', index_col=0)
-    df_pca_2 = pd.read_csv(PCA_files[1], sep=',', index_col=0)
+    df_pca_1 = pd.read_csv(PCA_files_pixel[0], sep=',', index_col=0)
+    df_pca_2 = pd.read_csv(PCA_files_pixel[1], sep=',', index_col=0)
 
     # list_class_1 = np.unique(df_pca_1['class'])
     # list_class_2 = np.unique(df_pca_2['class'])
@@ -137,12 +137,12 @@ def PlotGlobalHDversusBin_pixel_PCA(PCA_files, outpath, explained_variance_ratio
     ax.clear()
     
 
-def GlobalHD_pixel(PCA_files, outpath, n_bins_pixel, explained_variance_ratio_pixel, image_threshold):
+def GlobalHD_pixel(PCA_files_pixel, outpath, n_bins_pixel, explained_variance_ratio_pixel, image_threshold):
 
     print('-----------------Now computing global Hellinger distances on PCA pixel.-----------------')
 
-    df_pca_1 = pd.read_csv(PCA_files[0], sep=',', index_col=0)
-    df_pca_2 = pd.read_csv(PCA_files[1], sep=',', index_col=0)
+    df_pca_1 = pd.read_csv(PCA_files_pixel[0], sep=',', index_col=0)
+    df_pca_2 = pd.read_csv(PCA_files_pixel[1], sep=',', index_col=0)
 
     list_class_1 = np.unique(df_pca_1['class'])
     list_class_2 = np.unique(df_pca_2['class'])
