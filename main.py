@@ -201,7 +201,7 @@ class LoadInputParameters:
     def WriteParams(self):
         """ Writes a txt file with the simulation parameters """
         self.fsummary = open(self.params.outpath + '/params.txt', 'w')
-        # print(self.params, file=self.fsummary)
+        print(self.params, file=self.fsummary)
         self.fsummary.flush()
 
         ''' Writes the same simulation parameters in binary '''
