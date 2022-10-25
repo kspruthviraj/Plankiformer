@@ -1,19 +1,16 @@
 from __future__ import print_function
 
 import os
-from os.path import join
 
 import numpy as np
 import pandas as pd
-import scipy.io
 import torch
 import torch.utils.data as data
 import torchvision.transforms as T
-from PIL import Image
 from sklearn.utils import compute_class_weight
 from torch.utils.data import Dataset
-from torchvision.datasets.utils import download_url, list_dir
 from torchvision.datasets.folder import default_loader
+
 torch.manual_seed(0)
 
 
@@ -82,7 +79,6 @@ class CreateDataForBirds:
             classes.append(list(class_names.values())[list(class_names.keys()).index(str(i))])
 
         self.classes = classes
-
 
 
 class NABirds(Dataset):
