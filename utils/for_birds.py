@@ -1,19 +1,17 @@
 from __future__ import print_function
 
 import os
-from os.path import join
 
 import numpy as np
 import pandas as pd
-import scipy.io
 import torch
 import torch.utils.data as data
 import torchvision.transforms as T
-from PIL import Image
 from sklearn.utils import compute_class_weight
 from torch.utils.data import Dataset
-from torchvision.datasets.utils import download_url, list_dir
 from torchvision.datasets.folder import default_loader
+from pathlib import Path
+
 torch.manual_seed(0)
 
 
@@ -34,33 +32,59 @@ class CreateDataForBirds:
         return
 
     def make_train_test_for_birds(self, train_main):
-        train_transform = T.Compose([T.Resize((224, 224)),
-                                     T.RandomHorizontalFlip(),
-                                     T.RandomVerticalFlip(),
-                                     T.ToTensor()])
-
-        test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
-
-        train_PATH = train_main.params.datapaths
-        train_PATH = ' '.join(map(str, train_PATH))
-
-        trainset = NABirds(root=train_PATH, train=True, transform=train_transform)
-        test_set = NABirds(root=train_PATH, train=False, transform=test_transform)
-
-        class_weight_path = train_main.params.outpath + '/class_weights_tensor.pt'
-        if os.path.exists(class_weight_path):
-            self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights_tensor.pt')
+        Data_path = train_main.params.outpath + '/Data.pt'
+        if os.path.exists(Data_path):
+            Out_Data = torch.load(train_main.params.outpath + '/Data.pt')
+            [train_set, val_set, test_set] = Out_Data
         else:
-            class_train = []
-            for i in range(len(trainset)):
-                class_train.append(trainset[i][1])
-            class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(class_train),
-                                                 y=class_train)
-            self.class_weights_tensor = torch.Tensor(class_weights)
-            torch.save(self.class_weights_tensor, train_main.params.outpath + '/class_weights_tensor.pt')
+            train_transform = T.Compose([T.Resize((224, 224)),
+                                         T.RandomHorizontalFlip(),
+                                         T.RandomVerticalFlip(),
+                                         T.ToTensor()])
 
-        train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
-                                                                      int(np.round(0.2 * len(trainset), 0))])
+            test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
+
+            train_PATH = train_main.params.datapaths
+            train_PATH = ' '.join(map(str, train_PATH))
+
+            trainset = NABirds(root=train_PATH, train=True, transform=train_transform)
+            test_set = NABirds(root=train_PATH, train=False, transform=test_transform)
+
+            class_weight_path = train_main.params.outpath + '/class_weights_tensor.pt'
+            if os.path.exists(class_weight_path):
+                self.class_weights_tensor = torch.load(class_weight_path)
+            else:
+                class_train = []
+                for i in range(len(trainset)):
+                    class_train.append(trainset[i][1])
+                class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(class_train),
+                                                     y=class_train)
+                self.class_weights_tensor = torch.Tensor(class_weights)
+                torch.save(self.class_weights_tensor, class_weight_path)
+
+            classes_path = train_main.params.outpath + '/classes.pt'
+            if os.path.exists(classes_path):
+                self.classes = torch.load(classes_path)
+            else:
+
+                dataset_path = os.path.join(train_PATH, 'nabirds')
+                image_class_labels = pd.read_csv(os.path.join(dataset_path, 'image_class_labels.txt'), sep=' ',
+                                                 names=['img_id', 'target'])
+                label_set = list(set(image_class_labels['target']))
+                class_names = load_class_names(dataset_path)
+
+                classes = []
+                for i in label_set:
+                    classes.append(list(class_names.values())[list(class_names.keys()).index(str(i))])
+
+                self.classes = classes
+                torch.save(self.classes, classes_path)
+
+            train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
+                                                                          int(np.round(0.2 * len(trainset), 0))])
+            Out_Data = [train_set, val_set,test_set]
+
+            torch.save(Out_Data, train_main.params.outpath + '/Data.pt')
 
         self.train_dataloader = torch.utils.data.DataLoader(train_set, batch_size=train_main.params.batch_size,
                                                             shuffle=True, num_workers=4, pin_memory=True)
@@ -70,19 +94,7 @@ class CreateDataForBirds:
                                                            shuffle=False, num_workers=4, pin_memory=True)
 
         self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
-
-        dataset_path = os.path.join(train_PATH, 'nabirds')
-        image_class_labels = pd.read_csv(os.path.join(dataset_path, 'image_class_labels.txt'), sep=' ',
-                                         names=['img_id', 'target'])
-        label_set = list(set(image_class_labels['target']))
-        class_names = load_class_names(dataset_path)
-
-        classes = []
-        for i in label_set:
-            classes.append(list(class_names.values())[list(class_names.keys()).index(str(i))])
-
-        self.classes = classes
-
+        Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
 
 class NABirds(Dataset):

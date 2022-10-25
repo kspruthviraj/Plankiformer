@@ -257,7 +257,8 @@ def LoadMixed(datapaths, L, class_select=None, classifier=None, resize_images=No
                     except:
                         pass
                 print('class: {} ({})'.format(c, len(dfFeat)))
-                # Each line in features.tsv should be associated with classname (and image, if the options say it's true)
+                # Each line in features.tsv should be associated with classname (and image, if the options say it's
+                # true)
                 for index, row in dfFeat.iterrows():
                     if alsoImages:
                         npimage, rescaled, filename = LoadImage(row.filename, L, resize_images)
