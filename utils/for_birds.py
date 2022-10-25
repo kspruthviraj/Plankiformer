@@ -82,7 +82,7 @@ class CreateDataForBirds:
 
             train_set, val_set = torch.utils.data.random_split(trainset, [int(np.round(0.8 * len(trainset), 0)),
                                                                           int(np.round(0.2 * len(trainset), 0))])
-            Out_Data = [train_set, val_set,test_set]
+            Out_Data = [train_set, val_set, test_set]
 
             torch.save(Out_Data, train_main.params.outpath + '/Data.pt')
 
