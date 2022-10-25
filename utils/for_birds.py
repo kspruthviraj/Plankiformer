@@ -10,6 +10,7 @@ import torchvision.transforms as T
 from sklearn.utils import compute_class_weight
 from torch.utils.data import Dataset
 from torchvision.datasets.folder import default_loader
+from pathlib import Path
 
 torch.manual_seed(0)
 
@@ -93,6 +94,7 @@ class CreateDataForBirds:
                                                            shuffle=False, num_workers=4, pin_memory=True)
 
         self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
+        Path(self.checkpoint_path).mkdir(parents=True, exist_ok=True)
 
 
 class NABirds(Dataset):
