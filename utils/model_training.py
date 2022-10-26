@@ -959,11 +959,12 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
-            bias, MAE, MSE, RMSE, R2, weighted_recall = extra_metrics(GT_label, Ens_DEIT_label)
+            bias, MAE, MSE, RMSE, R2, weighted_recall, df_count = extra_metrics(GT_label, Ens_DEIT_label)
             ff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_' + name2 + name + '.txt', 'w')
             ff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias, MAE, MSE, RMSE, R2, weighted_recall))
-
             ff.close()
+
+            df_count.to_csv(test_main.params.test_outpath + 'Population_count.txt', sep='\t', index=True, header=True)
 
             labels = np.unique(GT_label)
             unknown_index = np.where(labels=='unknown')[0][0]
@@ -1397,4 +1398,4 @@ def extra_metrics(GT_label, Pred_label):
 
     weighted_recall = recall_score(GT_label, Pred_label, average='weighted')
 
-    return bias, MAE, MSE, RMSE, R2, weighted_recall
+    return bias, MAE, MSE, RMSE, R2, weighted_recall, df_count_Pred_GT
