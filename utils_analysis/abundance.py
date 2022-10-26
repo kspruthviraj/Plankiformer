@@ -99,11 +99,14 @@ def PlotAbundance(datapaths, outpath, datapath_labels):
     y1 = df_abundance_sorted['dataset_1']
     y2 = df_abundance_sorted['dataset_2']
 
+    abundance_distance = AbundanceDistance(y1, y2)
+
     plt.bar(x1, y1, width=0.5, label=datapath_labels[0])
     plt.bar(x2, y2, width=0.5, label=datapath_labels[1])
     # plt.bar(x1, y1, width=0.5, label=datapath_labels[0], log=True)
     # plt.bar(x2, y2, width=0.5, label=datapath_labels[1], log=True)
     plt.xticks(x, df_abundance_sorted['class'], rotation=90)
+    plt.title('Distance between datasets: %.3f' % abundance_distance)
 
     ax_2 = ax.twinx()
     ax_2.set_ylabel('Ratio of two datasets')
@@ -115,3 +118,16 @@ def PlotAbundance(datapaths, outpath, datapath_labels):
     # plt.savefig(outpath + 'abundance.png')
     plt.close()
     ax.clear()
+
+
+
+def AbundanceDistance(abundance_percentage_1, abundance_percentage_2):
+    p1, p2 = abundance_percentage_1, abundance_percentage_2
+    p1_normalized = p1 / np.linalg.norm(p1)
+    p2_normalized = p2 / np.linalg.norm(p2)
+    assert np.absolute(np.linalg.norm(p1_normalized)) - 1 < 10e-8
+    assert np.absolute(np.linalg.norm(p2_normalized)) - 1 < 10e-8
+    overlap = np.dot(p1_normalized, p2_normalized)
+    abundance_distance = 1 - overlap
+
+    return abundance_distance 

@@ -36,10 +36,10 @@ args = parser.parse_args()
 
 if __name__ == '__main__':
 
-    # sdate.PlotSamplingDate(args.train_datapath, args.outpath)
-    # sdate.PlotSamplingDateEachClass(args.train_datapath, args.outpath)
-    # abundance.PlotAbundance(args.datapaths, args.outpath, args.datapath_labels)
-    # abundance.PlotAbundanceSep(args.datapaths, args.outpath, args.datapath_labels)
+    sdate.PlotSamplingDate(args.train_datapath, args.outpath)
+    sdate.PlotSamplingDateEachClass(args.train_datapath, args.outpath)
+    abundance.PlotAbundance(args.datapaths, args.outpath, args.datapath_labels)
+    abundance.PlotAbundanceSep(args.datapaths, args.outpath, args.datapath_labels)
 
     if args.PCA == 'no':
         feature.PlotFeatureDistribution(args.datapaths, args.outpath, args.selected_features, args.n_bins_feature, args.datapath_labels)
