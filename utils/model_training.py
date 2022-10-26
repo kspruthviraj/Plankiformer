@@ -15,7 +15,7 @@ import torch.nn.functional as F
 import torch.optim
 import torch.utils.data
 from scipy.stats import gmean
-from sklearn.metrics import f1_score, accuracy_score, classification_report
+from sklearn.metrics import f1_score, accuracy_score, classification_report, mean_absolute_error, mean_squared_error, r2_score, recall_score
 from torchvision.utils import make_grid
 import copy
 
@@ -950,12 +950,7 @@ class import_and_train_model:
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
 
-            # allClasses = list(set([name for idata in range(len(test_main.params.test_path)) for name in os.listdir(test_main.params.test_path[idata]) if
-            #                os.path.isdir(os.path.join(test_main.params.test_path[idata], name))]))
-            # clf_report = classification_report(GT_label, Ens_DEIT_label, labels=allClasses)
-
             accuracy_model = accuracy_score(GT_label, Ens_DEIT_label)
-            # clf_report = classification_report(GT_label, Ens_DEIT_label)
             clf_report = classification_report(GT_label, Ens_DEIT_label, labels=np.unique(GT_label))
             f1 = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=np.unique(GT_label))
 
@@ -964,6 +959,11 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
+            bias, MAE, MSE, RMSE, R2, weighted_recall = extra_metrics(GT_label, Ens_DEIT_label)
+            ff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_' + name2 + name + '.txt', 'w')
+            ff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias, MAE, MSE, RMSE, R2, weighted_recall))
+
+            ff.close()
 
             labels = np.unique(GT_label)
             unknown_index = np.where(labels=='unknown')[0][0]
@@ -972,10 +972,10 @@ class import_and_train_model:
             clf_report_rm_unknown = classification_report(GT_label, Ens_DEIT_label, labels=labels_rm_unknown)
             f1_rm_unknown = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=labels_rm_unknown)
 
-            f = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_unknown_' + name2 + name + '.txt', 'w')
-            f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_unknown,
+            fff = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_unknown_' + name2 + name + '.txt', 'w')
+            fff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_unknown,
                                                                                                   clf_report_rm_unknown))
-            f.close()
+            fff.close()
 
 
             filenames_out = im_names[0]
@@ -1375,3 +1375,26 @@ def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
     print('Time taken for prediction (in secs): {}'.format(total_secs))
 
     return avg_acc1, targets, outputs, probs
+
+
+def extra_metrics(GT_label, Pred_label):
+
+    list_class = list(set(np.unique(GT_label)).union(set(np.unique(Pred_label))))
+    list_class.sort()
+    df_count_Pred_GT = pd.DataFrame(index=list_class, columns=['Predict', 'Ground_truth'])
+
+    for index in list_class:
+        df_count_Pred_GT.loc[index, 'Predict'] = Pred_label.count(index)
+        df_count_Pred_GT.loc[index, 'Ground_truth'] = GT_label.count(index)
+
+    df_percentage_Pred_GT = df_count_Pred_GT.div(df_count_Pred_GT.sum(axis=0), axis=1)
+
+    bias = np.sum(df_percentage_Pred_GT['Predict'] - df_percentage_Pred_GT['Ground_truth']) / df_percentage_Pred_GT.shape[0]
+    MAE = mean_absolute_error(df_percentage_Pred_GT['Ground_truth'], df_percentage_Pred_GT['Predict'])
+    MSE = mean_squared_error(df_percentage_Pred_GT['Ground_truth'], df_percentage_Pred_GT['Predict'])
+    RMSE = np.sqrt(MSE)
+    R2 = r2_score(df_percentage_Pred_GT['Ground_truth'], df_percentage_Pred_GT['Predict'])
+
+    weighted_recall = recall_score(GT_label, Pred_label, average='weighted')
+
+    return bias, MAE, MSE, RMSE, R2, weighted_recall
