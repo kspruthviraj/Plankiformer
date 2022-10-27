@@ -1389,6 +1389,7 @@ def extra_metrics(GT_label, Pred_label):
         df_count_Pred_GT.loc[index, 'Ground_truth'] = GT_label.count(index)
 
     df_percentage_Pred_GT = df_count_Pred_GT.div(df_count_Pred_GT.sum(axis=0), axis=1)
+    df_count_Pred_GT['Bias'] = df_count_Pred_GT['Predict'] - df_count_Pred_GT['Ground_truth']
 
     bias = np.sum(df_percentage_Pred_GT['Predict'] - df_percentage_Pred_GT['Ground_truth']) / df_percentage_Pred_GT.shape[0]
     MAE = mean_absolute_error(df_percentage_Pred_GT['Ground_truth'], df_percentage_Pred_GT['Predict'])
