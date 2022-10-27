@@ -1,5 +1,7 @@
+from cProfile import label
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 def global_population_bias(population_counts, outpath):
 
@@ -26,3 +28,16 @@ def global_population_bias(population_counts, outpath):
             df_population.loc[j, 'Bias'] += Bias
 
     df_population.to_csv(outpath + 'Global_population.txt', sep='\t', index=True, header=True)
+
+    GT_percentage = df_population['Ground_truth'] / np.sum(df_population['Ground_truth'])
+    pred_percentage = df_population['Predict'] / np.sum(df_population['Predict'])
+    
+    plt.figure()
+    plt.scatter(GT_percentage, pred_percentage, label=df_population.index)
+    plt.xlabel('Real population')
+    plt.ylabel('Predicted population')
+    plt.xlim([0, 1])
+    plt.ylim([0, 1])
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(outpath + 'Global population.png')
