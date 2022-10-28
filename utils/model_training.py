@@ -1386,9 +1386,7 @@ def extra_metrics(GT_label, Pred_label):
 
     for index in list_class:
         df_count_Pred_GT.loc[index, 'Predict'] = Pred_label.count(index)
-        print(GT_label)
-        print(np.shape(GT_label))
-        df_count_Pred_GT.loc[index, 'Ground_truth'] = GT_label.to_list().count(index)
+        df_count_Pred_GT.loc[index, 'Ground_truth'] = GT_label.tolist().count(index)
 
     df_percentage_Pred_GT = df_count_Pred_GT.div(df_count_Pred_GT.sum(axis=0), axis=1)
     df_count_Pred_GT['Bias'] = df_count_Pred_GT['Predict'] - df_count_Pred_GT['Ground_truth']
