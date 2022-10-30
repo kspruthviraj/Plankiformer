@@ -964,7 +964,9 @@ class import_and_train_model:
             ff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias, MAE, MSE, RMSE, R2, weighted_recall))
             ff.close()
 
-            df_count.to_csv(test_main.params.test_outpath + 'Population_count.csv', sep='\t', index=True, header=True)
+            # df_count.to_csv(test_main.params.test_outpath + 'Population_count.csv', sep='\t', index=True, header=True)
+            with open(test_main.params.test_outpath + 'Population_count.csv', 'w') as f_count:
+                f_count.write('\n'.join(df_count))
 
             labels = np.unique(GT_label)
             unknown_index = np.where(labels=='unknown')[0][0]
