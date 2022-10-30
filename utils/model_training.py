@@ -959,7 +959,7 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
-            bias, MAE, MSE, RMSE, R2, weighted_recall, df_count = extra_metrics(GT_label, Ens_DEIT_label)
+            bias, MAE, MSE, RMSE, R2, weighted_recall, df_count = extra_metrics(GT_label.tolist(), Ens_DEIT_label)
             ff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_' + name2 + name + '.txt', 'w')
             ff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias, MAE, MSE, RMSE, R2, weighted_recall))
             ff.close()
@@ -1386,7 +1386,7 @@ def extra_metrics(GT_label, Pred_label):
 
     for index in list_class:
         df_count_Pred_GT.loc[index, 'Predict'] = Pred_label.count(index)
-        df_count_Pred_GT.loc[index, 'Ground_truth'] = GT_label.tolist().count(index)
+        df_count_Pred_GT.loc[index, 'Ground_truth'] = GT_label.count(index)
 
     df_percentage_Pred_GT = df_count_Pred_GT.div(df_count_Pred_GT.sum(axis=0), axis=1)
     df_count_Pred_GT['Bias'] = df_count_Pred_GT['Predict'] - df_count_Pred_GT['Ground_truth']
