@@ -965,7 +965,7 @@ class import_and_train_model:
             ff.close()
 
             # df_count.to_csv(test_main.params.test_outpath + 'Population_count.csv', sep='\t', index=True, header=True)
-            with open(test_main.params.test_outpath + 'Population_count.csv', 'w') as f_count:
+            with open(test_main.params.test_outpath + 'Population_count.txt', 'w') as f_count:
                 f_count.write('\n'.join(df_count))
 
             labels = np.unique(GT_label)
