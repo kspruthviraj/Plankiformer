@@ -132,10 +132,11 @@ class import_and_train_model:
         print(f"{total_trainable_params:,} training parameters.")
         class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
         self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
+        gpu_id = 1
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            torch.cuda.set_device(train_main.params.gpu_id)
-            self.model.cuda(train_main.params.gpu_id)
-            self.criterion = self.criterion.cuda(train_main.params.gpu_id)
+            torch.cuda.set_device(gpu_id)
+            self.model.cuda(gpu_id)
+            self.criterion = self.criterion.cuda(gpu_id)
 
         # Observe that all parameters are being optimized
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
