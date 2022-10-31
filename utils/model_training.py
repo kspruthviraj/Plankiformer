@@ -117,7 +117,7 @@ class import_and_train_model:
             print('This model cannot be imported. Please check from the list of models')
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            device = torch.device("cuda:0")
+            device = torch.device("cuda:1")
         else:
             device = torch.device("cpu")
 
