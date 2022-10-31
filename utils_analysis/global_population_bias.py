@@ -8,7 +8,7 @@ def global_population_bias(population_counts, outpath):
     
     classes = []
     for i in population_counts:
-        df_count = pd.read_csv(i, index_col=0)
+        df_count = pd.read_excel(i, index_col=0)
         class_name = df_count.index
         classes = list(set(np.unique(classes)).union(set(np.unique(class_name))))
     classes.sort()
