@@ -15,7 +15,7 @@ def global_population_bias(population_counts, outpath):
 
     df_population = pd.DataFrame(index=classes, columns=['Predict', 'Ground_truth', 'Bias'])
     for i in population_counts:
-        df_count = pd.read_csv(i, sep='\t', index_col=0)
+        df_count = pd.read_excel(i, index_col=0)
         class_name = df_count.index
         for j in class_name:
             predict_count = df_count.loc[j, 'Predict']
