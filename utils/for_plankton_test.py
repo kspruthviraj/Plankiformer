@@ -107,13 +107,13 @@ class CreateDataForPlankton:
         self.test_dataloader = DataLoader(test_dataset, 32, shuffle=False, num_workers=0,
                                           pin_memory=True)
 
-    def create_data_loaders_with_y(self, train_main):
+    def create_data_loaders_with_y(self, test_main):
         # self.checkpoint_path = test_main.params.model_path
 
         test_dataset = CreateDataset_with_y(X=self.X_train, y=self.y_train)
         self.test_dataloader = DataLoader(test_dataset, 32, shuffle=False, num_workers=0,
                                           pin_memory=True)
-        torch.save(self.test_dataloader, train_main.params.main_param_path + '/test_dataloader.pth')
+        torch.save(self.test_dataloader, test_main.params.main_param_path + '/test_dataloader.pth')
 
 
 class CreateDataset(Dataset):
