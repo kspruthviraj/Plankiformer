@@ -991,9 +991,9 @@ class import_and_train_model:
             self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            torch.cuda.set_device(train_main.params.gpu_id)
-            self.model.cuda(train_main.params.gpu_id)
-            self.criterion = self.criterion.cuda(train_main.params.gpu_id)
+            torch.cuda.set_device(1)
+            self.model.cuda(1)
+            self.criterion = self.criterion.cuda(1)
         # Observe that all parameters are being optimized
         if train_main.params.last_layer_finetune == 'yes':
             self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
