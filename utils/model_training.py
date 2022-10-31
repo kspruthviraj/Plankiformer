@@ -976,7 +976,7 @@ class import_and_train_model:
     def initialize_model(self, train_main, test_main, data_loader, lr):
         if torch.cuda.is_available():
             if train_main.params.use_gpu == 'yes' or test_main.params.use_gpu == 'yes':
-                device = torch.device("cuda:0")
+                device = torch.device("cuda:1")
         else:
             device = torch.device("cpu")
 
