@@ -814,6 +814,7 @@ class import_and_train_model:
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
         Ensemble_prob = []
         Ensemble_GT = []
+        Ensemble_GT_label = []
         im_names = data_loader.Filenames
 
         for i in range(len(test_main.params.model_path)):
@@ -841,15 +842,23 @@ class import_and_train_model:
             prob = prob.cpu().numpy()
             target = target.cpu().numpy()
 
-            Ensemble_prob.append(prob)
-            Ensemble_GT.append(target)
+            target_label = np.array([classes[target[i]] for i in range(len(target))], dtype=object)
+
+            target_label_sorted = np.sort(target_label)
+            target_label_indices = np.argsort(target_label)
+            prob_sorted = prob[target_label_indices]
+            target_sorted = target[target_label_indices]
+
+            Ensemble_prob.append(prob_sorted)
+            Ensemble_GT.append(target_sorted)
+            Ensemble_GT_label.append(target_label_sorted)
 
         Ens_DEIT_prob_max = []
         Ens_DEIT_label = []
         Ens_DEIT = []
         name2 = []
+        GT_label = Ensemble_GT_label[0]
         GT = Ensemble_GT[0]
-        GT_label = np.array([classes[GT[i]] for i in range(len(GT))], dtype=object)
 
         if test_main.params.ensemble == 1:
             Ens_DEIT = sum(Ensemble_prob) / len(Ensemble_prob)
@@ -877,7 +886,7 @@ class import_and_train_model:
         GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob = [GT, Ens_DEIT_prob_max, GT_label, Ens_DEIT_label,
                                                              Ens_DEIT_corrected_label, Ens_DEIT]
         with open(
-                test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name2 + name + '.pickle',
+                test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_PredLabel_Corrected_Prob_' + name2 + name + '.pickle',
                 'wb') \
                 as cw:
             pickle.dump(GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob, cw)
