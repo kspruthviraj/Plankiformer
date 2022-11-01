@@ -101,9 +101,9 @@ if __name__ == '__main__':
     # For Plankton testing
     for_plankton_test = fplankton_test.CreateDataForPlankton()
     for_plankton_test.make_train_test_for_model_with_y(train_params, test_params, prep_test_data)
-    for_plankton_test.create_data_loaders_with_y(train_params)
+    for_plankton_test.create_data_loaders_with_y(test_params)
 
-    # initialize model training
-    model_training = mt.import_and_train_model()
-    # Do Predictions
-    model_training.load_model_and_run_prediction_with_y(train_params, test_params, for_plankton_test)
+    # # initialize model training
+    # model_training = mt.import_and_train_model()
+    # # Do Predictions
+    # model_training.load_model_and_run_prediction_with_y(train_params, test_params, for_plankton_test)

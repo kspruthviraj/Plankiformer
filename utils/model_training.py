@@ -117,7 +117,7 @@ class import_and_train_model:
             print('This model cannot be imported. Please check from the list of models')
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            device = torch.device("cuda:0")
+            device = torch.device("cuda:1")
         else:
             device = torch.device("cpu")
 
@@ -132,10 +132,11 @@ class import_and_train_model:
         print(f"{total_trainable_params:,} training parameters.")
         class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
         self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
+        gpu_id = 1
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            torch.cuda.set_device(train_main.params.gpu_id)
-            self.model.cuda(train_main.params.gpu_id)
-            self.criterion = self.criterion.cuda(train_main.params.gpu_id)
+            torch.cuda.set_device(gpu_id)
+            self.model.cuda(gpu_id)
+            self.criterion = self.criterion.cuda(gpu_id)
 
         # Observe that all parameters are being optimized
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
@@ -995,7 +996,7 @@ class import_and_train_model:
     def initialize_model(self, train_main, test_main, data_loader, lr):
         if torch.cuda.is_available():
             if train_main.params.use_gpu == 'yes' or test_main.params.use_gpu == 'yes':
-                device = torch.device("cuda:0")
+                device = torch.device("cuda:1")
         else:
             device = torch.device("cpu")
 
@@ -1010,9 +1011,9 @@ class import_and_train_model:
             self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            torch.cuda.set_device(train_main.params.gpu_id)
-            self.model.cuda(train_main.params.gpu_id)
-            self.criterion = self.criterion.cuda(train_main.params.gpu_id)
+            torch.cuda.set_device(1)
+            self.model.cuda(1)
+            self.criterion = self.criterion.cuda(1)
         # Observe that all parameters are being optimized
         if train_main.params.last_layer_finetune == 'yes':
             self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
@@ -1356,7 +1357,7 @@ def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
