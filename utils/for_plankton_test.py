@@ -116,8 +116,8 @@ class CreateDataForPlankton:
                                           pin_memory=True)
         # torch.save(test_dataset, test_main.params.main_param_path + '/test_dataloader.pt')
         DATA = [self.X_train, self.y_train]
-        with open(test_main.params.main_param_path + '/test_data.pickle', 'wb') as a:
-            pickle.dump(DATA, a, protocol=4)
+        # with open(test_main.params.main_param_path + '/test_data.pickle', 'wb') as a:
+        #     pickle.dump(DATA, a, protocol=4)
 
 
 class CreateDataset(Dataset):
