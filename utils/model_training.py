@@ -58,7 +58,7 @@ class import_and_train_model:
         else:
             print('This model cannot be imported. Please check from the list of models')
 
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
