@@ -59,7 +59,7 @@ class import_and_train_model:
         else:
             print('This model cannot be imported. Please check from the list of models')
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
@@ -83,11 +83,13 @@ class import_and_train_model:
         print(f"{total_trainable_params:,} training parameters.")
 
         self.criterion = nn.CrossEntropyLoss(data_loader.class_weights_tensor)
-        if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            torch.cuda.set_device(train_main.params.gpu_id)
-            self.model.cuda(train_main.params.gpu_id)
-            self.criterion = self.criterion.cuda(train_main.params.gpu_id)
-
+        # if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
+        #     torch.cuda.set_device(train_main.params.gpu_id)
+        #     self.model.cuda(train_main.params.gpu_id)
+        #     self.criterion = self.criterion.cuda(train_main.params.gpu_id)
+        #
+        self.model.cuda(train_main.params.gpu_id)
+        self.criterion = self.criterion.cuda(train_main.params.gpu_id)
         # Observe that all parameters are being optimized
 
         if train_main.params.last_layer_finetune == 'yes':
