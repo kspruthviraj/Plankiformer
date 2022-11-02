@@ -17,6 +17,7 @@ from utils import for_wildtrap as wildtrap
 from utils import model_training as mt
 from utils import prepare_train_test_data as pdata
 from utils import for_inaturalist as inature
+from utils import for_cifar100 as cifar100
 
 
 def ArgsCheck(args):
@@ -114,7 +115,7 @@ class LoadInputParameters:
         # Choose dataset name
         parser.add_argument('-dataset_name', choices=['zoolake', 'zooscan', 'whoi', 'kaggle',
                                                       'eilat', 'rsmas', 'birds', 'dogs', 'beetle', 'wildtrap',
-                                                      'cifar10', 'inature'],
+                                                      'cifar10', 'inature', 'cifar100'],
                             default='zoolake', help='Choose between different datasets "zoolake", "zooscan", "whoi", '
                                                     '"kaggle", "eilat", "rsmas", "birds", "dogs", "beetle", "wildtrap"')
 

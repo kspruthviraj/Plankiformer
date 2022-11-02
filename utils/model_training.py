@@ -160,6 +160,7 @@ class import_and_train_model:
 
         print("Beginning training")
         time_begin = time()
+        lr_scheduler = LRScheduler(self.optimizer)
 
         for epoch in range(initial_epoch, epochs):
             time_begin_epoch = time()
@@ -272,6 +273,7 @@ class import_and_train_model:
                 self.early_stopping(test_loss)
                 if self.early_stopping.early_stop:
                     break
+            lr_scheduler(test_loss)
 
         total_mins = (time() - time_begin) / 60
 
@@ -1228,9 +1230,9 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
         outputs.append(output)
         targets.append(target)
 
-    if modeltype == 0:
-        if train_main.params.run_lr_scheduler == 'yes':
-            lr_scheduler(loss)
+    # if modeltype == 0:
+    #     if train_main.params.run_lr_scheduler == 'yes':
+    #         lr_scheduler(loss)
 
     outputs = torch.cat(outputs)
     outputs = outputs.cpu().detach().numpy()
