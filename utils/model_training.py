@@ -267,13 +267,13 @@ class import_and_train_model:
                 np.round(total_mins, 3)))
 
             if train_main.params.run_lr_scheduler == 'yes':
-                self.lr_scheduler(test_loss)
+                self.lr_scheduler(train_loss)
 
             if train_main.params.run_early_stopping == 'yes':
-                self.early_stopping(test_loss)
+                self.early_stopping(train_loss)
                 if self.early_stopping.early_stop:
                     break
-            lr_scheduler(test_loss)
+            lr_scheduler(train_loss)
 
         total_mins = (time() - time_begin) / 60
 
