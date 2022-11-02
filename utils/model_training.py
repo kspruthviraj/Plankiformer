@@ -189,9 +189,9 @@ class import_and_train_model:
             if epoch + 1 == epochs:
                 torch.save({'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
-                            'loss': test_loss,
-                            'f1': test_f1,
-                            'acc': test_acc1,
+                            'loss': train_loss,
+                            'f1': train_f1,
+                            'acc': train_acc1,
                             'epoch': epoch},
                            data_loader.checkpoint_path + '/trained_model_' + name + '_last_epoch.pth')
             else:
@@ -201,50 +201,50 @@ class import_and_train_model:
                 if (epoch + 1) % 10 == 0:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': test_loss,
-                                'f1': test_f1,
-                                'acc': test_acc1,
+                                'loss': train_loss,
+                                'f1': train_f1,
+                                'acc': train_acc1,
                                 'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '_' + str(epoch + 1) + '_epoch.pth')
                 else:
                     pass
 
             if train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 1:
-                if test_loss < best_loss or epoch == 1:
+                if train_loss < best_loss or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': test_loss,
-                                'f1': test_f1,
-                                'acc': test_acc1,
+                                'loss': train_loss,
+                                'f1': train_f1,
+                                'acc': train_acc1,
                                 'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 2:
 
-                if test_f1 > best_f1 or epoch == 1:
+                if train_f1 > best_f1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': test_loss,
-                                'f1': test_f1,
-                                'acc': test_acc1,
+                                'loss': train_loss,
+                                'f1': train_f1,
+                                'acc': train_acc1,
                                 'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 3:
-                if test_acc1 > best_acc1 or epoch == 1:
+                if train_acc1 > best_acc1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': test_loss,
+                                'loss': train_loss,
                                 'f1': test_f1,
-                                'acc': test_acc1,
+                                'acc': train_acc1,
                                 'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
             else:
                 print('Choose correct metric i.e. based on loss or acc or f1 to save the model')
 
-            best_acc1 = max(test_acc1, best_acc1)
+            best_acc1 = max(train_acc1, best_acc1)
             best_f1 = max(test_f1, best_f1)
-            best_loss = min(test_f1, best_loss)
+            best_loss = min(train_loss, best_loss)
 
             train_losses.append(train_loss)
             test_losses.append(test_loss)
