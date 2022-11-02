@@ -18,6 +18,7 @@ from scipy.stats import gmean
 from sklearn.metrics import f1_score, accuracy_score, classification_report
 from torchvision.utils import make_grid
 import copy
+torch.manual_seed(0)
 
 
 # import streamlit as st
@@ -916,7 +917,6 @@ class import_and_train_model:
                     dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Classified/' + str(GT_label[jj])
                     Path(dest_path).mkdir(parents=True, exist_ok=True)
                     shutil.copy(filenames_out[jj], dest_path)
-
                 else:
                     dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(
                         GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])

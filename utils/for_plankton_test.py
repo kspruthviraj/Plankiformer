@@ -7,6 +7,7 @@ import torch
 import torchvision.transforms as T
 from torch.utils.data import DataLoader, Dataset
 import pickle
+torch.manual_seed(0)
 
 
 class CreateDataForPlankton:
@@ -105,14 +106,14 @@ class CreateDataForPlankton:
         # self.checkpoint_path = test_main.params.model_path
 
         test_dataset = CreateDataset(X=self.X_train)
-        self.test_dataloader = DataLoader(test_dataset, 32, shuffle=True, num_workers=4,
+        self.test_dataloader = DataLoader(test_dataset, 32, shuffle=False, num_workers=4,
                                           pin_memory=True)
 
     def create_data_loaders_with_y(self, test_main):
         # self.checkpoint_path = test_main.params.model_path
 
         test_dataset = CreateDataset_with_y(X=self.X_train, y=self.y_train)
-        self.test_dataloader = DataLoader(test_dataset, 32, shuffle=True, num_workers=4,
+        self.test_dataloader = DataLoader(test_dataset, 32, shuffle=False, num_workers=4,
                                           pin_memory=True)
         # torch.save(test_dataset, test_main.params.main_param_path + '/test_dataloader.pt')
         # DATA = [self.X_train, self.y_train]
