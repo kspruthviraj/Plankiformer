@@ -821,10 +821,10 @@ class import_and_train_model:
             checkpoint_path = test_main.params.model_path[i]
             PATH = checkpoint_path + '/trained_model_' + name + '.pth'
 
-            if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-                checkpoint = torch.load(PATH)
-            else:
-                checkpoint = torch.load(PATH, map_location='cpu')
+            # if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+            #     checkpoint = torch.load(PATH)
+            # else:
+            checkpoint = torch.load(PATH, map_location='cpu')
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
