@@ -11,6 +11,7 @@ from sklearn.utils import compute_class_weight
 from timm.data.auto_augment import rand_augment_transform
 from torch.utils.data import Dataset
 from torchvision import datasets
+import torchvision.transforms as T
 
 torch.manual_seed(0)
 
@@ -147,20 +148,21 @@ class CreateDataForCifar100:
         data_mean = data_config["mean"]
         data_std = data_config["std"]
 
-        train_transform = timm.data.create_transform(
-            input_size=224,
-            is_training=True,
-            mean=data_mean,
-            std=data_std,
-            auto_augment="rand-m9-mstd0.5", hflip=0.5, vflip=0.5, re_prob=0.3)
+        # train_transform = timm.data.create_transform(
+        #     input_size=224,
+        #     is_training=True,
+        #     mean=data_mean,
+        #     std=data_std,
+        #     auto_augment="rand-m9-mstd0.5", hflip=0.5, vflip=0.5, re_prob=0.3)
+        #
+        # test_transform = timm.data.create_transform(input_size=224,
+        #                                             is_training=False,
+        #                                             mean=data_mean,
+        #                                             std=data_std)
 
         # random_erase = RandomErasing(probability=0.5)
         # train_transform.extend(random_erase, AutoAugment(), Cutout())
 
-        test_transform = timm.data.create_transform(input_size=224,
-                                                    is_training=False,
-                                                    mean=data_mean,
-                                                    std=data_std)
 
         # train_transform = [T.RandomCrop(32, padding=4), T.RandomHorizontalFlip(), AutoAugment(), Cutout()]
         # train_transform.extend([T.ToTensor(),
@@ -185,11 +187,13 @@ class CreateDataForCifar100:
         #     download=True,
         #     transform=test_transform)
 
-        # train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
-        #                              T.GaussianBlur(kernel_size=(3, 9), sigma=(0.1, 2)),
-        #                              T.RandomRotation(degrees=(0, 180)), T.ToTensor()])
-        #
-        # test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
+        train_transform = T.Compose([T.Resize((224, 224)), T.RandomHorizontalFlip(), T.RandomVerticalFlip(),
+                                     T.GaussianBlur(kernel_size=(1, 5), sigma=(0.1, 2)),
+                                     T.RandomRotation(degrees=(0, 180)),
+                                     T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3), scale=(0.5, 0.9)),
+                                     T.ToTensor()])
+
+        test_transform = T.Compose([T.Resize((224, 224)), T.ToTensor()])
 
         trainset = datasets.CIFAR100('./data/CIFAR100/', download=True, train=True)
         test_set = datasets.CIFAR100('./data/CIFAR100/', download=True, train=False)
@@ -210,7 +214,7 @@ class CreateDataForCifar100:
                                                                       int(np.round(0.02 * len(trainset), 0))])
 
         train_set = ApplyTransform(train_set, transform=train_transform)
-        val_set = ApplyTransform(val_set, transform=train_transform)
+        val_set = ApplyTransform(val_set, transform=test_transform)
         test_set = ApplyTransform(test_set, transform=test_transform)
 
         self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
