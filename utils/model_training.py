@@ -58,7 +58,7 @@ class import_and_train_model:
         else:
             print('This model cannot be imported. Please check from the list of models')
 
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
@@ -821,10 +821,10 @@ class import_and_train_model:
             checkpoint_path = test_main.params.model_path[i]
             PATH = checkpoint_path + '/trained_model_' + name + '.pth'
 
-            if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-                checkpoint = torch.load(PATH)
-            else:
-                checkpoint = torch.load(PATH, map_location='cpu')
+            # if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+            #     checkpoint = torch.load(PATH)
+            # else:
+            checkpoint = torch.load(PATH, map_location='cpu')
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
