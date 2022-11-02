@@ -125,7 +125,7 @@ class LoadInputParameters:
 
         parser.add_argument('-batch_size', type=int, default=16, help="Batch size for training")
         parser.add_argument('-image_size', type=int, default=224, help="Image size for training the model")
-        parser.add_argument('-epochs', type=int, default=100, help="number of epochs for training the model")
+        parser.add_argument('-epochs', type=int, default=30, help="number of epochs for training the model")
         # parser.add_argument('-initial_epoch', type=int, default=0, help="set the initial epoch value")
         parser.add_argument('-gpu_id', type=int, default=0, help="select the gpu id ")
         parser.add_argument('-lr', type=float, default=1e-4, help="starting learning rate")
@@ -259,6 +259,10 @@ if __name__ == '__main__':
 
     elif train_params.params.dataset_name == 'cifar10':
         loaded_data = cifar10.CreateDataForCifar10()
+        loaded_data.make_train_test_for_cifar(train_params)
+
+    elif train_params.params.dataset_name == 'cifar100':
+        loaded_data = cifar100.CreateDataForCifar100()
         loaded_data.make_train_test_for_cifar(train_params)
 
     elif train_params.params.dataset_name == 'inature':
