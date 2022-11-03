@@ -160,6 +160,7 @@ class import_and_train_model:
 
         print("Beginning training")
         time_begin = time()
+        lr_scheduler = LRScheduler(self.optimizer)
 
         for epoch in range(initial_epoch, epochs):
             time_begin_epoch = time()
@@ -188,9 +189,9 @@ class import_and_train_model:
             if epoch + 1 == epochs:
                 torch.save({'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
-                            'loss': test_loss,
-                            'f1': test_f1,
-                            'acc': test_acc1,
+                            'loss': train_loss,
+                            'f1': train_f1,
+                            'acc': train_acc1,
                             'epoch': epoch},
                            data_loader.checkpoint_path + '/trained_model_' + name + '_last_epoch.pth')
             else:
@@ -200,50 +201,50 @@ class import_and_train_model:
                 if (epoch + 1) % 10 == 0:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': test_loss,
-                                'f1': test_f1,
-                                'acc': test_acc1,
+                                'loss': train_loss,
+                                'f1': train_f1,
+                                'acc': train_acc1,
                                 'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '_' + str(epoch + 1) + '_epoch.pth')
                 else:
                     pass
 
             if train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 1:
-                if test_loss < best_loss or epoch == 1:
+                if train_loss < best_loss or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': test_loss,
-                                'f1': test_f1,
-                                'acc': test_acc1,
+                                'loss': train_loss,
+                                'f1': train_f1,
+                                'acc': train_acc1,
                                 'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 2:
 
-                if test_f1 > best_f1 or epoch == 1:
+                if train_f1 > best_f1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': test_loss,
-                                'f1': test_f1,
-                                'acc': test_acc1,
+                                'loss': train_loss,
+                                'f1': train_f1,
+                                'acc': train_acc1,
                                 'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 3:
-                if test_acc1 > best_acc1 or epoch == 1:
+                if train_acc1 > best_acc1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': test_loss,
+                                'loss': train_loss,
                                 'f1': test_f1,
-                                'acc': test_acc1,
+                                'acc': train_acc1,
                                 'epoch': epoch},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
             else:
                 print('Choose correct metric i.e. based on loss or acc or f1 to save the model')
 
-            best_acc1 = max(test_acc1, best_acc1)
+            best_acc1 = max(train_acc1, best_acc1)
             best_f1 = max(test_f1, best_f1)
-            best_loss = min(test_f1, best_loss)
+            best_loss = min(train_loss, best_loss)
 
             train_losses.append(train_loss)
             test_losses.append(test_loss)
@@ -266,12 +267,13 @@ class import_and_train_model:
                 np.round(total_mins, 3)))
 
             if train_main.params.run_lr_scheduler == 'yes':
-                self.lr_scheduler(test_loss)
+                self.lr_scheduler(train_loss)
 
             if train_main.params.run_early_stopping == 'yes':
-                self.early_stopping(test_loss)
+                self.early_stopping(train_loss)
                 if self.early_stopping.early_stop:
                     break
+            lr_scheduler(train_loss)
 
         total_mins = (time() - time_begin) / 60
 
@@ -1219,7 +1221,7 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
 
     for i, (images, target) in enumerate(train_loader):
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            device = torch.device("cuda:0")
+            device = torch.device("cuda:1")
         else:
             device = torch.device("cpu")
         images, target = images.to(device), target.to(device)
@@ -1248,9 +1250,9 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
         outputs.append(output)
         targets.append(target)
 
-    if modeltype == 0:
-        if train_main.params.run_lr_scheduler == 'yes':
-            lr_scheduler(loss)
+    # if modeltype == 0:
+    #     if train_main.params.run_lr_scheduler == 'yes':
+    #         lr_scheduler(loss)
 
     outputs = torch.cat(outputs)
     outputs = outputs.cpu().detach().numpy()
@@ -1273,7 +1275,7 @@ def cls_validate(train_main, val_loader, model, criterion, time_begin=None):
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
             if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-                device = torch.device("cuda:0")
+                device = torch.device("cuda:1")
             else:
                 device = torch.device("cpu")
 
@@ -1312,7 +1314,7 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
@@ -1341,7 +1343,7 @@ def cls_predict_on_unseen(test_loader, model):
     time_begin = time()
     with torch.no_grad():
         for i, (images) in enumerate(test_loader):
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
             # device = torch.device("cuda")
             # images = torch.stack(images).to(device)
             images = images.to(device)
