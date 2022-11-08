@@ -68,7 +68,7 @@ class import_and_train_model:
                 param.requires_grad = False
             i = 1
             for param in self.model.parameters():
-                if i > 812:
+                if i > 427:
                     param.requires_grad = True
                 i = i + 1
         else:
@@ -434,7 +434,7 @@ class import_and_train_model:
 
                 i = 1
                 for param in self.model.parameters():
-                    if i > 812:
+                    if i > 437:
                         param.requires_grad = True
                     i = i + 1
 
@@ -460,7 +460,7 @@ class import_and_train_model:
 
                 i = 1
                 for param in self.model.parameters():
-                    if i > 812:
+                    if i > 437:
                         param.requires_grad = True
                     i = i + 1
 
