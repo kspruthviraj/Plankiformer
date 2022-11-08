@@ -15,7 +15,7 @@ import torch.nn.functional as F
 import torch.optim
 import torch.utils.data
 from scipy.stats import gmean
-from sklearn.metrics import f1_score, accuracy_score, classification_report, mean_absolute_error, mean_squared_error, r2_score, recall_score
+from sklearn.metrics import f1_score, accuracy_score, classification_report, mean_absolute_error, mean_squared_error, r2_score, recall_score, roc_curve
 from torchvision.utils import make_grid
 import copy
 torch.manual_seed(0)
@@ -1412,3 +1412,63 @@ def extra_metrics(GT_label, Pred_label):
     weighted_recall = recall_score(GT_label, Pred_label, average='weighted')
 
     return bias, MAE, MSE, RMSE, R2, weighted_recall, df_count_Pred_GT
+
+
+def quantification(GT_label, Pred_label, Pred_prob):
+    pred_classes = np.unique(Pred_label)
+    pred_classes.sort()
+
+    train_counts_summary = {
+        'aphanizomenon': 322, 
+        'asplanchna': 679, 
+        'asterionella': 1057,
+        'bosmina': 87,
+        'brachionus': 650,
+        'ceratium': 1031,
+        'chaoborus': 14,
+        'collotheca': 257,
+        'conochilus': 264,
+        'copepod_skins': 36,
+        'cyclops': 1998,
+        'daphnia': 1973,
+        'daphnia_skins': 124,
+        'diaphanosoma': 1164,
+        'diatom_chain': 17,
+        'dinobryon': 3672,
+        'dirt': 131,
+        'eudiaptomus': 1539,
+        'filament': 405,
+        'fish': 311,
+        'fragilaria': 1309,
+        'hydra': 18,
+        'kellicottia': 519,
+        'keratella_cochlearis': 132,
+        'keratella_quadrata': 872,
+        'leptodora': 276,
+        'maybe_cyano': 1364,
+        'nauplius': 2602,
+        'paradileptus': 581,
+        'polyarthra': 127,
+        'rotifers': 1108,
+        'synchaeta': 371,
+        'trichocerca': 576,
+        'unknown': 1660,
+        'unknown_plankton': 310,
+        'uroglena': 1953
+        }
+
+    CC = []
+    AC = []
+    PCC = []
+    for i, iclass in enumerate(pred_classes):
+        class_CC = Pred_label.count(iclass) / len(Pred_label)
+        CC.append(class_CC)
+
+        FPR, TPR, _ = roc_curve(GT_label, Pred_prob[:, i], pos_label=iclass)
+        class_AC = (class_CC - FPR) / (TPR - FPR)
+        AC.append(class_AC)
+
+        class_PCC = np.average(Pred_prob[:, i])
+        PCC.append(class_PCC)
+
+    return CC, AC, PCC
