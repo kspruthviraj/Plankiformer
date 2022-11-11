@@ -59,7 +59,7 @@ class import_and_train_model:
         else:
             print('This model cannot be imported. Please check from the list of models')
 
-        device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
@@ -118,7 +118,7 @@ class import_and_train_model:
             print('This model cannot be imported. Please check from the list of models')
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            device = torch.device("cuda:1")
+            device = torch.device("cuda:0")
         else:
             device = torch.device("cpu")
 
@@ -1007,7 +1007,7 @@ class import_and_train_model:
     def initialize_model(self, train_main, test_main, data_loader, lr):
         if torch.cuda.is_available():
             if train_main.params.use_gpu == 'yes' or test_main.params.use_gpu == 'yes':
-                device = torch.device("cuda:1")
+                device = torch.device("cuda:0")
         else:
             device = torch.device("cpu")
 
@@ -1022,9 +1022,9 @@ class import_and_train_model:
             self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            torch.cuda.set_device(1)
-            self.model.cuda(1)
-            self.criterion = self.criterion.cuda(1)
+            torch.cuda.set_device(0)
+            self.model.cuda(0)
+            self.criterion = self.criterion.cuda(0)
         # Observe that all parameters are being optimized
         if train_main.params.last_layer_finetune == 'yes':
             self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
@@ -1221,7 +1221,7 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
 
     for i, (images, target) in enumerate(train_loader):
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            device = torch.device("cuda:1")
+            device = torch.device("cuda:0")
         else:
             device = torch.device("cpu")
         images, target = images.to(device), target.to(device)
@@ -1275,7 +1275,7 @@ def cls_validate(train_main, val_loader, model, criterion, time_begin=None):
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
             if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-                device = torch.device("cuda:1")
+                device = torch.device("cuda:0")
             else:
                 device = torch.device("cpu")
 
@@ -1314,7 +1314,7 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
@@ -1343,7 +1343,7 @@ def cls_predict_on_unseen(test_loader, model):
     time_begin = time()
     with torch.no_grad():
         for i, (images) in enumerate(test_loader):
-            device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
             # device = torch.device("cuda")
             # images = torch.stack(images).to(device)
             images = images.to(device)
@@ -1368,7 +1368,7 @@ def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
