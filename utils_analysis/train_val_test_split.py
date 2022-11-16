@@ -14,21 +14,21 @@ def SplitFrom_txt(datapath):
         if not os.path.exists(datapath + '/0_train/' + iclass):
             os.makedirs(datapath + '/0_train/' + iclass)
         for img in filenames_train:
-            if iclass in img:
+            if iclass + '/' in img:
                 shutil.copy(datapath + img[16:], datapath + '/0_train/' + iclass)
 
     for iclass in list_classes:
         if not os.path.exists(datapath + '/0_val/' + iclass):
             os.makedirs(datapath + '/0_val/' + iclass)
         for img in filenames_val:
-            if iclass in img:
+            if iclass + '/' in img:
                 shutil.copy(datapath + img[16:], datapath + '/0_val/' + iclass)
 
     for iclass in list_classes:
         if not os.path.exists(datapath + '/0_test/' + iclass):
             os.makedirs(datapath + '/0_test/' + iclass)
         for img in filenames_test:
-            if iclass in img:
+            if iclass + '/' in img:
                 shutil.copy(datapath + img[16:], datapath + '/0_test/' + iclass)
 
 
