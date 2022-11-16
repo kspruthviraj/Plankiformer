@@ -133,15 +133,15 @@ class LoadEnsembleParameters:
             DEIT_01_PredLabel = DEIT_model[3]
             DEIT_01_Prob = DEIT_model[4]
 
-            DEIT_01_GTLabel_sorted = np.sort(DEIT_01_GTLabel)
-            DEIT_01_GTLabel_indices = np.argsort(DEIT_01_GTLabel)
-            DEIT_01_PredLabel_sorted = DEIT_01_PredLabel[DEIT_01_GTLabel_indices]
-            DEIT_01_Prob_sorted = DEIT_01_Prob[DEIT_01_GTLabel_indices]
+            # DEIT_01_GTLabel_sorted = np.sort(DEIT_01_GTLabel)
+            # DEIT_01_GTLabel_indices = np.argsort(DEIT_01_GTLabel)
+            # DEIT_01_PredLabel_sorted = DEIT_01_PredLabel[DEIT_01_GTLabel_indices]
+            # DEIT_01_Prob_sorted = DEIT_01_Prob[DEIT_01_GTLabel_indices]
 
-            DEIT_GTLabel_sorted.append(DEIT_01_GTLabel_sorted)
-            DEIT_GTLabel_indices.append(DEIT_01_GTLabel_indices)
-            DEIT_PredLabel_sorted.append(DEIT_01_PredLabel_sorted)
-            DEIT_Prob_sorted.append(DEIT_01_Prob_sorted)
+            DEIT_GTLabel_sorted.append(DEIT_01_GTLabel)
+            # DEIT_GTLabel_indices.append(DEIT_01_GTLabel_indices)
+            DEIT_PredLabel_sorted.append(DEIT_01_PredLabel)
+            DEIT_Prob_sorted.append(DEIT_01_Prob)
 
         Ens_DEIT_label = []
         Ens_DEIT = []
