@@ -45,7 +45,7 @@ def SplitFrom_pickle(datapath, outpath, split_pickle_file):
         if not os.path.exists(outpath + '/0_train/' + iclass):
             os.makedirs(outpath + '/0_train/' + iclass)
         for img in train_filenames:
-            if iclass in img:
+            if iclass + '/' in img:
                 if not os.path.exists(datapath + '/' + img[50:]):
                     continue
                 shutil.copy(datapath + '/' + img[50:], outpath + '/0_train/' + iclass)
@@ -54,7 +54,7 @@ def SplitFrom_pickle(datapath, outpath, split_pickle_file):
         if not os.path.exists(outpath + '/0_test/' + iclass):
             os.makedirs(outpath + '/0_test/' + iclass)
         for img in test_filenames:
-            if iclass in img:
+            if iclass + '/' in img:
                 if not os.path.exists(datapath + '/' + img[50:]):
                     continue
                 shutil.copy(datapath + '/' + img[50:], outpath + '/0_test/' + iclass)
@@ -63,7 +63,7 @@ def SplitFrom_pickle(datapath, outpath, split_pickle_file):
         if not os.path.exists(outpath + '/0_val/' + iclass):
             os.makedirs(outpath + '/0_val/' + iclass)
         for img in val_filenames:
-            if iclass in img:
+            if iclass + '/' in img:
                 if not os.path.exists(datapath + '/' + img[50:]):
                     continue
                 shutil.copy(datapath + '/' + img[50:], outpath + '/0_val/' + iclass)
