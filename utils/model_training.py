@@ -522,12 +522,14 @@ class import_and_train_model:
                     self.init_train_predict(train_main, data_loader, 2)
                 else:
                     print('If you want to retrain then set "resume from saved" to "yes"')
+                    self.run_prediction(data_loader, 'finetuned')
 
             elif train_main.params.finetune == 0:
                 if not os.path.exists(model_present_path0):
                     self.train_predict(train_main, data_loader, 0)
                 else:
                     print('If you want to retrain then set "resume from saved" to "yes"')
+                    self.run_prediction(data_loader, 'original')
 
             elif train_main.params.finetune == 1:
                 if not os.path.exists(model_present_path0):
@@ -541,6 +543,7 @@ class import_and_train_model:
                     self.init_train_predict(train_main, data_loader, 1)
                 else:
                     print('If you want to retrain then set "resume from saved" to "yes"')
+                    self.run_prediction(data_loader, 'tuned')
 
         elif train_main.params.resume_from_saved == 'yes':
             if train_main.params.finetune == 0:

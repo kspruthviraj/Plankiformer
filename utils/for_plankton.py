@@ -233,11 +233,11 @@ class CreateDataForPlankton:
                                                pin_memory=True)
 
             test_dataset = CreateDataset(X=self.X_test, y=self.y_test)
-            self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
+            self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=False, num_workers=4,
                                               pin_memory=True)
 
             val_dataset = CreateDataset(X=self.X_val, y=self.y_val)
-            self.val_dataloader = DataLoader(val_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
+            self.val_dataloader = DataLoader(val_dataset, train_main.params.batch_size, shuffle=False, num_workers=4,
                                              pin_memory=True)
         elif train_main.params.test_set == 'no':
             train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.params.aug_type)
@@ -245,11 +245,11 @@ class CreateDataForPlankton:
                                                pin_memory=True)
         elif train_main.params.test_set == 'yes' and train_main.params.valid_set == 'no':
             train_dataset = AugmentedDataset(X=self.X_train, y=self.y_train, aug_type=train_main.params.aug_type)
-            self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
+            self.train_dataloader = DataLoader(train_dataset, train_main.params.batch_size, shuffle=False, num_workers=4,
                                                pin_memory=True)
 
             test_dataset = CreateDataset(X=self.X_test, y=self.y_test)
-            self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
+            self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=False, num_workers=4,
                                               pin_memory=True)
 
     def make_train_test_for_others(self, prep_data):
@@ -307,11 +307,11 @@ class CreateDataForPlankton:
                                            pin_memory=True)
 
         test_dataset = CreateDataset(X=self.X_test, y=self.y_test)
-        self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
+        self.test_dataloader = DataLoader(test_dataset, train_main.params.batch_size, shuffle=False, num_workers=4,
                                           pin_memory=True)
 
         val_dataset = CreateDataset(X=self.X_val, y=self.y_val)
-        self.val_dataloader = DataLoader(val_dataset, train_main.params.batch_size, shuffle=True, num_workers=4,
+        self.val_dataloader = DataLoader(val_dataset, train_main.params.batch_size, shuffle=False, num_workers=4,
                                          pin_memory=True)
 
 
