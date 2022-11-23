@@ -924,17 +924,17 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
-            filenames_out = im_names[0]
-            for jj in range(len(filenames_out)):
-                if GT_label[jj] == Ens_DEIT_label[jj]:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Classified/' + str(GT_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
-                else:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(
-                        GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
+            # filenames_out = im_names[0]
+            # for jj in range(len(filenames_out)):
+            #     if GT_label[jj] == Ens_DEIT_label[jj]:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Classified/' + str(GT_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
+            #     else:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(
+            #             GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
 
             ## Thresholded
 
@@ -952,20 +952,20 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
-            filenames_out = im_names[0]
-            for jj in range(len(filenames_out)):
-                if GT_label[jj] == Ens_DEIT_corrected_label[jj]:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded_' + str(
-                        test_main.params.threshold) + '/Classified/' + str(GT_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
-
-                else:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded_' + str(
-                        test_main.params.threshold) + '/Misclassified/' + str(
-                        GT_label[jj]) + '_as_' + str(Ens_DEIT_corrected_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
+            # filenames_out = im_names[0]
+            # for jj in range(len(filenames_out)):
+            #     if GT_label[jj] == Ens_DEIT_corrected_label[jj]:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded_' + str(
+            #             test_main.params.threshold) + '/Classified/' + str(GT_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
+            #
+            #     else:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded_' + str(
+            #             test_main.params.threshold) + '/Misclassified/' + str(
+            #             GT_label[jj]) + '_as_' + str(Ens_DEIT_corrected_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
 
         else:
             print('I am using default value as threshold i.e. 0')
