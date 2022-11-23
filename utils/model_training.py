@@ -850,14 +850,14 @@ class import_and_train_model:
 
             target_label = np.array([classes[target[i]] for i in range(len(target))], dtype=object)
 
-            target_label_sorted = np.sort(target_label)
-            target_label_indices = np.argsort(target_label)
-            prob_sorted = prob[target_label_indices]
-            target_sorted = target[target_label_indices]
+            # target_label_sorted = np.sort(target_label)
+            # target_label_indices = np.argsort(target_label)
+            # prob_sorted = prob[target_label_indices]
+            # target_sorted = target[target_label_indices]
 
-            Ensemble_prob.append(prob_sorted)
-            Ensemble_GT.append(target_sorted)
-            Ensemble_GT_label.append(target_label_sorted)
+            Ensemble_prob.append(prob)
+            Ensemble_GT.append(target)
+            Ensemble_GT_label.append(target_label)
 
         Ens_DEIT_prob_max = []
         Ens_DEIT_label = []

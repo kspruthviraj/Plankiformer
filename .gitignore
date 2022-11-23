@@ -1,11 +1,13 @@
+.gitignore
 __pycache__/
 utils_analysis/__pycache__/
 utils/__pycache__/
 for_plankiformer/
-.gitignore
 abundance.sh
 dataset_analysis.sh
 PCA_feature.sh
 PCA_pixel.sh
 predict.sh
 train.sh
+predict_phyto.sh
+predict_zoo.sh
