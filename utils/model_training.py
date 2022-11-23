@@ -860,7 +860,7 @@ class import_and_train_model:
 
             GT_Pred_GTLabel_PredLabel_Prob = [target, output_max, target_label, output_label, prob]
             with open(
-                    test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_Prob_' + name + str(i+1) +
+                    test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_Prob_' + name + '_' + str(i+1) +
                     '.pickle', 'wb') as cw:
                 pickle.dump(GT_Pred_GTLabel_PredLabel_Prob, cw)
 
@@ -901,7 +901,7 @@ class import_and_train_model:
         GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected = [GT, Ens_DEIT_prob_max, GT_label, Ens_DEIT_label,
                                                              Ens_DEIT_corrected_label, Ens_DEIT]
         with open(
-                test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected_' + name2 + name +
+                test_main.params.test_outpath + '/Ensemble_GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected_' + name2 + name +
                 '.pickle', 'wb') as cw:
             pickle.dump(GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected, cw)
 
