@@ -988,6 +988,26 @@ class import_and_train_model:
             df_labels = pd.DataFrame(data=[GT_label, Ens_DEIT_label])
             df_labels_rm_unknown = df_labels.drop(columns=df_labels.columns[df_labels.iloc[0] == 'unknown'])
 
+            # # for phyto  
+            # labels = np.unique(GT_label)
+            # unknown_index = np.where(labels=='unknown')[0][0]            
+            # unknown_eccentric_index = np.where(labels=='unknown_eccentric')[0][0]
+            # unknown_elongated_index = np.where(labels=='unknown_elongated')[0][0]
+            # unknown_probably_dirt_index = np.where(labels=='unknown_probably_dirt')[0][0]
+            # unrecognizable_dots_index = np.where(labels=='unrecognizable_dots')[0][0]
+            # zooplankton_index = np.where(labels=='zooplankton')[0][0]
+            
+            # labels_rm_unknown = np.delete(labels, [unknown_index, unknown_eccentric_index, unknown_elongated_index, unknown_probably_dirt_index, unrecognizable_dots_index, zooplankton_index])
+
+            # df_labels = pd.DataFrame(data=[GT_label, Ens_DEIT_label])
+            # df_labels_rm_unknown = df_labels.drop(columns=df_labels.columns[df_labels.iloc[0] == 'unknown'])
+            # df_labels_rm_unknown = df_labels_rm_unknown.drop(columns=df_labels.columns[df_labels.iloc[0] == 'unknown_eccentric'])
+            # df_labels_rm_unknown = df_labels_rm_unknown.drop(columns=df_labels.columns[df_labels.iloc[0] == 'unknown_elongated'])
+            # df_labels_rm_unknown = df_labels_rm_unknown.drop(columns=df_labels.columns[df_labels.iloc[0] == 'unknown_probably_dirt'])
+            # df_labels_rm_unknown = df_labels_rm_unknown.drop(columns=df_labels.columns[df_labels.iloc[0] == 'unrecognizable_dots'])
+            # df_labels_rm_unknown = df_labels_rm_unknown.drop(columns=df_labels.columns[df_labels.iloc[0] == 'zooplankton'])
+
+
             accuracy_rm_unknown = accuracy_score(df_labels_rm_unknown.iloc[0].tolist(), df_labels_rm_unknown.iloc[1].tolist())
             clf_report_rm_unknown = classification_report(GT_label, Ens_DEIT_label, labels=labels_rm_unknown)
             f1_rm_unknown = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=labels_rm_unknown)
