@@ -846,17 +846,23 @@ class import_and_train_model:
                                                                           time_begin=time())
 
             target = torch.cat(target)
+            output = torch.cat(output)
             prob = torch.cat(prob)
 
             prob = prob.cpu().numpy()
+            output = output.cpu().numpy()
             target = target.cpu().numpy()
 
-            target_label = np.array([classes[target[i]] for i in range(len(target))], dtype=object)
+            output_max = output.argmax(axis=1)
 
-            # target_label_sorted = np.sort(target_label)
-            # target_label_indices = np.argsort(target_label)
-            # prob_sorted = prob[target_label_indices]
-            # target_sorted = target[target_label_indices]
+            target_label = np.array([classes[target[i]] for i in range(len(target))], dtype=object)
+            output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
+
+            GT_Pred_GTLabel_PredLabel_Prob = [target, output_max, target_label, output_label, prob]
+            with open(
+                    test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_Prob_' + name + str(i+1) +
+                    '.pickle', 'wb') as cw:
+                pickle.dump(GT_Pred_GTLabel_PredLabel_Prob, cw)
 
             Ensemble_prob.append(prob)
             Ensemble_GT.append(target)
