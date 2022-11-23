@@ -1025,23 +1025,25 @@ class import_and_train_model:
                                                weight_decay=train_main.params.weight_decay)
 
     def load_model_and_run_prediction(self, train_main, test_main, data_loader):
+
         self.import_deit_models_for_testing(train_main, test_main)
+
         if test_main.params.finetuned == 0:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen(test_main, data_loader, 'original')
             else:
                 self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen(test_main, data_loader, 'tuned')
             else:
                 self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen(test_main, data_loader, 'finetuned')
             else:
@@ -1050,23 +1052,25 @@ class import_and_train_model:
             print('Choose the correct finetune label')
 
     def load_model_and_run_prediction_with_y(self, train_main, test_main, data_loader):
+
         self.import_deit_models_for_testing(train_main, test_main)
+
         if test_main.params.finetuned == 0:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'original')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
             else:

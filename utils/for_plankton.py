@@ -42,6 +42,8 @@ class CreateDataForPlankton:
             Data = pd.read_pickle(train_main.params.outpath + '/Data.pickle')
             classes = np.load(train_main.params.outpath + '/classes.npy')
             self.class_weights_tensor = torch.load(train_main.params.outpath + '/class_weights_tensor.pt')
+            self.Filenames = pd.read_pickle(train_main.params.outpath + 'Files_used_for_training_testing.pickle')
+
         # if train_main.params.saved_data == 'yes':
         #     Data = pd.read_pickle(train_main.params.outpath + '/Data.pickle')
         #     classes = np.load(train_main.params.outpath + '/classes.npy')
