@@ -319,10 +319,13 @@ class import_and_train_model:
             checkpoint = torch.load(PATH)
         else:
             checkpoint = torch.load(PATH, map_location='cpu')
+
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        avg_acc1, target, output, prob = cls_predict(data_loader.test_dataloader, self.model, self.criterion,
+        avg_acc1, target, output, prob = cls_predict(data_loader.test_dataloader,
+                                                     self.model,
+                                                     self.criterion,
                                                      time_begin=time())
 
         target = torch.cat(target)
@@ -756,7 +759,8 @@ class import_and_train_model:
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(data_loader.test_dataloader, self.model,
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(data_loader.test_dataloader,
+                                                                          self.model,
                                                                           self.criterion,
                                                                           time_begin=time())
 
@@ -781,13 +785,13 @@ class import_and_train_model:
                 if confs[i] < test_main.params.threshold:
                     output_corrected_label[i] = 'unknown'
 
-            GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob = [target, output_max, target_label, output_label,
-                                                                 output_corrected_label, prob]
+            GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected = [target, output_max, target_label, output_label,
+                                                                 prob, output_corrected_label]
             with open(
                     test_main.params.test_outpath + '/Single_GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name + '.pickle',
                     'wb') \
                     as cw:
-                pickle.dump(GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob, cw)
+                pickle.dump(GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected, cw)
 
             output_label = output_label.tolist()
 
