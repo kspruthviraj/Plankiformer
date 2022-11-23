@@ -788,9 +788,8 @@ class import_and_train_model:
             GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected = [target, output_max, target_label, output_label,
                                                                  prob, output_corrected_label]
             with open(
-                    test_main.params.test_outpath + '/Single_GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name + '.pickle',
-                    'wb') \
-                    as cw:
+                    test_main.params.test_outpath + '/Single_GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name
+                    + '.pickle', 'wb') as cw:
                 pickle.dump(GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected, cw)
 
             output_label = output_label.tolist()
@@ -893,13 +892,12 @@ class import_and_train_model:
             if Ens_confs[i] < test_main.params.threshold:
                 Ens_DEIT_corrected_label[i] = 'unknown'
 
-        GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob = [GT, Ens_DEIT_prob_max, GT_label, Ens_DEIT_label,
+        GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected = [GT, Ens_DEIT_prob_max, GT_label, Ens_DEIT_label,
                                                              Ens_DEIT_corrected_label, Ens_DEIT]
         with open(
-                test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_PredLabel_Corrected_Prob_' + name2 + name + '.pickle',
-                'wb') \
-                as cw:
-            pickle.dump(GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob, cw)
+                test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected_' + name2 + name +
+                '.pickle', 'wb') as cw:
+            pickle.dump(GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected, cw)
 
         Ens_DEIT_label = Ens_DEIT_label.tolist()
 
