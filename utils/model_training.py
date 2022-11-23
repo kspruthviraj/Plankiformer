@@ -1367,7 +1367,7 @@ def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
-            output = model(images)
+            output, x = model(images)
             outputs.append(output)
             prob = torch.nn.functional.softmax(output, dim=1)
             probs.append(prob)
