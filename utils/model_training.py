@@ -982,18 +982,18 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
-            filenames_out = im_names[0]
-            for jj in range(len(filenames_out)):
-                if GT_label[jj] == Ens_DEIT_label[jj]:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Classified/' + str(GT_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
-
-                else:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(
-                        GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
+            # filenames_out = im_names[0]
+            # for jj in range(len(filenames_out)):
+            #     if GT_label[jj] == Ens_DEIT_label[jj]:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Classified/' + str(GT_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
+            #
+            #     else:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(
+            #             GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
 
     def initialize_model(self, train_main, test_main, data_loader, lr):
         if torch.cuda.is_available():
