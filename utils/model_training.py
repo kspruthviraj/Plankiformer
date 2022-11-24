@@ -122,7 +122,7 @@ class import_and_train_model:
         else:
             device = torch.device("cpu")
 
-        # model = nn.DataParallel(model)
+        # model = nn.DataParallel(model)  # to run on multiple GPUs
         self.model.to(device)
 
         if train_main.params.last_layer_finetune == 'yes':
@@ -771,8 +771,7 @@ class import_and_train_model:
             # PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
             im_names = data_loader.Filenames
 
-            # print('im_names : {}'.format(im_names))
-            if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+            if torch.cuda.is_available():
                 checkpoint = torch.load(PATH)
             else:
                 checkpoint = torch.load(PATH, map_location='cpu')
@@ -1080,21 +1079,21 @@ class import_and_train_model:
         self.import_deit_models_for_testing(train_main, test_main)
 
         if test_main.params.finetuned == 0:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'original')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
             else:
