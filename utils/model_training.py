@@ -125,16 +125,29 @@ class import_and_train_model:
         # model = nn.DataParallel(model)
         self.model.to(device)
 
+        if train_main.params.last_layer_finetune == 'yes':
+            for param in self.model.parameters():
+                param.requires_grad = False
+            i = 1
+            for param in self.model.parameters():
+                if i > 150:
+                    param.requires_grad = True
+                i = i + 1
+        else:
+            for param in self.model.parameters():
+                param.requires_grad = True
+
         # total parameters and trainable parameters
         total_params = sum(p.numel() for p in self.model.parameters())
         print(f"{total_params:,} total parameters.")
         total_trainable_params = sum(
             p.numel() for p in self.model.parameters() if p.requires_grad)
         print(f"{total_trainable_params:,} training parameters.")
+
         class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
         self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
-        gpu_id = 1 # hard coded, but can be changed
+        gpu_id = 1
 
         if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
             torch.cuda.set_device(gpu_id)
@@ -142,14 +155,19 @@ class import_and_train_model:
             self.criterion = self.criterion.cuda(gpu_id)
 
         # Observe that all parameters are being optimized
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
-                                           weight_decay=train_main.params.weight_decay)
+
+        if train_main.params.last_layer_finetune == 'yes':
+            self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
+                                               lr=train_main.params.lr, weight_decay=train_main.params.weight_decay)
+        else:
+            self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+                                               weight_decay=train_main.params.weight_decay)
 
         # Decay LR by a factor of 0.1 every 7 epochs
         # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
         # Early stopping and lr scheduler
-
+        self.lr_scheduler = LRScheduler(self.optimizer)
         self.early_stopping = EarlyStopping()
 
     def run_training(self, train_main, data_loader, initial_epoch, epochs, lr, name, best_values, modeltype):
@@ -1035,21 +1053,21 @@ class import_and_train_model:
         self.import_deit_models_for_testing(train_main, test_main)
 
         if test_main.params.finetuned == 0:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen(test_main, data_loader, 'original')
             else:
                 self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen(test_main, data_loader, 'tuned')
             else:
                 self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen(test_main, data_loader, 'finetuned')
             else:
@@ -1062,21 +1080,21 @@ class import_and_train_model:
         self.import_deit_models_for_testing(train_main, test_main)
 
         if test_main.params.finetuned == 0:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'original')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
             else:
