@@ -316,6 +316,10 @@ class import_and_train_model:
         # classes = np.load(train_main.params.outpath + '/classes.npy')
         classes = data_loader.classes
         PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
+        im_names = data_loader.Filenames
+
+        with open(data_loader.checkpoint_path + '/file_names_' + name + '.pickle', 'wb') as b:
+            pickle.dump(im_names, b)
 
         if torch.cuda.is_available():
             checkpoint = torch.load(PATH)
