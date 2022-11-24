@@ -1,7 +1,6 @@
 import glob
 import math
 import os
-import re
 import sys
 from pathlib import Path
 
@@ -587,7 +586,8 @@ def LoadMixedData(test_features, L, resize_images, alsoImages, compute_extrafeat
 
 class Cdata:
 
-    def __init__(self, train_main, L=None, class_select=None, classifier=None, compute_extrafeat=None, resize_images=None,
+    def __init__(self, train_main, L=None, class_select=None, classifier=None, compute_extrafeat=None,
+                 resize_images=None,
                  kind='mixed', training_data=True):
         self.datapath = None
         self.Xfeat = None
