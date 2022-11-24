@@ -183,7 +183,7 @@ def step_decay(epoch):
 
 def LoadMixed(datapaths, L, class_select=None, classifier=None, resize_images=None, alsoImages=True,
               training_data=True):
-    '''
+    """
     Uses the data in datapath to create a DataFrame with images and features.
     For each class, we read a tsv file with the features. This file also contains the name of the corresponding image, which we fetch and resize.
     For each line in the tsv file, we then have all the features in the tsv, plus class name, image (as numpy array), and a binary variable stating whether the image was resized or not.
@@ -197,7 +197,7 @@ def LoadMixed(datapaths, L, class_select=None, classifier=None, resize_images=No
     training_data - flag for adding a subdirectory called training_data
     Output:
     df 		 	  - a dataframe with classname, npimage, rescaled, and all the columns contained in features.tsv
-    '''
+    """
     training_data_dir = '/training_data/' if training_data == True else '/'
 
     df = pd.DataFrame()
@@ -382,10 +382,12 @@ def LoadImage(filename, L=None, resize_images=None, show=False):
         rescaled = 0
     elif resize_images == 1:
         image, rescaled = ResizeWithProportions(image,
-                                                L)  # width and height are assumed to be the same (assertion at the beginning)
+                                                L)  # width and height are assumed to be the same (assertion at the
+        # beginning)
     elif resize_images == 2:
         image, rescaled = ResizeWithoutProportions(image,
-                                                   L)  # width and height are assumed to be the same (assertion at the beginning)
+                                                   L)  # width and height are assumed to be the same (assertion at
+        # the beginning)
     npimage = np.array(image.copy(), dtype=np.float32)
     # 	npimage = cv2.cvtColor(npimage,cv2.COLOR_GRAY2RGB) ## FOR WHOI and KAGGLE dataset
     if show:
