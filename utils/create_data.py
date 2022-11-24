@@ -1214,6 +1214,7 @@ class CTestSet_with_y:
 
         # Take care of the labels
         self.y = y
+        self.VectorizeLabels()
         self.filenames = filenames
 
         # Now the features
@@ -1442,6 +1443,17 @@ class CTestSet_with_y:
         """ Merges labels to create aggregated classes """
         raise NotImplementedError
 
+    def VectorizeLabels(self):
+        """
+        Transform labels in one-hot encoded vectors
+        This is where we will act if we decide to train with HYBRID LABELS
+        """
+        self.lb = LabelBinarizer()
+        self.y = self.lb.fit_transform(self.y.tolist())
+        if self.classifier == 'binary' or self.classifier == 'versusall':
+            self.y = np.hstack((1 - self.y, self.y))
+
+        return
 
 if __name__ == '__main__':
     pass
