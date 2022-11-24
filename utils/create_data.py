@@ -1175,7 +1175,7 @@ class CTrainTestSet:
 
 class CTestSet_with_y:
     """
-    A class for extracting train and test sets from the original dataset, and preprocessing them.
+    A class for making test dataset, and preprocessing them.
     """
 
     def __init__(self, X, y, filenames, ttkind='image', classifier=None, balance_weight=None, rescale=False,
