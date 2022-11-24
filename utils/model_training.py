@@ -117,8 +117,8 @@ class import_and_train_model:
         else:
             print('This model cannot be imported. Please check from the list of models')
 
-        if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            device = torch.device("cuda:0")
+        if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+            device = torch.device("cuda")
         else:
             device = torch.device("cpu")
 
@@ -133,8 +133,10 @@ class import_and_train_model:
         print(f"{total_trainable_params:,} training parameters.")
         class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
         self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
-        gpu_id = 1
-        if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
+
+        gpu_id = 1 # hard coded, but can be changed
+
+        if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
             torch.cuda.set_device(gpu_id)
             self.model.cuda(gpu_id)
             self.criterion = self.criterion.cuda(gpu_id)
