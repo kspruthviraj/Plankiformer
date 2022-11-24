@@ -61,16 +61,15 @@ class CreateDataset:
         classifier = train_main.params.classifier
         compute_extrafeat = train_main.params.compute_extrafeat
         resize_images = train_main.params.resize_images
-        balance_weight = train_main.params.balance_weight
         datakind = train_main.params.datakind
         training_data = train_main.params.training_data
 
         # Initialize or Load Data Structure
         if self.data is None:
-            self.data = cdata.Cdata(datapaths, L, class_select, classifier, compute_extrafeat, resize_images,
-                                    balance_weight, datakind, training_data=training_data)
+            self.data = cdata.Cdata(train_main, L, class_select, classifier, compute_extrafeat, resize_images,
+                                    datakind, training_data=training_data)
         else:
-            self.data.Load(datapaths, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
+            self.data.Load(train_main, L, class_select, classifier, compute_extrafeat, resize_images,
                            datakind, training_data=training_data)
 
         return
@@ -92,17 +91,16 @@ class CreateDataset:
         classifier = train_main.params.classifier
         compute_extrafeat = train_main.params.compute_extrafeat
         resize_images = train_main.params.resize_images
-        balance_weight = train_main.params.balance_weight
         datakind = train_main.params.datakind
         training_data = train_main.params.training_data
 
         # Initialize or Load Data Structure
         if self.data is None:
-            self.data = cdata.Cdata_with_y(classpath, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
-                                           balance_weight, datakind, training_data=training_data)
+            self.data = cdata.Cdata_with_y(test_main, L, class_select, classifier, compute_extrafeat, resize_images,
+                                           datakind, training_data=training_data)
         else:
-            self.data.Load_with_y(classpath, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
-                                  balance_weight, datakind, training_data=training_data)
+            self.data.Load_with_y(test_main, L, class_select, classifier, compute_extrafeat, resize_images,
+                                  datakind, training_data=training_data)
 
         return
 
