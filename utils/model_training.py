@@ -771,10 +771,8 @@ class import_and_train_model:
             # PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
             im_names = data_loader.Filenames
 
-            if torch.cuda.is_available():
-                checkpoint = torch.load(PATH)
-            else:
-                checkpoint = torch.load(PATH, map_location='cpu')
+            # print('im_names : {}'.format(im_names))
+            checkpoint = torch.load(PATH, map_location='cpu')
 
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -1079,21 +1077,21 @@ class import_and_train_model:
         self.import_deit_models_for_testing(train_main, test_main)
 
         if test_main.params.finetuned == 0:
-            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'original')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
-            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
-            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
             else:
@@ -1386,7 +1384,7 @@ def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
