@@ -587,11 +587,11 @@ class Cdata:
 
     def __init__(self, train_main, L=None, class_select=None, classifier=None, compute_extrafeat=None, resize_images=None,
                  kind='mixed', training_data=True):
+        self.datapath = None
         self.Xfeat = None
         self.Ximage = None
         self.filenames = None
         self.classes = None
-        self.datapath = train_main.params.datapaths
         if L is None and kind != 'feat':
             print('CData: image size needs to be set, unless kind is \'feat\'')
             raise ValueError
@@ -604,7 +604,7 @@ class Cdata:
         self.df = None
         self.y = None
         self.X = None
-        self.Load(self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat, self.resize_images,
+        self.Load(train_main, self.L, self.class_select, self.classifier, self.compute_extrafeat, self.resize_images,
                   self.kind, training_data=training_data)
         return
 
@@ -645,7 +645,7 @@ class Cdata:
 
         # 		print(self.df['classname'].unique())
         self.classes = self.df['classname'].unique()
-        print('The data path is : {}'.format(self.datapath))
+        # print('The data path is : {}'.format(self.datapath))
         self.kind = kind  # Now the data kind is kind. In most cases, we had already kind=self.kind, but if the user
         # tested another kind, it must be changed
         self.Check()  # Some sanity checks on the dataset
@@ -730,9 +730,6 @@ class Cdata_with_y:
         self.y = None
         self.X = None
 
-        # self.Load(self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat, self.resize_images,
-        #           self.balance_weight, self.kind, training_data=training_data)
-        #
         self.Load_with_y(test_main, self.L, self.class_select, self.classifier,
                          self.compute_extrafeat, self.resize_images,
                          self.kind, training_data=training_data)
@@ -745,7 +742,6 @@ class Cdata_with_y:
         For the moment, only mixed data. Later, also pure images or pure features.
         """
         self.L = L
-
         self.datapath = test_main.params.test_path
         self.classpath = test_main.params.main_param_path
         self.class_select = class_select
@@ -775,7 +771,7 @@ class Cdata_with_y:
         else:
             raise NotImplementedError('Only mixed, image or feat data-loading')
 
-        print('The class path is : {}'.format(self.classpath))
+        # print('The class path is : {}'.format(self.classpath))
         # self.classes = self.df['classname'].unique()
         self.classes = np.load(self.classpath + '/classes.npy')
         self.kind = kind  # Now the data kind is kind. In most cases, we had already kind=self.kind, but if the user

@@ -54,7 +54,6 @@ class CreateDataset:
         """
 
         # Default values
-        datapaths = train_main.params.datapaths
         L = train_main.params.L
         class_select = train_main.params.class_select  # class_select==None has the explicit
         # meaning of selecting all the classes
@@ -83,8 +82,6 @@ class CreateDataset:
         """
 
         # Default values
-        testpath = test_main.params.test_path
-        classpath = test_main.params.main_param_path
         L = train_main.params.L
         class_select = train_main.params.class_select  # class_select==None has the explicit
         # meaning of selecting all the classes
