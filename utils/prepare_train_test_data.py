@@ -54,23 +54,21 @@ class CreateDataset:
         """
 
         # Default values
-        datapaths = train_main.params.datapaths
         L = train_main.params.L
         class_select = train_main.params.class_select  # class_select==None has the explicit
         # meaning of selecting all the classes
         classifier = train_main.params.classifier
         compute_extrafeat = train_main.params.compute_extrafeat
         resize_images = train_main.params.resize_images
-        balance_weight = train_main.params.balance_weight
         datakind = train_main.params.datakind
         training_data = train_main.params.training_data
 
         # Initialize or Load Data Structure
         if self.data is None:
-            self.data = cdata.Cdata(datapaths, L, class_select, classifier, compute_extrafeat, resize_images,
-                                    balance_weight, datakind, training_data=training_data)
+            self.data = cdata.Cdata(train_main, L, class_select, classifier, compute_extrafeat, resize_images,
+                                    datakind, training_data=training_data)
         else:
-            self.data.Load(datapaths, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
+            self.data.Load(train_main, L, class_select, classifier, compute_extrafeat, resize_images,
                            datakind, training_data=training_data)
 
         return
@@ -84,25 +82,22 @@ class CreateDataset:
         """
 
         # Default values
-        testpath = test_main.params.test_path
-        classpath = test_main.params.main_param_path
         L = train_main.params.L
         class_select = train_main.params.class_select  # class_select==None has the explicit
         # meaning of selecting all the classes
         classifier = train_main.params.classifier
         compute_extrafeat = train_main.params.compute_extrafeat
         resize_images = train_main.params.resize_images
-        balance_weight = train_main.params.balance_weight
         datakind = train_main.params.datakind
         training_data = train_main.params.training_data
 
         # Initialize or Load Data Structure
         if self.data is None:
-            self.data = cdata.Cdata_with_y(classpath, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
-                                           balance_weight, datakind, training_data=training_data)
+            self.data = cdata.Cdata_with_y(test_main, L, class_select, classifier, compute_extrafeat, resize_images,
+                                           datakind, training_data=training_data)
         else:
-            self.data.Load_with_y(classpath, testpath, L, class_select, classifier, compute_extrafeat, resize_images,
-                                  balance_weight, datakind, training_data=training_data)
+            self.data.Load_with_y(test_main, L, class_select, classifier, compute_extrafeat, resize_images,
+                                  datakind, training_data=training_data)
 
         return
 
@@ -213,6 +208,9 @@ class CreateDataset:
                          self.tt.trainXfeat, [], []]
         else:
             print("Set the right data type")
+
+        with open(test_main.params.test_outpath + '/Data_test_for_debug.pickle', 'wb') as a:
+            pickle.dump(self.Data, a, protocol=4)
 
         self.Filenames = [self.tt.trainFilenames]
 

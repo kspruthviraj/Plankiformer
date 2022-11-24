@@ -59,7 +59,7 @@ class import_and_train_model:
         else:
             print('This model cannot be imported. Please check from the list of models')
 
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
@@ -122,8 +122,20 @@ class import_and_train_model:
         else:
             device = torch.device("cpu")
 
-        # model = nn.DataParallel(model)
+        # model = nn.DataParallel(model)  # to run on multiple GPUs
         self.model.to(device)
+
+        if train_main.params.last_layer_finetune == 'yes':
+            for param in self.model.parameters():
+                param.requires_grad = False
+            i = 1
+            for param in self.model.parameters():
+                if i > 150:
+                    param.requires_grad = True
+                i = i + 1
+        else:
+            for param in self.model.parameters():
+                param.requires_grad = True
 
         # total parameters and trainable parameters
         total_params = sum(p.numel() for p in self.model.parameters())
@@ -131,10 +143,11 @@ class import_and_train_model:
         total_trainable_params = sum(
             p.numel() for p in self.model.parameters() if p.requires_grad)
         print(f"{total_trainable_params:,} training parameters.")
+
         class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
         self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
-        gpu_id = 1 # hard coded, but can be changed
+        gpu_id = 1
 
         if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
             torch.cuda.set_device(gpu_id)
@@ -142,14 +155,19 @@ class import_and_train_model:
             self.criterion = self.criterion.cuda(gpu_id)
 
         # Observe that all parameters are being optimized
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
-                                           weight_decay=train_main.params.weight_decay)
+
+        if train_main.params.last_layer_finetune == 'yes':
+            self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
+                                               lr=train_main.params.lr, weight_decay=train_main.params.weight_decay)
+        else:
+            self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+                                               weight_decay=train_main.params.weight_decay)
 
         # Decay LR by a factor of 0.1 every 7 epochs
         # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
         # Early stopping and lr scheduler
-
+        self.lr_scheduler = LRScheduler(self.optimizer)
         self.early_stopping = EarlyStopping()
 
     def run_training(self, train_main, data_loader, initial_epoch, epochs, lr, name, best_values, modeltype):
@@ -316,6 +334,10 @@ class import_and_train_model:
         # classes = np.load(train_main.params.outpath + '/classes.npy')
         classes = data_loader.classes
         PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
+        im_names = data_loader.Filenames
+
+        with open(data_loader.checkpoint_path + '/file_names_' + name + '.pickle', 'wb') as b:
+            pickle.dump(im_names, b)
 
         if torch.cuda.is_available():
             checkpoint = torch.load(PATH)
@@ -750,10 +772,7 @@ class import_and_train_model:
             im_names = data_loader.Filenames
 
             # print('im_names : {}'.format(im_names))
-            if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-                checkpoint = torch.load(PATH)
-            else:
-                checkpoint = torch.load(PATH, map_location='cpu')
+            checkpoint = torch.load(PATH, map_location='cpu')
 
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -1000,7 +1019,7 @@ class import_and_train_model:
     def initialize_model(self, train_main, test_main, data_loader, lr):
         if torch.cuda.is_available():
             if train_main.params.use_gpu == 'yes' or test_main.params.use_gpu == 'yes':
-                device = torch.device("cuda:0")
+                device = torch.device("cuda")
         else:
             device = torch.device("cpu")
 
@@ -1058,21 +1077,21 @@ class import_and_train_model:
         self.import_deit_models_for_testing(train_main, test_main)
 
         if test_main.params.finetuned == 0:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'original')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
             else:
@@ -1218,7 +1237,7 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
 
     for i, (images, target) in enumerate(train_loader):
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            device = torch.device("cuda:0")
+            device = torch.device("cuda")
         else:
             device = torch.device("cpu")
         images, target = images.to(device), target.to(device)
@@ -1272,7 +1291,7 @@ def cls_validate(train_main, val_loader, model, criterion, time_begin=None):
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
             if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-                device = torch.device("cuda:0")
+                device = torch.device("cuda")
             else:
                 device = torch.device("cpu")
 
@@ -1311,7 +1330,7 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
@@ -1340,7 +1359,7 @@ def cls_predict_on_unseen(test_loader, model):
     time_begin = time()
     with torch.no_grad():
         for i, (images) in enumerate(test_loader):
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             # device = torch.device("cuda")
             # images = torch.stack(images).to(device)
             images = images.to(device)
@@ -1365,7 +1384,7 @@ def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
