@@ -537,10 +537,10 @@ def LoadImages(datapaths, L, class_select=None, classifier=None, resize_images=N
 
 
 def LoadImageList(im_names, L, resize_images, show=False):
-    '''
+    """
     Function that loads a list of images given in im_names, and returns
     them in a numpy format that can be used by the classifier.
-    '''
+    """
     npimages = np.ndarray((len(im_names), L, L, 3))
 
     for i, im_name in enumerate(im_names):
