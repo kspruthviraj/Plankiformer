@@ -60,9 +60,9 @@ class CreateDataForDogs:
         test_set = ApplyTransform(testset, transform=test_transform)
 
         self.train_dataloader = torch.utils.data.DataLoader(train_set, batch_size=train_main.params.batch_size,
-                                                            shuffle=True, num_workers=4, pin_memory=True)
+                                                            shuffle=False, num_workers=4, pin_memory=True)
         self.val_dataloader = torch.utils.data.DataLoader(val_set, batch_size=train_main.params.batch_size,
-                                                          shuffle=True, num_workers=4, pin_memory=True)
+                                                          shuffle=False, num_workers=4, pin_memory=True)
         self.test_dataloader = torch.utils.data.DataLoader(test_set, batch_size=train_main.params.batch_size,
                                                            shuffle=False, num_workers=4, pin_memory=True)
         self.checkpoint_path = train_main.params.outpath + 'trained_models/' + train_main.params.init_name + '/'
