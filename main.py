@@ -29,9 +29,7 @@ def ArgsCheck(args):
 
     if args.ttkind == 'image':
         args.compute_extrafeat = 'no'
-        print(
-            'User asked for computing extra features, but we set it to False, because we only do it for `mixed` '
-            'models')
+        print('User asked for computing extra features, but we set it to False, because we only do it for `mixed` models')
     return
 
 
@@ -52,7 +50,7 @@ class LoadInputParameters:
         return
 
     def SetParameters(self, mode='default'):
-        """ default, from args"""
+        """ default, from args """
         if mode == 'default':
             self.ReadArgs(string=None)
         elif mode == 'args':
@@ -66,7 +64,7 @@ class LoadInputParameters:
         if string is None:
             string = ""
 
-        parser = argparse.ArgumentParser(description='Create Dataset')
+        parser = argparse.ArgumentParser(description='Train a model on Zoolake2 dataset')
 
         parser.add_argument('-datapaths', nargs='*',
                             default=['./data/1_zooplankton_0p5x/training/zooplankton_trainingset_2020.04.28/'],

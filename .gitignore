@@ -11,3 +11,4 @@ predict.sh
 train.sh
 predict_phyto.sh
 predict_zoo.sh
+requirements.txt

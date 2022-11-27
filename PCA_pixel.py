@@ -23,7 +23,7 @@ def ConcactAllClasses(datapath, resized_length):
         df_class_pixel = df_class_pixel / 255
         df_class_pixel['class'] = iclass
         df_all_pixel = pd.concat([df_all_pixel, df_class_pixel], ignore_index=True)
-    
+
     return df_all_pixel
 
 
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     plt.tight_layout()
     plt.savefig(args.outpath + 'PCA_explained_variance_ratio_pixel.png')
 
-    
+
     df_train = ConcactAllClasses(args.in_distribution_datapaths[0], args.resized_length)
     df_val = ConcactAllClasses(args.in_distribution_datapaths[1], args.resized_length)
     df_test = ConcactAllClasses(args.in_distribution_datapaths[2], args.resized_length)

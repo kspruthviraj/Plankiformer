@@ -64,7 +64,7 @@ if __name__ == '__main__':
     #         fc.PlotFeatureDistribution_PCA(args.PCA_files_feature, args.outpath_feature, args.selected_components_feature, args.n_bins_feature, args.data_labels, args.image_threshold)
     #         fc.PlotGlobalHDversusBin_feature_PCA(args.PCA_files_feature, args.outpath_feature, args.explained_variance_ratio_feature, args.image_threshold)
     #         fc.GlobalHD_feature(args.PCA_files_feature, args.outpath_feature, args.n_bins_feature, args.explained_variance_ratio_feature, args.image_threshold)
-        
+
     #     elif args.feature_or_pixel == 'pixel':
     #         pc.PlotPixelDistribution_PCA(args.PCA_files_pixel, args.outpath_pixel, args.selected_components_pixel, args.n_bins_pixel, args.data_labels, args.image_threshold)
     #         pc.PlotGlobalHDversusBin_pixel_PCA(args.PCA_files_pixel, args.outpath_pixel, args.explained_variance_ratio_pixel, args.image_threshold)

@@ -22,7 +22,7 @@ def ConcactAllClasses(datapath):
         df_class_feat = f.ConcatAllFeatures(class_datapath)
         df_class_feat['class'] = iclass
         df_all_feat = pd.concat([df_all_feat, df_class_feat], ignore_index=True)
-    
+
     return df_all_feat
 
 
@@ -99,7 +99,7 @@ if __name__ == '__main__':
     plt.tight_layout()
     plt.savefig(args.outpath + 'PCA_explained_variance_ratio_feature.png')
 
-    
+
     df_train = ConcactAllClasses(args.in_distribution_datapaths[0])
     df_val = ConcactAllClasses(args.in_distribution_datapaths[1])
     df_test = ConcactAllClasses(args.in_distribution_datapaths[2])

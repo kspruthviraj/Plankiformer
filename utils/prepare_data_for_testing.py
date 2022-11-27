@@ -36,7 +36,6 @@ class CreateDataset:
         """
         Loads dataset using the function in the Cdata class.
         Acts differently in case it is the first time or not that the data is loaded
-
         The flag `training_data` is there because of how the taxonomists created the data directories. In the folders that I use for training there is an extra subfolder called `training_data`. This subfolder is absent, for example, in the validation directories.
         """
 
@@ -66,7 +65,6 @@ class CreateDataset:
         """
         Loads dataset using the function in the Cdata class.
         Acts differently in case it is the first time or not that the data is loaded
-
         The flag `training_data` is there because of how the taxonomists created the data directories. In the folders that I use for training there is an extra subfolder called `training_data`. This subfolder is absent, for example, in the validation directories.
         """
 
