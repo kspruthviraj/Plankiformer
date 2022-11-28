@@ -1,7 +1,6 @@
 import glob
 import math
 import os
-import re
 import sys
 from pathlib import Path
 
@@ -538,10 +537,10 @@ def LoadImages(datapaths, L, class_select=None, classifier=None, resize_images=N
 
 
 def LoadImageList(im_names, L, resize_images, show=False):
-    '''
+    """
     Function that loads a list of images given in im_names, and returns
     them in a numpy format that can be used by the classifier.
-    '''
+    """
     npimages = np.ndarray((len(im_names), L, L, 3))
 
     for i, im_name in enumerate(im_names):
@@ -587,7 +586,8 @@ def LoadMixedData(test_features, L, resize_images, alsoImages, compute_extrafeat
 
 class Cdata:
 
-    def __init__(self, train_main, L=None, class_select=None, classifier=None, compute_extrafeat=None, resize_images=None,
+    def __init__(self, train_main, L=None, class_select=None, classifier=None, compute_extrafeat=None,
+                 resize_images=None,
                  kind='mixed', training_data=True):
         self.datapath = None
         self.Xfeat = None
