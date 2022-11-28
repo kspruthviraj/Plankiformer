@@ -5,16 +5,18 @@
 import argparse
 import pathlib
 import sys
+from time import time
 
 import numpy as np
 
-from utils import prepare_data_for_testing as pdata_test
+import main as main_train
 from utils import for_plankton_test as fplankton_test
 from utils import model_training as mt
-import main as main_train
-from time import time
+from utils import prepare_data_for_testing as pdata_test
+
 
 time_begin = time()
+
 
 class LoadInputParameters:
     def __init__(self, initMode='default', verbose=True):

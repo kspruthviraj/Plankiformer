@@ -65,7 +65,7 @@ class import_and_train_model:
             device = torch.device("cuda:1")
         else:
             device = torch.cuda("cpu")
-        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
@@ -133,19 +133,19 @@ class import_and_train_model:
         else:
             print('This model cannot be imported. Please check from the list of models')
 
-        if torch.cuda.is_available() and train_main.params.gpu_id == 0:
+        if torch.cuda.is_available() and test_main.params.gpu_id == 0:
             device = torch.device("cuda:0")
-        elif torch.cuda.is_available() and train_main.params.gpu_id == 1:
+        elif torch.cuda.is_available() and test_main.params.gpu_id == 1:
             device = torch.device("cuda:1")
         else:
             device = torch.cuda("cpu")
 
-        # if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-        #     device = torch.device("cuda:0")
+        # if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+        #     device = torch.device("cuda")
         # else:
         #     device = torch.device("cpu")
 
-        # model = nn.DataParallel(model)
+        # model = nn.DataParallel(model)  # to run on multiple GPUs
         self.model.to(device)
 
         # total parameters and trainable parameters
@@ -157,20 +157,27 @@ class import_and_train_model:
         class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
         self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
         gpu_id = train_main.params.gpu_id
-        if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
+
+        if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
             torch.cuda.set_device(gpu_id)
             self.model.cuda(gpu_id)
             self.criterion = self.criterion.cuda(gpu_id)
 
         # Observe that all parameters are being optimized
-        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
-                                           weight_decay=train_main.params.weight_decay)
+
+        if train_main.params.last_layer_finetune == 'yes':
+            self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
+                                               lr=train_main.params.lr, weight_decay=train_main.params.weight_decay)
+        else:
+            self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+                                               weight_decay=train_main.params.weight_decay)
 
         # Decay LR by a factor of 0.1 every 7 epochs
         # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
         # Early stopping and lr scheduler
 
+        self.lr_scheduler = LRScheduler(self.optimizer)
         self.early_stopping = EarlyStopping()
 
     def run_training(self, train_main, data_loader, initial_epoch, epochs, lr, name, best_values, modeltype):
@@ -353,15 +360,22 @@ class import_and_train_model:
         # classes = np.load(train_main.params.outpath + '/classes.npy')
         classes = data_loader.classes
         PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
+        im_names = data_loader.Filenames
+
+        with open(data_loader.checkpoint_path + '/file_names_' + name + '.pickle', 'wb') as b:
+            pickle.dump(im_names, b)
 
         if torch.cuda.is_available():
             checkpoint = torch.load(PATH)
         else:
             checkpoint = torch.load(PATH, map_location='cpu')
+
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        avg_acc1, target, output, prob = cls_predict(data_loader.test_dataloader, self.model, self.criterion,
+        avg_acc1, target, output, prob = cls_predict(data_loader.test_dataloader, 
+                                                     self.model, 
+                                                     self.criterion,
                                                      time_begin=time())
 
         target = torch.cat(target)
@@ -581,13 +595,6 @@ class import_and_train_model:
                     print('If you want to retrain then set "resume from saved" to "yes"')
                     self.run_prediction(data_loader, 'finetuned')
 
-            elif train_main.params.finetune == 0:
-                if not os.path.exists(model_present_path0):
-                    self.train_predict(train_main, data_loader, 0)
-                else:
-                    print('If you want to retrain then set "resume from saved" to "yes"')
-                    self.run_prediction(data_loader, 'original')
-
             elif train_main.params.finetune == 1:
                 if not os.path.exists(model_present_path0):
                     self.train_predict(train_main, data_loader, 0)
@@ -601,6 +608,13 @@ class import_and_train_model:
                 else:
                     print('If you want to retrain then set "resume from saved" to "yes"')
                     self.run_prediction(data_loader, 'tuned')
+            
+            elif train_main.params.finetune == 0:
+                if not os.path.exists(model_present_path0):
+                    self.train_predict(train_main, data_loader, 0)
+                else:
+                    print('If you want to retrain then set "resume from saved" to "yes"')
+                    self.run_prediction(data_loader, 'original')
 
         elif train_main.params.resume_from_saved == 'yes':
             if train_main.params.finetune == 0:
@@ -802,10 +816,7 @@ class import_and_train_model:
             im_names = data_loader.Filenames
 
             # print('im_names : {}'.format(im_names))
-            if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-                checkpoint = torch.load(PATH)
-            else:
-                checkpoint = torch.load(PATH, map_location='cpu')
+            checkpoint = torch.load(PATH, map_location='cpu')
 
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -813,7 +824,8 @@ class import_and_train_model:
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(data_loader.test_dataloader, self.model,
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(data_loader.test_dataloader, 
+                                                                          self.model,
                                                                           self.criterion,
                                                                           time_begin=time())
 
@@ -838,13 +850,12 @@ class import_and_train_model:
                 if confs[i] < test_main.params.threshold:
                     output_corrected_label[i] = 'unknown'
 
-            GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob = [target, output_max, target_label, output_label,
-                                                                 output_corrected_label, prob]
+            GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected = [target, output_max, target_label, output_label,
+                                                                 prob, output_corrected_label]
             with open(
-                    test_main.params.test_outpath + '/Single_GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name + '.pickle',
-                    'wb') \
-                    as cw:
-                pickle.dump(GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob, cw)
+                    test_main.params.test_outpath + '/Single_GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob_' + name
+                    + '.pickle', 'wb') as cw:
+                pickle.dump(GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected, cw)
 
             output_label = output_label.tolist()
 
@@ -923,17 +934,23 @@ class import_and_train_model:
                                                                           time_begin=time())
 
             target = torch.cat(target)
+            output = torch.cat(output)
             prob = torch.cat(prob)
 
             prob = prob.cpu().numpy()
+            output = output.cpu().numpy()
             target = target.cpu().numpy()
 
-            target_label = np.array([classes[target[i]] for i in range(len(target))], dtype=object)
+            output_max = output.argmax(axis=1)
 
-            # target_label_sorted = np.sort(target_label)
-            # target_label_indices = np.argsort(target_label)
-            # prob_sorted = prob[target_label_indices]
-            # target_sorted = target[target_label_indices]
+            target_label = np.array([classes[target[i]] for i in range(len(target))], dtype=object)
+            output_label = np.array([classes[output_max[i]] for i in range(len(output_max))], dtype=object)
+
+            GT_Pred_GTLabel_PredLabel_Prob = [target, output_max, target_label, output_label, prob]
+            with open(
+                    test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_Prob_' + name + '_' + str(i+1) +
+                    '.pickle', 'wb') as cw:
+                pickle.dump(GT_Pred_GTLabel_PredLabel_Prob, cw)
 
             Ensemble_prob.append(prob)
             Ensemble_GT.append(target)
@@ -969,13 +986,12 @@ class import_and_train_model:
             if Ens_confs[i] < test_main.params.threshold:
                 Ens_DEIT_corrected_label[i] = 'unknown'
 
-        GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob = [GT, Ens_DEIT_prob_max, GT_label, Ens_DEIT_label,
-                                                             Ens_DEIT_corrected_label, Ens_DEIT]
+        GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected = [GT, Ens_DEIT_prob_max, GT_label, Ens_DEIT_label,
+                                                             Ens_DEIT, Ens_DEIT_corrected_label]
         with open(
-                test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_PredLabel_Corrected_Prob_' + name2 + name + '.pickle',
-                'wb') \
-                as cw:
-            pickle.dump(GT_Pred_GTLabel_PredLabel_PredLabelCorrected_Prob, cw)
+                test_main.params.test_outpath + '/Ensemble_GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected_' + name2 + name +
+                '.pickle', 'wb') as cw:
+            pickle.dump(GT_Pred_GTLabel_PredLabel_Prob_PredLabelCorrected, cw)
 
         Ens_DEIT_label = Ens_DEIT_label.tolist()
 
@@ -996,17 +1012,17 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
-            filenames_out = im_names[0]
-            for jj in range(len(filenames_out)):
-                if GT_label[jj] == Ens_DEIT_label[jj]:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Classified/' + str(GT_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
-                else:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(
-                        GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
+            # filenames_out = im_names[0]
+            # for jj in range(len(filenames_out)):
+            #     if GT_label[jj] == Ens_DEIT_label[jj]:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Classified/' + str(GT_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
+            #     else:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(
+            #             GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
 
             ## Thresholded
 
@@ -1024,20 +1040,20 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
-            filenames_out = im_names[0]
-            for jj in range(len(filenames_out)):
-                if GT_label[jj] == Ens_DEIT_corrected_label[jj]:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded_' + str(
-                        test_main.params.threshold) + '/Classified/' + str(GT_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
+            # filenames_out = im_names[0]
+            # for jj in range(len(filenames_out)):
+            #     if GT_label[jj] == Ens_DEIT_corrected_label[jj]:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded_' + str(
+            #             test_main.params.threshold) + '/Classified/' + str(GT_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
 
-                else:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded_' + str(
-                        test_main.params.threshold) + '/Misclassified/' + str(
-                        GT_label[jj]) + '_as_' + str(Ens_DEIT_corrected_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
+            #     else:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded_' + str(
+            #             test_main.params.threshold) + '/Misclassified/' + str(
+            #             GT_label[jj]) + '_as_' + str(Ens_DEIT_corrected_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
 
         else:
             print('I am using default value as threshold i.e. 0')
@@ -1098,18 +1114,18 @@ class import_and_train_model:
             fff.close()
 
 
-            filenames_out = im_names[0]
-            for jj in range(len(filenames_out)):
-                if GT_label[jj] == Ens_DEIT_label[jj]:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Classified/' + str(GT_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
+            # filenames_out = im_names[0]
+            # for jj in range(len(filenames_out)):
+            #     if GT_label[jj] == Ens_DEIT_label[jj]:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Classified/' + str(GT_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
 
-                else:
-                    dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(
-                        GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
-                    Path(dest_path).mkdir(parents=True, exist_ok=True)
-                    shutil.copy(filenames_out[jj], dest_path)
+            #     else:
+            #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(
+            #             GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
+            #         Path(dest_path).mkdir(parents=True, exist_ok=True)
+            #         shutil.copy(filenames_out[jj], dest_path)
 
     def initialize_model(self, train_main, test_main, data_loader, lr):
         if torch.cuda.is_available():
@@ -1118,6 +1134,7 @@ class import_and_train_model:
                     device = torch.device("cuda:0")
                 elif train_main.params.gpu_id == 1:
                     device = torch.device("cuda:1")
+                # device = torch.device("cuda")
         else:
             device = torch.device("cpu")
 
@@ -1144,7 +1161,9 @@ class import_and_train_model:
                                                weight_decay=train_main.params.weight_decay)
 
     def load_model_and_run_prediction(self, train_main, test_main, data_loader):
+
         self.import_deit_models_for_testing(train_main, test_main)
+
         if test_main.params.finetuned == 0:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
@@ -1169,23 +1188,25 @@ class import_and_train_model:
             print('Choose the correct finetune label')
 
     def load_model_and_run_prediction_with_y(self, train_main, test_main, data_loader):
+
         self.import_deit_models_for_testing(train_main, test_main)
+
         if test_main.params.finetuned == 0:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'original')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
-            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
             else:
@@ -1335,6 +1356,7 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
                 device = torch.device("cuda:0")
             elif train_main.params.gpu_id == 1:
                 device = torch.device("cuda:1")
+            # device = torch.device("cuda")
         else:
             device = torch.device("cpu")
         images, target = images.to(device), target.to(device)
@@ -1392,6 +1414,7 @@ def cls_validate(train_main, val_loader, model, criterion, time_begin=None):
                     device = torch.device("cuda:0")
                 elif train_main.params.gpu_id == 1:
                     device = torch.device("cuda:1")
+                # device = torch.device("cuda")
             else:
                 device = torch.device("cpu")
 
@@ -1430,7 +1453,7 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
@@ -1459,7 +1482,7 @@ def cls_predict_on_unseen(test_loader, model):
     time_begin = time()
     with torch.no_grad():
         for i, (images) in enumerate(test_loader):
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             # device = torch.device("cuda")
             # images = torch.stack(images).to(device)
             images = images.to(device)
@@ -1484,7 +1507,7 @@ def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 

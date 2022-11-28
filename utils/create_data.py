@@ -1,7 +1,6 @@
 import glob
 import math
 import os
-import re
 import sys
 from pathlib import Path
 
@@ -183,7 +182,7 @@ def step_decay(epoch):
 
 def LoadMixed(datapaths, L, class_select=None, classifier=None, resize_images=None, alsoImages=True,
               training_data=True):
-    '''
+    """
     Uses the data in datapath to create a DataFrame with images and features.
     For each class, we read a tsv file with the features. This file also contains the name of the corresponding image, which we fetch and resize.
     For each line in the tsv file, we then have all the features in the tsv, plus class name, image (as numpy array), and a binary variable stating whether the image was resized or not.
@@ -197,7 +196,7 @@ def LoadMixed(datapaths, L, class_select=None, classifier=None, resize_images=No
     training_data - flag for adding a subdirectory called training_data
     Output:
     df 		 	  - a dataframe with classname, npimage, rescaled, and all the columns contained in features.tsv
-    '''
+    """
     training_data_dir = '/training_data/' if training_data == True else '/'
 
     df = pd.DataFrame()
@@ -536,10 +535,10 @@ def LoadImages(datapaths, L, class_select=None, classifier=None, resize_images=N
 
 
 def LoadImageList(im_names, L, resize_images, show=False):
-    '''
+    """
     Function that loads a list of images given in im_names, and returns
     them in a numpy format that can be used by the classifier.
-    '''
+    """
     npimages = np.ndarray((len(im_names), L, L, 3))
 
     for i, im_name in enumerate(im_names):
@@ -585,13 +584,14 @@ def LoadMixedData(test_features, L, resize_images, alsoImages, compute_extrafeat
 
 class Cdata:
 
-    def __init__(self, datapath, L=None, class_select=None, classifier=None, compute_extrafeat=None, resize_images=None,
-                 balance_weight=None, kind='mixed', training_data=True):
+    def __init__(self, train_main, L=None, class_select=None, classifier=None, compute_extrafeat=None, 
+                 resize_images=None,
+                 kind='mixed', training_data=True):
+        self.datapath = None
         self.Xfeat = None
         self.Ximage = None
         self.filenames = None
         self.classes = None
-        self.datapath = datapath
         if L is None and kind != 'feat':
             print('CData: image size needs to be set, unless kind is \'feat\'')
             raise ValueError
@@ -600,23 +600,22 @@ class Cdata:
         self.classifier = classifier
         self.compute_extrafeat = compute_extrafeat
         self.resize_images = resize_images
-        self.balance_weight = balance_weight
         self.kind = kind
         self.df = None
         self.y = None
         self.X = None
-        self.Load(self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat, self.resize_images,
-                  self.balance_weight, self.kind, training_data=training_data)
+        self.Load(train_main, self.L, self.class_select, self.classifier, self.compute_extrafeat, self.resize_images,
+                  self.kind, training_data=training_data)
         return
 
-    def Load(self, datapaths, L, class_select, classifier, compute_extrafeat, resize_images, balance_weight,
-             kind='mixed', training_data=True):
+    def Load(self, train_main, L, class_select, classifier, compute_extrafeat, resize_images, kind='mixed',
+             training_data=True):
         """
         Loads dataset
         For the moment, only mixed data. Later, also pure images or pure features.
         """
         self.L = L
-        self.datapath = datapaths
+        self.datapath = train_main.params.datapaths
         self.class_select = class_select
         self.kind = kind
         self.classifier = classifier
@@ -624,19 +623,19 @@ class Cdata:
         self.resize_images = resize_images
 
         if kind == 'mixed':
-            self.df = LoadMixed(datapaths, L, class_select, classifier, resize_images, alsoImages=True)
+            self.df = LoadMixed(self.datapath, L, class_select, classifier, resize_images, alsoImages=True)
             if compute_extrafeat == 'yes':
                 dfExtraFeat = compute_extrafeat_function(self.df)
                 self.df = pd.concat([self.df, dfExtraFeat], axis=1)
 
         elif kind == 'feat':
-            self.df = LoadMixed(datapaths, L, class_select, classifier, resize_images, alsoImages=False)
+            self.df = LoadMixed(self.datapath, L, class_select, classifier, resize_images, alsoImages=False)
             if compute_extrafeat == 'yes':
                 dfExtraFeat = compute_extrafeat_function(self.df)
                 self.df = pd.concat([self.df, dfExtraFeat], axis=1)
 
         elif kind == 'image':
-            self.df = LoadImages(datapaths, L, class_select, classifier, resize_images, training_data=training_data)
+            self.df = LoadImages(self.datapath, L, class_select, classifier, resize_images, training_data=training_data)
             if compute_extrafeat == 'yes':
                 dfExtraFeat = compute_extrafeat_function(self.df)
                 self.df = pd.concat([self.df, dfExtraFeat], axis=1)
@@ -646,7 +645,7 @@ class Cdata:
 
         # 		print(self.df['classname'].unique())
         self.classes = self.df['classname'].unique()
-        print('The data path is : {}'.format(self.datapath))
+        # print('The data path is : {}'.format(self.datapath))
         self.kind = kind  # Now the data kind is kind. In most cases, we had already kind=self.kind, but if the user
         # tested another kind, it must be changed
         self.Check()  # Some sanity checks on the dataset
@@ -710,14 +709,14 @@ class Cdata:
 
 class Cdata_with_y:
 
-    def __init__(self, classpath, datapath, L=None, class_select=None, classifier=None, compute_extrafeat=None,
-                 resize_images=None, balance_weight=None, kind='mixed', training_data=True):
+    def __init__(self, test_main, L=None, class_select=None, classifier=None, compute_extrafeat=None,
+                 resize_images=None, kind='mixed', training_data=True):
+        self.classpath = None
+        self.datapath = None
         self.Xfeat = None
         self.Ximage = None
         self.filenames = None
         self.classes = None
-        self.datapath = datapath
-        self.classpath = classpath
         if L is None and kind != 'feat':
             print('CData: image size needs to be set, unless kind is \'feat\'')
             raise ValueError
@@ -726,49 +725,45 @@ class Cdata_with_y:
         self.classifier = classifier
         self.compute_extrafeat = compute_extrafeat
         self.resize_images = resize_images
-        self.balance_weight = balance_weight
         self.kind = kind
         self.df = None
         self.y = None
         self.X = None
 
-        # self.Load(self.datapath, self.L, self.class_select, self.classifier, self.compute_extrafeat, self.resize_images,
-        #           self.balance_weight, self.kind, training_data=training_data)
-        #
-        self.Load_with_y(self.classpath, self.datapath, self.L, self.class_select, self.classifier,
-                         self.compute_extrafeat, self.resize_images,
-                         self.balance_weight, self.kind, training_data=training_data)
+        self.Load_with_y(test_main, self.L, self.class_select, self.classifier, 
+                         self.compute_extrafeat, self.resize_images, 
+                         self.kind, training_data=training_data)
         return
 
-    def Load_with_y(self, classpaths, datapaths, L, class_select, classifier, compute_extrafeat, resize_images,
-                    balance_weight, kind='mixed', training_data=True):
+    def Load_with_y(self, test_main, L, class_select, classifier, compute_extrafeat, resize_images,
+                    kind='mixed', training_data=True):
         """
         Loads dataset
         For the moment, only mixed data. Later, also pure images or pure features.
         """
         self.L = L
-        self.datapath = datapaths
+        self.datapath = test_main.params.test_path
+        self.classpath = test_main.params.main_param_path
         self.class_select = class_select
         self.kind = kind
         self.classifier = classifier
         self.compute_extrafeat = compute_extrafeat
         self.resize_images = resize_images
-        self.classpath = classpaths
 
         if kind == 'mixed':
-            self.df = LoadMixed(datapaths, L, class_select, classifier, resize_images, alsoImages=True)
+            self.df = LoadMixed(self.datapath, L, class_select, classifier, resize_images, alsoImages=True)
             if compute_extrafeat == 'yes':
                 dfExtraFeat = compute_extrafeat_function(self.df)
                 self.df = pd.concat([self.df, dfExtraFeat], axis=1)
 
         elif kind == 'feat':
-            self.df = LoadMixed(datapaths, L, class_select, classifier, resize_images, alsoImages=False)
+            self.df = LoadMixed(self.datapath, L, class_select, classifier, resize_images, alsoImages=False)
             if compute_extrafeat == 'yes':
                 dfExtraFeat = compute_extrafeat_function(self.df)
                 self.df = pd.concat([self.df, dfExtraFeat], axis=1)
 
         elif kind == 'image':
-            self.df = LoadImages(datapaths, L, class_select, classifier, resize_images, training_data=training_data)
+            self.df = LoadImages(self.datapath, L, class_select, classifier, resize_images, training_data=training_data)
             if compute_extrafeat == 'yes':
                 dfExtraFeat = compute_extrafeat_function(self.df)
                 self.df = pd.concat([self.df, dfExtraFeat], axis=1)
@@ -776,7 +771,7 @@ class Cdata_with_y:
         else:
             raise NotImplementedError('Only mixed, image or feat data-loading')
 
-        print('The class path is : {}'.format(self.classpath))
+        # print('The class path is : {}'.format(self.classpath))
         # self.classes = self.df['classname'].unique()
         self.classes = np.load(self.classpath + '/classes.npy')
         self.kind = kind  # Now the data kind is kind. In most cases, we had already kind=self.kind, but if the user
@@ -1175,7 +1170,7 @@ class CTrainTestSet:
 
 class CTestSet_with_y:
     """
-    A class for extracting train and test sets from the original dataset, and preprocessing them.
+    A class for making test dataset, and preprocessing them.
     """
 
     def __init__(self, X, y, filenames, ttkind='image', classifier=None, balance_weight=None, rescale=False,
