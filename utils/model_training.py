@@ -59,7 +59,12 @@ class import_and_train_model:
         else:
             print('This model cannot be imported. Please check from the list of models')
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if torch.cuda.is_available():
+            device = torch.device("cuda:" + str(train_main.params.gpu_id))
+        else:
+            device = torch.device("cpu")
+
+        # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
@@ -118,7 +123,7 @@ class import_and_train_model:
             print('This model cannot be imported. Please check from the list of models')
 
         if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-            device = torch.device("cuda")
+            device = torch.device("cuda:" + str(train_main.params.gpu_id))
         else:
             device = torch.device("cpu")
 
@@ -147,12 +152,10 @@ class import_and_train_model:
         class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
         self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
-        gpu_id = 1
-
         if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-            torch.cuda.set_device(gpu_id)
-            self.model.cuda(gpu_id)
-            self.criterion = self.criterion.cuda(gpu_id)
+            torch.cuda.set_device(train_main.params.gpu_id)
+            self.model.cuda(train_main.params.gpu_id)
+            self.criterion = self.criterion.cuda(train_main.params.gpu_id)
 
         # Observe that all parameters are being optimized
 
@@ -330,7 +333,7 @@ class import_and_train_model:
 
         plt.savefig(data_loader.checkpoint_path + '/performance_curves_' + name + '.png')
 
-    def run_prediction(self, data_loader, name):
+    def run_prediction(self, train_main, data_loader, name):
         # classes = np.load(train_main.params.outpath + '/classes.npy')
         classes = data_loader.classes
         PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
@@ -347,7 +350,7 @@ class import_and_train_model:
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        avg_acc1, target, output, prob = cls_predict(data_loader.test_dataloader,
+        avg_acc1, target, output, prob = cls_predict(train_main, data_loader.test_dataloader,
                                                      self.model,
                                                      self.criterion,
                                                      time_begin=time())
@@ -390,7 +393,7 @@ class import_and_train_model:
             PATH = data_loader.checkpoint_path + 'trained_model_finetuned.pth'
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            checkpoint = torch.load(PATH)
+            checkpoint = torch.load(PATH, map_location="cuda:" + str(train_main.params.gpu_id))
         else:
             checkpoint = torch.load(PATH, map_location='cpu')
 
@@ -413,7 +416,7 @@ class import_and_train_model:
             PATH = data_loader.checkpoint_path + 'trained_model_finetuned.pth'
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            checkpoint = torch.load(PATH)
+            checkpoint = torch.load(PATH, map_location="cuda:" + str(train_main.params.gpu_id))
         else:
             checkpoint = torch.load(PATH, map_location='cpu')
 
@@ -449,7 +452,7 @@ class import_and_train_model:
                                   data_loader=data_loader, lr=train_main.params.lr)
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.epochs,
                               train_main.params.lr, "original", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'original')
+            self.run_prediction(train_main, data_loader, 'original')
 
         elif modeltype == 1:
             self.initialize_model(train_main=train_main, test_main=None,
@@ -475,7 +478,7 @@ class import_and_train_model:
 
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.finetune_lr, "tuned", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'tuned')
+            self.run_prediction(train_main, data_loader, 'tuned')
 
         elif modeltype == 2:
             self.initialize_model(train_main=train_main, test_main=None,
@@ -501,23 +504,23 @@ class import_and_train_model:
 
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.finetune_lr / 10, "finetuned", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'finetuned')
+            self.run_prediction(train_main, data_loader, 'finetuned')
 
     def train_predict(self, train_main, data_loader, modeltype):
         if modeltype == 0:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.epochs,
                               train_main.params.lr, "original", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'original')
+            self.run_prediction(train_main, data_loader, 'original')
 
         elif modeltype == 1:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.finetune_lr, "tuned", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'tuned')
+            self.run_prediction(train_main, data_loader, 'tuned')
 
         elif modeltype == 2:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.finetune_lr / 10, "finetuned", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'finetuned')
+            self.run_prediction(train_main, data_loader, 'finetuned')
 
     def train_and_save(self, train_main, data_loader):
         model_present_path0 = data_loader.checkpoint_path + 'trained_model_original.pth'
@@ -549,7 +552,7 @@ class import_and_train_model:
                     self.init_train_predict(train_main, data_loader, 2)
                 else:
                     print('If you want to retrain then set "resume from saved" to "yes"')
-                    self.run_prediction(data_loader, 'finetuned')
+                    self.run_prediction(train_main, data_loader, 'finetuned')
 
             elif train_main.params.finetune == 1:
                 if not os.path.exists(model_present_path0):
@@ -563,14 +566,14 @@ class import_and_train_model:
                     self.init_train_predict(train_main, data_loader, 1)
                 else:
                     print('If you want to retrain then set "resume from saved" to "yes"')
-                    self.run_prediction(data_loader, 'tuned')
+                    self.run_prediction(train_main, data_loader, 'tuned')
 
             elif train_main.params.finetune == 0:
                 if not os.path.exists(model_present_path0):
                     self.train_predict(train_main, data_loader, 0)
                 else:
                     print('If you want to retrain then set "resume from saved" to "yes"')
-                    self.run_prediction(data_loader, 'original')
+                    self.run_prediction(train_main, data_loader, 'original')
 
         elif train_main.params.resume_from_saved == 'yes':
             if train_main.params.finetune == 0:
@@ -633,16 +636,17 @@ class import_and_train_model:
             im_names = data_loader.Filenames
 
             if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-                checkpoint = torch.load(PATH)
+                checkpoint = torch.load(PATH, map_location="cuda:" + str(test_main.params.gpu_id))
             else:
                 checkpoint = torch.load(PATH, map_location='cpu')
+
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
+            output, prob = cls_predict_on_unseen(test_main, data_loader.test_dataloader, self.model)
 
             output = torch.cat(output)
             prob = torch.cat(prob)
@@ -693,9 +697,10 @@ class import_and_train_model:
             checkpoint_path = test_main.params.model_path[i]
             PATH = checkpoint_path + '/trained_model_' + name + '.pth'
             if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-                checkpoint = torch.load(PATH)
+                checkpoint = torch.load(PATH, map_location="cuda:" + str(test_main.params.gpu_id))
             else:
                 checkpoint = torch.load(PATH, map_location='cpu')
+
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
@@ -780,7 +785,7 @@ class import_and_train_model:
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(data_loader.test_dataloader,
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(test_main, data_loader.test_dataloader,
                                                                           self.model,
                                                                           self.criterion,
                                                                           time_begin=time())
@@ -854,7 +859,12 @@ class import_and_train_model:
             # if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
             #     checkpoint = torch.load(PATH)
             # else:
-            checkpoint = torch.load(PATH, map_location='cpu')
+            if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+                checkpoint = torch.load(PATH, map_location="cuda:" + str(test_main.params.gpu_id))
+            else:
+                checkpoint = torch.load(PATH, map_location='cpu')
+
+            # checkpoint = torch.load(PATH, map_location='cpu')
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
@@ -1017,9 +1027,9 @@ class import_and_train_model:
             #         shutil.copy(filenames_out[jj], dest_path)
 
     def initialize_model(self, train_main, test_main, data_loader, lr):
-        if torch.cuda.is_available():
-            if train_main.params.use_gpu == 'yes' or test_main.params.use_gpu == 'yes':
-                device = torch.device("cuda")
+
+        if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
+            device = torch.device("cuda:" + str(test_main.params.gpu_id))
         else:
             device = torch.device("cpu")
 
@@ -1034,9 +1044,21 @@ class import_and_train_model:
             self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            torch.cuda.set_device(0)
-            self.model.cuda(0)
-            self.criterion = self.criterion.cuda(0)
+            if test_main is None:
+                if torch.cuda.is_available():
+                    torch.cuda.set_device(train_main.params.gpu_id)
+                    self.model.cuda(train_main.params.gpu_id)
+                    self.criterion = self.criterion.cuda(train_main.params.gpu_id)
+            else:
+                if torch.cuda.is_available():
+                    torch.cuda.set_device(test_main.params.gpu_id)
+                    self.model.cuda(test_main.params.gpu_id)
+                    self.criterion = self.criterion.cuda(test_main.params.gpu_id)
+
+        # if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
+        #     torch.cuda.set_device(0)
+        #     self.model.cuda(0)
+        #     self.criterion = self.criterion.cuda(0)
         # Observe that all parameters are being optimized
         if train_main.params.last_layer_finetune == 'yes':
             self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
@@ -1236,10 +1258,12 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
     lr_scheduler = LRScheduler(optimizer)
 
     for i, (images, target) in enumerate(train_loader):
+
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            device = torch.device("cuda")
+            device = torch.device("cuda:" + str(train_main.params.gpu_id))
         else:
             device = torch.device("cpu")
+
         images, target = images.to(device), target.to(device)
 
         if train_main.params.run_cnn_or_on_colab == 'yes':
@@ -1291,7 +1315,7 @@ def cls_validate(train_main, val_loader, model, criterion, time_begin=None):
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
             if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-                device = torch.device("cuda")
+                device = torch.device("cuda:" + str(train_main.params.gpu_id))
             else:
                 device = torch.device("cpu")
 
@@ -1321,7 +1345,7 @@ def cls_validate(train_main, val_loader, model, criterion, time_begin=None):
     return avg_acc1, avg_loss, outputs, targets, total_mins
 
 
-def cls_predict(val_loader, model, criterion, time_begin=None):
+def cls_predict(train_main, val_loader, model, criterion, time_begin=None):
     model.eval()
     loss_val, acc1_val = 0, 0
     n = 0
@@ -1330,7 +1354,12 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+            if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
+                device = torch.device("cuda:" + str(train_main.params.gpu_id))
+            else:
+                device = torch.device("cpu")
+
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
@@ -1352,14 +1381,20 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
     return avg_acc1, targets, outputs, probs
 
 
-def cls_predict_on_unseen(test_loader, model):
+def cls_predict_on_unseen(test_main, test_loader, model):
     model.eval()
     outputs = []
     probs = []
     time_begin = time()
     with torch.no_grad():
         for i, (images) in enumerate(test_loader):
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+            if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+                device = torch.device("cuda:" + str(test_main.params.gpu_id))
+            else:
+                device = torch.device("cpu")
+
+            # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             # device = torch.device("cuda")
             # images = torch.stack(images).to(device)
             images = images.to(device)
@@ -1375,7 +1410,7 @@ def cls_predict_on_unseen(test_loader, model):
     return outputs, probs
 
 
-def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
+def cls_predict_on_unseen_with_y(test_main, val_loader, model, criterion, time_begin=None):
     model.eval()
     loss_val, acc1_val = 0, 0
     n = 0
@@ -1384,7 +1419,12 @@ def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+                device = torch.device("cuda:" + str(test_main.params.gpu_id))
+            else:
+                device = torch.device("cpu")
+
+            # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 

@@ -371,9 +371,9 @@ def LoadMixed(datapaths, L, class_select=None, classifier=None, resize_images=No
 
 
 def LoadImage(filename, L=None, resize_images=None, show=False):
-    ''' Loads one image, and rescales it to size L.
-    The pixel values are between 0 and 255, instead of between 0 and 1, so they should be normalized outside of the function
-    '''
+    """ Loads one image, and rescales it to size L. The pixel values are between 0 and 255, instead of between 0 and
+    1, so they should be normalized outside the function
+    """
 
     image = Image.open(filename)
     # Set image's largest dimension to target size, and fill the rest with black pixels
