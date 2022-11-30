@@ -1,8 +1,7 @@
+import copy
 import math
 import os
 import pickle
-import shutil
-from pathlib import Path
 from time import time
 
 import matplotlib.pyplot as plt
@@ -11,13 +10,12 @@ import pandas as pd
 import timm
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim
 import torch.utils.data
 from scipy.stats import gmean
 from sklearn.metrics import f1_score, accuracy_score, classification_report
 from torchvision.utils import make_grid
-import copy
+
 torch.manual_seed(0)
 
 

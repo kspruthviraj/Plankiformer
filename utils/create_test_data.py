@@ -1,7 +1,6 @@
 import glob
 import math
 import os
-import re
 import sys
 from pathlib import Path
 
@@ -9,10 +8,9 @@ import cv2
 import numpy as np
 import pandas as pd
 from PIL import Image
+
+
 # import the necessary packages
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelBinarizer
-from sklearn.utils.class_weight import compute_class_weight  # Added by SK
 
 
 def compute_extrafeat_function(df):
