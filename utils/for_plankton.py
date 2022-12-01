@@ -369,7 +369,7 @@ class AugmentedDataset(Dataset):
     #         T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3), scale=(0.5, 0.9)),
     #         T.ToTensor()])
     # transform1_y = T.Compose([T.ToTensor()])
-
+    #
     # transform2 = T.Compose([
     #         T.ToPILImage(),
     #         T.Resize(224),

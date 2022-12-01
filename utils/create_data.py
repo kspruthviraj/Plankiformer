@@ -371,20 +371,18 @@ def LoadMixed(datapaths, L, class_select=None, classifier=None, resize_images=No
 
 
 def LoadImage(filename, L=None, resize_images=None, show=False):
-    ''' Loads one image, and rescales it to size L.
-    The pixel values are between 0 and 255, instead of between 0 and 1, so they should be normalized outside of the function
-    '''
+    """ Loads one image, and rescales it to size L. The pixel values are between 0 and 255, instead of between 0 and
+    1, so they should be normalized outside the function
+    """
 
     image = Image.open(filename)
     # Set image's largest dimension to target size, and fill the rest with black pixels
     if resize_images == 0 or resize_images is None:
         rescaled = 0
     elif resize_images == 1:
-        image, rescaled = ResizeWithProportions(image,
-                                                L)  # width and height are assumed to be the same (assertion at the beginning)
+        image, rescaled = ResizeWithProportions(image, L)  # width and height are assumed to be the same (assertion at the beginning)
     elif resize_images == 2:
-        image, rescaled = ResizeWithoutProportions(image,
-                                                   L)  # width and height are assumed to be the same (assertion at the beginning)
+        image, rescaled = ResizeWithoutProportions(image, L)  # width and height are assumed to be the same (assertion at the beginning)
     npimage = np.array(image.copy(), dtype=np.float32)
     # 	npimage = cv2.cvtColor(npimage,cv2.COLOR_GRAY2RGB) ## FOR WHOI and KAGGLE dataset
     if show:
@@ -584,7 +582,7 @@ def LoadMixedData(test_features, L, resize_images, alsoImages, compute_extrafeat
 
 class Cdata:
 
-    def __init__(self, train_main, L=None, class_select=None, classifier=None, compute_extrafeat=None, 
+    def __init__(self, train_main, L=None, class_select=None, classifier=None, compute_extrafeat=None,
                  resize_images=None,
                  kind='mixed', training_data=True):
         self.datapath = None
@@ -730,8 +728,8 @@ class Cdata_with_y:
         self.y = None
         self.X = None
 
-        self.Load_with_y(test_main, self.L, self.class_select, self.classifier, 
-                         self.compute_extrafeat, self.resize_images, 
+        self.Load_with_y(test_main, self.L, self.class_select, self.classifier,
+                         self.compute_extrafeat, self.resize_images,
                          self.kind, training_data=training_data)
         return
 

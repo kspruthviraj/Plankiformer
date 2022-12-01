@@ -1,8 +1,7 @@
+import copy
 import math
 import os
 import pickle
-import shutil
-from pathlib import Path
 from time import time
 
 import matplotlib.pyplot as plt
@@ -11,17 +10,13 @@ import pandas as pd
 import timm
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim
 import torch.utils.data
 from scipy.stats import gmean
 from sklearn.metrics import f1_score, accuracy_score, classification_report, mean_absolute_error, mean_squared_error, r2_score, recall_score, roc_curve
 from torchvision.utils import make_grid
-import copy
+
 torch.manual_seed(0)
-
-
-# import streamlit as st
 
 
 class import_and_train_model:
@@ -53,9 +48,6 @@ class import_and_train_model:
         if train_main.params.architecture == 'deit':
             self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
                                            num_classes=len(np.unique(classes)))
-        # elif train_main.params.architecture == 'cnn':
-        #     self.model = timm.create_model('tf_efficientnet_b7', pretrained=True,
-        #                                    num_classes=len(np.unique(classes)))
         elif train_main.params.architecture == 'efficientnet':
             self.model = timm.create_model('tf_efficientnet_b7', pretrained=True,
                                            num_classes=len(np.unique(classes)))
@@ -74,25 +66,16 @@ class import_and_train_model:
         else:
             print('This model cannot be imported. Please check from the list of models')
 
-        if torch.cuda.is_available() and train_main.params.gpu_id == 0:
-            device = torch.device("cuda:0")
-        elif torch.cuda.is_available() and train_main.params.gpu_id == 1:
-            device = torch.device("cuda:1")
+        if torch.cuda.is_available():
+            device = torch.device("cuda:" + str(train_main.params.gpu_id))
         else:
-            device = torch.cuda("cpu")
+            device = torch.device("cpu")
+
         # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         # model = nn.DataParallel(model) # to run on multiple GPUs
         self.model.to(device)
 
         if train_main.params.last_layer_finetune == 'yes':
-            # for param in self.model.parameters():
-            #     param.requires_grad = False
-            # i = 1
-            # for param in self.model.parameters():
-            #     if i > 709:
-            #         param.requires_grad = True
-            #     i = i + 1
-
             n_layer = 0
             for param in self.model.parameters():
                 n_layer += 1
@@ -142,9 +125,6 @@ class import_and_train_model:
         if train_main.params.architecture == 'deit':
             self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
                                            num_classes=len(np.unique(classes)))
-        # elif train_main.params.architecture == 'cnn':
-        #     self.model = timm.create_model('tf_efficientnet_b7', pretrained=True,
-        #                                    num_classes=len(np.unique(classes)))
         elif train_main.params.architecture == 'efficientnet':
             self.model = timm.create_model('tf_efficientnet_b7', pretrained=True,
                                            num_classes=len(np.unique(classes)))
@@ -163,20 +143,27 @@ class import_and_train_model:
         else:
             print('This model cannot be imported. Please check from the list of models')
 
-        if torch.cuda.is_available() and test_main.params.gpu_id == 0:
-            device = torch.device("cuda:0")
-        elif torch.cuda.is_available() and test_main.params.gpu_id == 1:
-            device = torch.device("cuda:1")
+        if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+            device = torch.device("cuda:" + str(test_main.params.gpu_id))
         else:
-            device = torch.cuda("cpu")
-
-        # if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-        #     device = torch.device("cuda")
-        # else:
-        #     device = torch.device("cpu")
+            device = torch.device("cpu")
 
         # model = nn.DataParallel(model)  # to run on multiple GPUs
         self.model.to(device)
+
+        if train_main.params.last_layer_finetune == 'yes':
+            n_layer = 0
+            for param in self.model.parameters():
+                n_layer += 1
+                param.requires_grad = False
+
+            for i, param in enumerate(self.model.parameters()):
+                if i + 1 > n_layer - 2: 
+                    param.requires_grad = True
+
+        else:
+            for param in self.model.parameters():
+                param.requires_grad = True
 
         # total parameters and trainable parameters
         total_params = sum(p.numel() for p in self.model.parameters())
@@ -184,14 +171,14 @@ class import_and_train_model:
         total_trainable_params = sum(
             p.numel() for p in self.model.parameters() if p.requires_grad)
         print(f"{total_trainable_params:,} training parameters.")
+
         class_weights_tensor = torch.load(test_main.params.main_param_path + '/class_weights_tensor.pt')
         self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
-        gpu_id = train_main.params.gpu_id
 
         if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-            torch.cuda.set_device(gpu_id)
-            self.model.cuda(gpu_id)
-            self.criterion = self.criterion.cuda(gpu_id)
+            torch.cuda.set_device(test_main.params.gpu_id)
+            self.model.cuda(test_main.params.gpu_id)
+            self.criterion = self.criterion.cuda(test_main.params.gpu_id)
 
         # Observe that all parameters are being optimized
 
@@ -206,11 +193,12 @@ class import_and_train_model:
         # exp_lr_scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
 
         # Early stopping and lr scheduler
-
         self.lr_scheduler = LRScheduler(self.optimizer)
         self.early_stopping = EarlyStopping()
 
     def run_training(self, train_main, data_loader, initial_epoch, epochs, lr, name, best_values, modeltype):
+        if initial_epoch != 0:
+            cp = torch.load(data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
         best_loss, best_f1, best_acc1 = best_values[0], best_values[1], best_values[2]
 
@@ -246,13 +234,26 @@ class import_and_train_model:
             test_f1 = f1_score(test_outputs, test_targets, average='macro')
             test_accuracy = accuracy_score(test_outputs, test_targets)
 
+            train_losses.append(train_loss)
+            test_losses.append(test_loss)
+            train_accuracies.append(train_accuracy)
+            test_accuracies.append(test_accuracy)
+            train_f1s.append(train_f1)
+            test_f1s.append(test_f1)
+
             if epoch + 1 == epochs:
                 torch.save({'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
                             'loss': train_loss,
                             'f1': train_f1,
                             'acc': train_acc1,
-                            'epoch': epoch},
+                            'epoch': epoch,
+                            'train_acc': train_accuracies,
+                            'val_acc': test_accuracies,
+                            'train_f1': train_f1s,
+                            'val_f1': test_f1s,
+                            'train_loss': train_losses,
+                            'val_loss': test_losses},
                            data_loader.checkpoint_path + '/trained_model_' + name + '_last_epoch.pth')
             else:
                 pass
@@ -264,7 +265,13 @@ class import_and_train_model:
                                 'loss': train_loss,
                                 'f1': train_f1,
                                 'acc': train_acc1,
-                                'epoch': epoch},
+                                'epoch': epoch,
+                                'train_acc': train_accuracies,
+                                'val_acc': test_accuracies,
+                                'train_f1': train_f1s,
+                                'val_f1': test_f1s,
+                                'train_loss': train_losses,
+                                'val_loss': test_losses},
                                data_loader.checkpoint_path + '/trained_model_' + name + '_' + str(epoch + 1) + '_epoch.pth')
                 else:
                     pass
@@ -276,18 +283,29 @@ class import_and_train_model:
                                 'loss': train_loss,
                                 'f1': train_f1,
                                 'acc': train_acc1,
-                                'epoch': epoch},
+                                'epoch': epoch,
+                                'train_acc': train_accuracies,
+                                'val_acc': test_accuracies,
+                                'train_f1': train_f1s,
+                                'val_f1': test_f1s,
+                                'train_loss': train_losses,
+                                'val_loss': test_losses},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 2:
-
                 if train_f1 > best_f1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
                                 'loss': train_loss,
                                 'f1': train_f1,
                                 'acc': train_acc1,
-                                'epoch': epoch},
+                                'epoch': epoch,
+                                'train_acc': train_accuracies,
+                                'val_acc': test_accuracies,
+                                'train_f1': train_f1s,
+                                'val_f1': test_f1s,
+                                'train_loss': train_losses,
+                                'val_loss': test_losses},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 3:
@@ -297,7 +315,13 @@ class import_and_train_model:
                                 'loss': train_loss,
                                 'f1': test_f1,
                                 'acc': train_acc1,
-                                'epoch': epoch},
+                                'epoch': epoch,
+                                'train_acc': train_accuracies,
+                                'val_acc': test_accuracies,
+                                'train_f1': train_f1s,
+                                'val_f1': test_f1s,
+                                'train_loss': train_losses,
+                                'val_loss': test_losses},
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
             else:
                 print('Choose correct metric i.e. based on loss or acc or f1 to save the model')
@@ -305,13 +329,6 @@ class import_and_train_model:
             best_acc1 = max(train_acc1, best_acc1)
             best_f1 = max(test_f1, best_f1)
             best_loss = min(train_loss, best_loss)
-
-            train_losses.append(train_loss)
-            test_losses.append(test_loss)
-            train_accuracies.append(train_accuracy)
-            test_accuracies.append(test_accuracy)
-            train_f1s.append(train_f1)
-            test_f1s.append(test_f1)
 
             total_mins_per_epoch = (time() - time_begin_epoch) / 60
 
@@ -326,21 +343,51 @@ class import_and_train_model:
                 np.round(total_mins_per_epoch, 3),
                 np.round(total_mins, 3)))
 
-            plt.figure(figsize=(15, 4))
-            plt.subplot(1, 3, 1)
-            plt.plot(train_accuracies, label='Train accuracy')
-            plt.plot(test_accuracies, label='Validation accuracy')
-            plt.legend()
-            plt.subplot(1, 3, 2)
-            plt.plot(train_f1s, label='Train F1')
-            plt.plot(test_f1s, label='Validation F1')
-            plt.legend()
-            plt.subplot(1, 3, 3)
-            plt.plot(train_losses, label='Train loss')
-            plt.plot(test_losses, label='Validation loss')
-            plt.legend()
-            plt.savefig(data_loader.checkpoint_path + '/updated_performance_curves_' + name + '.png')
-            plt.close()
+            if initial_epoch != 0:
+                train_a = cp['train_acc']
+                train_f = cp['train_f1']
+                train_l = cp['train_loss']
+                test_a = cp['val_acc']
+                test_f = cp['val_f1']
+                test_l = cp['val_loss']
+                train_acc_resumed = train_a + train_accuracies 
+                test_acc_resumed = test_a + test_accuracies
+                train_f1s_resumed = train_f + train_f1s
+                test_f1s_resumed = test_f + test_f1s
+                train_losses_resumed = train_l + train_losses
+                test_losses_resumed = test_l + test_losses
+                plt.figure(figsize=(15, 4))
+                plt.subplot(1, 3, 1)
+                plt.plot(train_acc_resumed, label='Train accuracy')
+                plt.plot(test_acc_resumed, label='Validation accuracy')
+                plt.legend()
+                plt.subplot(1, 3, 2)
+                plt.plot(train_f1s_resumed, label='Train F1')
+                plt.plot(test_f1s_resumed, label='Validation F1')
+                plt.legend()
+                plt.subplot(1, 3, 3)
+                plt.plot(train_losses_resumed, label='Train loss')
+                plt.plot(test_losses_resumed, label='Validation loss')
+                plt.legend()
+                plt.savefig(data_loader.checkpoint_path + '/updated_performance_curves_' + name + '.png')
+                plt.close()
+
+            else:
+                plt.figure(figsize=(15, 4))
+                plt.subplot(1, 3, 1)
+                plt.plot(train_accuracies, label='Train accuracy')
+                plt.plot(test_accuracies, label='Validation accuracy')
+                plt.legend()
+                plt.subplot(1, 3, 2)
+                plt.plot(train_f1s, label='Train F1')
+                plt.plot(test_f1s, label='Validation F1')
+                plt.legend()
+                plt.subplot(1, 3, 3)
+                plt.plot(train_losses, label='Train loss')
+                plt.plot(test_losses, label='Validation loss')
+                plt.legend()
+                plt.savefig(data_loader.checkpoint_path + '/updated_performance_curves_' + name + '.png')
+                plt.close()
 
             if train_main.params.run_lr_scheduler == 'yes':
                 self.lr_scheduler(train_loss)
@@ -386,7 +433,7 @@ class import_and_train_model:
 
         # plt.savefig(data_loader.checkpoint_path + '/performance_curves_' + name + '.png')
 
-    def run_prediction(self, data_loader, name):
+    def run_prediction(self, train_main, data_loader, name):
         # classes = np.load(train_main.params.outpath + '/classes.npy')
         classes = data_loader.classes
         PATH = data_loader.checkpoint_path + '/trained_model_' + name + '.pth'
@@ -395,16 +442,16 @@ class import_and_train_model:
         with open(data_loader.checkpoint_path + '/file_names_' + name + '.pickle', 'wb') as b:
             pickle.dump(im_names, b)
 
-        if torch.cuda.is_available():
-            checkpoint = torch.load(PATH)
+        if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
+            checkpoint = torch.load(PATH, map_location="cuda:" + str(train_main.params.gpu_id))
         else:
             checkpoint = torch.load(PATH, map_location='cpu')
 
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
-        avg_acc1, target, output, prob = cls_predict(data_loader.test_dataloader, 
-                                                     self.model, 
+        avg_acc1, target, output, prob = cls_predict(train_main, data_loader.test_dataloader,
+                                                     self.model,
                                                      self.criterion,
                                                      time_begin=time())
 
@@ -427,13 +474,20 @@ class import_and_train_model:
             pickle.dump(GT_Pred_GTLabel_PredLabel_Prob, cw)
 
         accuracy_model = accuracy_score(target_label, output_label)
-        clf_report = classification_report(target_label, output_label, labels=np.unique(target_label))
-        f1 = f1_score(target_label, output_label, average='macro', labels=np.unique(target_label))
+        clf_report = classification_report(target_label, output_label)
+        clf_report_rm_0 = classification_report(target_label, output_label, labels=np.unique(target_label))
+        f1 = f1_score(target_label, output_label, average='macro')
+        f1_rm_0 = f1_score(target_label, output_label, average='macro', labels=np.unique(target_label))
 
         f = open(data_loader.checkpoint_path + 'test_report_' + name + '.txt', 'w')
         f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                               clf_report))
         f.close()
+
+        ff = open(data_loader.checkpoint_path + 'test_report_rm_0_' + name + '.txt', 'w')
+        ff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
+                                                                                              clf_report_rm_0))
+        ff.close()
 
     def load_trained_model(self, train_main, data_loader, modeltype):
         # self.import_deit_models(train_main, data_loader)
@@ -446,7 +500,7 @@ class import_and_train_model:
             PATH = data_loader.checkpoint_path + 'trained_model_finetuned.pth'
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            checkpoint = torch.load(PATH)
+            checkpoint = torch.load(PATH, map_location="cuda:" + str(train_main.params.gpu_id))
         else:
             checkpoint = torch.load(PATH, map_location='cpu')
 
@@ -469,7 +523,7 @@ class import_and_train_model:
             PATH = data_loader.checkpoint_path + 'trained_model_finetuned.pth'
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            checkpoint = torch.load(PATH)
+            checkpoint = torch.load(PATH, map_location="cuda:" + str(train_main.params.gpu_id))
         else:
             checkpoint = torch.load(PATH, map_location='cpu')
 
@@ -505,22 +559,13 @@ class import_and_train_model:
                                   data_loader=data_loader, lr=train_main.params.lr)
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.epochs,
                               train_main.params.lr, "original", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'original')
+            self.run_prediction(train_main, data_loader, 'original')
 
         elif modeltype == 1:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.finetune_lr)
 
             if train_main.params.last_layer_finetune_1 == 'yes':
-                # for param in self.model.parameters():
-                #     param.requires_grad = False  ### CHANGED HERE
-
-                # i = 1
-                # for param in self.model.parameters():
-                #     if i > 709:
-                #         param.requires_grad = True
-                #     i = i + 1
-
                 n_layer = 0
                 for param in self.model.parameters():
                     n_layer += 1
@@ -540,22 +585,13 @@ class import_and_train_model:
 
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.finetune_lr, "tuned", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'tuned')
+            self.run_prediction(train_main, data_loader, 'tuned')
 
         elif modeltype == 2:
             self.initialize_model(train_main=train_main, test_main=None,
                                   data_loader=data_loader, lr=train_main.params.finetune_lr / 10)
 
             if train_main.params.last_layer_finetune_2 == 'yes':
-                # for param in self.model.parameters():
-                #     param.requires_grad = False  ### CHANGED HERE
-
-                # i = 1
-                # for param in self.model.parameters():
-                #     if i > 709:
-                #         param.requires_grad = True
-                #     i = i + 1
-
                 n_layer = 0
                 for param in self.model.parameters():
                     n_layer += 1
@@ -575,23 +611,23 @@ class import_and_train_model:
 
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.finetune_lr / 10, "finetuned", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'finetuned')
+            self.run_prediction(train_main, data_loader, 'finetuned')
 
     def train_predict(self, train_main, data_loader, modeltype):
         if modeltype == 0:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.epochs,
                               train_main.params.lr, "original", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'original')
+            self.run_prediction(train_main, data_loader, 'original')
 
         elif modeltype == 1:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.finetune_lr, "tuned", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'tuned')
+            self.run_prediction(train_main, data_loader, 'tuned')
 
         elif modeltype == 2:
             self.run_training(train_main, data_loader, self.initial_epoch, train_main.params.finetune_epochs,
                               train_main.params.finetune_lr / 10, "finetuned", self.best_values, modeltype)
-            self.run_prediction(data_loader, 'finetuned')
+            self.run_prediction(train_main, data_loader, 'finetuned')
 
     def train_and_save(self, train_main, data_loader):
         model_present_path0 = data_loader.checkpoint_path + 'trained_model_original.pth'
@@ -623,7 +659,7 @@ class import_and_train_model:
                     self.init_train_predict(train_main, data_loader, 2)
                 else:
                     print('If you want to retrain then set "resume from saved" to "yes"')
-                    self.run_prediction(data_loader, 'finetuned')
+                    self.run_prediction(train_main, data_loader, 'finetuned')
 
             elif train_main.params.finetune == 1:
                 if not os.path.exists(model_present_path0):
@@ -637,14 +673,14 @@ class import_and_train_model:
                     self.init_train_predict(train_main, data_loader, 1)
                 else:
                     print('If you want to retrain then set "resume from saved" to "yes"')
-                    self.run_prediction(data_loader, 'tuned')
-            
+                    self.run_prediction(train_main, data_loader, 'tuned')
+
             elif train_main.params.finetune == 0:
                 if not os.path.exists(model_present_path0):
                     self.train_predict(train_main, data_loader, 0)
                 else:
                     print('If you want to retrain then set "resume from saved" to "yes"')
-                    self.run_prediction(data_loader, 'original')
+                    self.run_prediction(train_main, data_loader, 'original')
 
         elif train_main.params.resume_from_saved == 'yes':
             if train_main.params.finetune == 0:
@@ -707,16 +743,17 @@ class import_and_train_model:
             im_names = data_loader.Filenames
 
             if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-                checkpoint = torch.load(PATH)
+                checkpoint = torch.load(PATH, map_location="cuda:" + str(test_main.params.gpu_id))
             else:
                 checkpoint = torch.load(PATH, map_location='cpu')
+
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
+            output, prob = cls_predict_on_unseen(test_main, data_loader.test_dataloader, self.model)
 
             output = torch.cat(output)
             prob = torch.cat(prob)
@@ -767,9 +804,10 @@ class import_and_train_model:
             checkpoint_path = test_main.params.model_path[i]
             PATH = checkpoint_path + '/trained_model_' + name + '.pth'
             if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
-                checkpoint = torch.load(PATH)
+                checkpoint = torch.load(PATH, map_location="cuda:" + str(test_main.params.gpu_id))
             else:
                 checkpoint = torch.load(PATH, map_location='cpu')
+
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
@@ -854,7 +892,7 @@ class import_and_train_model:
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(data_loader.test_dataloader, 
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(test_main, data_loader.test_dataloader,
                                                                           self.model,
                                                                           self.criterion,
                                                                           time_begin=time())
@@ -906,18 +944,25 @@ class import_and_train_model:
                            fmt='%s')
 
             accuracy_model = accuracy_score(target_label, output_label)
-            clf_report = classification_report(target_label, output_label, labels=np.unique(target_label))
-            f1 = f1_score(target_label, output_label, average='macro', labels=np.unique(target_label))
+            clf_report = classification_report(target_label, output_label)
+            clf_report_rm_0 = classification_report(target_label, output_label, labels=np.unique(target_label))
+            f1 = f1_score(target_label, output_label, average='macro')
+            f1_rm_0 = f1_score(target_label, output_label, average='macro', labels=np.unique(target_label))
 
             f = open(test_main.params.test_outpath + 'Single_test_report_' + name + '.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                                   clf_report))
             f.close()
 
-            bias, MAE, MSE, RMSE, R2, weighted_recall, df_count = extra_metrics(target_label.tolist(), output_label)
-            ff = open(test_main.params.test_outpath + 'Single_test_report_extra_' + name + '.txt', 'w')
-            ff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias, MAE, MSE, RMSE, R2, weighted_recall))
+            ff = open(test_main.params.test_outpath + 'Single_test_report_rm_0_' + name + '.txt', 'w')
+            ff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
+                                                                                                  clf_report_rm_0))
             ff.close()
+
+            bias, MAE, MSE, RMSE, R2, weighted_recall, df_count = extra_metrics(target_label.tolist(), output_label)
+            fff = open(test_main.params.test_outpath + 'Single_test_report_extra_' + name + '.txt', 'w')
+            fff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias, MAE, MSE, RMSE, R2, weighted_recall))
+            fff.close()
 
             df_count.to_excel(test_main.params.test_outpath + 'Population_count.xlsx', index=True, header=True)
 
@@ -932,10 +977,10 @@ class import_and_train_model:
             clf_report_rm_unknown = classification_report(target_label, output_label, labels=labels_rm_unknown)
             f1_rm_unknown = f1_score(target_label, output_label, average='macro', labels=labels_rm_unknown)
 
-            fff = open(test_main.params.test_outpath + 'Single_test_report_rm_unknown_' + name + '.txt', 'w')
-            fff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_rm_unknown, f1_rm_unknown,
+            ffff = open(test_main.params.test_outpath + 'Single_test_report_rm_unknown_' + name + '.txt', 'w')
+            ffff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_rm_unknown, f1_rm_unknown,
                                                                                                   clf_report_rm_unknown))
-            fff.close()
+            ffff.close()
 
     def run_ensemble_prediction_on_unseen_with_y(self, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
@@ -951,7 +996,11 @@ class import_and_train_model:
             # if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
             #     checkpoint = torch.load(PATH)
             # else:
-            checkpoint = torch.load(PATH, map_location='cpu')
+            if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+                checkpoint = torch.load(PATH, map_location="cuda:" + str(test_main.params.gpu_id))
+            else:
+                checkpoint = torch.load(PATH, map_location='cpu')
+
             self.model.load_state_dict(checkpoint['model_state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
@@ -1034,13 +1083,20 @@ class import_and_train_model:
                        '.txt', To_write, fmt='%s')
 
             accuracy_model = accuracy_score(GT_label, Ens_DEIT_label)
-            clf_report = classification_report(GT_label, Ens_DEIT_label, labels=np.unique(GT_label))
-            f1 = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=np.unique(GT_label))
+            clf_report = classification_report(GT_label, Ens_DEIT_label)
+            clf_report_rm_0 = classification_report(GT_label, Ens_DEIT_label, labels=np.unique(GT_label))
+            f1 = f1_score(GT_label, Ens_DEIT_label, average='macro')
+            f1_rm_0 = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=np.unique(GT_label))
 
             f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                                   clf_report))
             f.close()
+
+            ff = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_0_' + name2 + name + '.txt', 'w')
+            ff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
+                                                                                                  clf_report_rm_0))
+            ff.close()
 
             # filenames_out = im_names[0]
             # for jj in range(len(filenames_out)):
@@ -1061,14 +1117,22 @@ class import_and_train_model:
                        '_thresholded_' + str(test_main.params.threshold) + '.txt', To_write, fmt='%s')
 
             accuracy_model = accuracy_score(GT_label, Ens_DEIT_corrected_label)
-            clf_report = classification_report(GT_label, Ens_DEIT_corrected_label, labels=np.unique(GT_label))
-            f1 = f1_score(GT_label, Ens_DEIT_corrected_label, average='macro', labels=np.unique(GT_label))
+            clf_report = classification_report(GT_label, Ens_DEIT_corrected_label)
+            clf_report_rm_0 = classification_report(GT_label, Ens_DEIT_corrected_label, labels=np.unique(GT_label))
+            f1 = f1_score(GT_label, Ens_DEIT_corrected_label, average='macro')
+            f1_rm_0 = f1_score(GT_label, Ens_DEIT_corrected_label, average='macro', labels=np.unique(GT_label))
 
             f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '_thresholded_' + str(
                 test_main.params.threshold) + '.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                                   clf_report))
             f.close()
+
+            ff = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_0_' + name2 + name + '_thresholded_' + str(
+                test_main.params.threshold) + '.txt', 'w')
+            ff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
+                                                                                                  clf_report_rm_0))
+            ff.close()
 
             # filenames_out = im_names[0]
             # for jj in range(len(filenames_out)):
@@ -1077,7 +1141,7 @@ class import_and_train_model:
             #             test_main.params.threshold) + '/Classified/' + str(GT_label[jj])
             #         Path(dest_path).mkdir(parents=True, exist_ok=True)
             #         shutil.copy(filenames_out[jj], dest_path)
-
+            #
             #     else:
             #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '_thresholded_' + str(
             #             test_main.params.threshold) + '/Misclassified/' + str(
@@ -1092,18 +1156,25 @@ class import_and_train_model:
                        '.txt', To_write, fmt='%s')
 
             accuracy_model = accuracy_score(GT_label, Ens_DEIT_label)
-            clf_report = classification_report(GT_label, Ens_DEIT_label, labels=np.unique(GT_label))
-            f1 = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=np.unique(GT_label))
+            clf_report = classification_report(GT_label, Ens_DEIT_label)
+            clf_report_rm_0 = classification_report(GT_label, Ens_DEIT_label, labels=np.unique(GT_label))
+            f1 = f1_score(GT_label, Ens_DEIT_label, average='macro')
+            f1_rm_0 = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=np.unique(GT_label))
 
             f = open(test_main.params.test_outpath + 'Ensemble_test_report_' + name2 + name + '.txt', 'w')
             f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                                   clf_report))
             f.close()
 
-            bias, MAE, MSE, RMSE, R2, weighted_recall, df_count = extra_metrics(GT_label.tolist(), Ens_DEIT_label)
-            ff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_' + name2 + name + '.txt', 'w')
-            ff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias, MAE, MSE, RMSE, R2, weighted_recall))
+            ff = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_0_' + name2 + name + '.txt', 'w')
+            ff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
+                                                                                                  clf_report_rm_0))
             ff.close()
+
+            bias, MAE, MSE, RMSE, R2, weighted_recall, df_count = extra_metrics(GT_label.tolist(), Ens_DEIT_label)
+            fff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_' + name2 + name + '.txt', 'w')
+            fff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias, MAE, MSE, RMSE, R2, weighted_recall))
+            fff.close()
 
             df_count.to_excel(test_main.params.test_outpath + 'Population_count.xlsx', index=True, header=True)
 
@@ -1138,10 +1209,10 @@ class import_and_train_model:
             clf_report_rm_unknown = classification_report(GT_label, Ens_DEIT_label, labels=labels_rm_unknown)
             f1_rm_unknown = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=labels_rm_unknown)
 
-            fff = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_unknown_' + name2 + name + '.txt', 'w')
-            fff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_rm_unknown, f1_rm_unknown,
+            ffff = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_unknown_' + name2 + name + '.txt', 'w')
+            ffff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_rm_unknown, f1_rm_unknown,
                                                                                                   clf_report_rm_unknown))
-            fff.close()
+            ffff.close()
 
 
             # filenames_out = im_names[0]
@@ -1150,7 +1221,7 @@ class import_and_train_model:
             #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Classified/' + str(GT_label[jj])
             #         Path(dest_path).mkdir(parents=True, exist_ok=True)
             #         shutil.copy(filenames_out[jj], dest_path)
-
+            #
             #     else:
             #         dest_path = test_main.params.test_outpath + '/' + name2 + name + '/Misclassified/' + str(
             #             GT_label[jj]) + '_as_' + str(Ens_DEIT_label[jj])
@@ -1158,13 +1229,9 @@ class import_and_train_model:
             #         shutil.copy(filenames_out[jj], dest_path)
 
     def initialize_model(self, train_main, test_main, data_loader, lr):
-        if torch.cuda.is_available():
-            if train_main.params.use_gpu == 'yes' or test_main.params.use_gpu == 'yes':
-                if train_main.params.gpu_id == 0:
-                    device = torch.device("cuda:0")
-                elif train_main.params.gpu_id == 1:
-                    device = torch.device("cuda:1")
-                # device = torch.device("cuda")
+
+        if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
+            device = torch.device("cuda:" + str(test_main.params.gpu_id))
         else:
             device = torch.device("cpu")
 
@@ -1179,9 +1246,17 @@ class import_and_train_model:
             self.criterion = nn.CrossEntropyLoss(class_weights_tensor)
 
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            torch.cuda.set_device(train_main.params.gpu_id)
-            self.model.cuda(train_main.params.gpu_id)
-            self.criterion = self.criterion.cuda(train_main.params.gpu_id)
+            if test_main is None:
+                if torch.cuda.is_available():
+                    torch.cuda.set_device(train_main.params.gpu_id)
+                    self.model.cuda(train_main.params.gpu_id)
+                    self.criterion = self.criterion.cuda(train_main.params.gpu_id)
+            else:
+                if torch.cuda.is_available():
+                    torch.cuda.set_device(test_main.params.gpu_id)
+                    self.model.cuda(test_main.params.gpu_id)
+                    self.criterion = self.criterion.cuda(test_main.params.gpu_id)
+
         # Observe that all parameters are being optimized
         if train_main.params.last_layer_finetune == 'yes':
             self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
@@ -1381,14 +1456,12 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
     lr_scheduler = LRScheduler(optimizer)
 
     for i, (images, target) in enumerate(train_loader):
+
         if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-            if train_main.params.gpu_id == 0:
-                device = torch.device("cuda:0")
-            elif train_main.params.gpu_id == 1:
-                device = torch.device("cuda:1")
-            # device = torch.device("cuda")
+            device = torch.device("cuda:" + str(train_main.params.gpu_id))
         else:
             device = torch.device("cpu")
+
         images, target = images.to(device), target.to(device)
 
         if train_main.params.run_cnn_or_on_colab == 'yes':
@@ -1440,11 +1513,7 @@ def cls_validate(train_main, val_loader, model, criterion, time_begin=None):
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
             if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
-                if train_main.params.gpu_id == 0:
-                    device = torch.device("cuda:0")
-                elif train_main.params.gpu_id == 1:
-                    device = torch.device("cuda:1")
-                # device = torch.device("cuda")
+                device = torch.device("cuda:" + str(train_main.params.gpu_id))
             else:
                 device = torch.device("cpu")
 
@@ -1474,7 +1543,7 @@ def cls_validate(train_main, val_loader, model, criterion, time_begin=None):
     return avg_acc1, avg_loss, outputs, targets, total_mins
 
 
-def cls_predict(val_loader, model, criterion, time_begin=None):
+def cls_predict(train_main, val_loader, model, criterion, time_begin=None):
     model.eval()
     loss_val, acc1_val = 0, 0
     n = 0
@@ -1483,7 +1552,12 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+            if torch.cuda.is_available() and train_main.params.use_gpu == 'yes':
+                device = torch.device("cuda:" + str(train_main.params.gpu_id))
+            else:
+                device = torch.device("cpu")
+
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
@@ -1505,14 +1579,20 @@ def cls_predict(val_loader, model, criterion, time_begin=None):
     return avg_acc1, targets, outputs, probs
 
 
-def cls_predict_on_unseen(test_loader, model):
+def cls_predict_on_unseen(test_main, test_loader, model):
     model.eval()
     outputs = []
     probs = []
     time_begin = time()
     with torch.no_grad():
         for i, (images) in enumerate(test_loader):
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+            if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+                device = torch.device("cuda:" + str(test_main.params.gpu_id))
+            else:
+                device = torch.device("cpu")
+
+            # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             # device = torch.device("cuda")
             # images = torch.stack(images).to(device)
             images = images.to(device)
@@ -1528,7 +1608,7 @@ def cls_predict_on_unseen(test_loader, model):
     return outputs, probs
 
 
-def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
+def cls_predict_on_unseen_with_y(test_main, val_loader, model, criterion, time_begin=None):
     model.eval()
     loss_val, acc1_val = 0, 0
     n = 0
@@ -1537,7 +1617,11 @@ def cls_predict_on_unseen_with_y(val_loader, model, criterion, time_begin=None):
     probs = []
     with torch.no_grad():
         for i, (images, target) in enumerate(val_loader):
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
+                device = torch.device("cuda:" + str(test_main.params.gpu_id))
+            else:
+                device = torch.device("cpu")
+
             images, target = images.to(device), target.to(device)
             targets.append(target)
 

@@ -65,6 +65,7 @@ class LoadInputParameters:
         parser.add_argument('-finetuned', type=int, default=2, help='Choose "0" or "1" or "2" for finetuning')
         parser.add_argument('-threshold', type=float, default=0.0, help="Threshold to set")
         parser.add_argument('-use_gpu', choices=['yes', 'no'], default='no', help='Choose "no" to run using cpu')
+        parser.add_argument('-gpu_id', type=int, default=0, help="select the gpu id ")
 
         args = parser.parse_args(string)
 

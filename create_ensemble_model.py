@@ -166,8 +166,10 @@ class LoadEnsembleParameters:
         print(classification_report(DEIT_GTLabel_sorted[0], Ens_DEIT_label, digits=2))
 
         accuracy_model = accuracy_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label)
-        clf_report = classification_report(DEIT_GTLabel_sorted[0], Ens_DEIT_label, labels=np.unique(DEIT_GTLabel_sorted[0]))
-        f1 = f1_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label, average='macro', labels=np.unique(DEIT_GTLabel_sorted[0]))
+        clf_report = classification_report(DEIT_GTLabel_sorted[0], Ens_DEIT_label)
+        clf_report_rm_0 = classification_report(DEIT_GTLabel_sorted[0], Ens_DEIT_label, labels=np.unique(DEIT_GTLabel_sorted[0]))
+        f1 = f1_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label, average='macro')
+        f1_rm_0 = f1_score(DEIT_GTLabel_sorted[0], Ens_DEIT_label, average='macro', labels=np.unique(DEIT_GTLabel_sorted[0]))
 
         Pred_PredLabel_Prob = [DEIT_GTLabel_sorted[0], Ens_DEIT_label, Ens_DEIT]
         with open(self.params.outpath + '/Ensemble_models_GTLabel_PredLabel_Prob_' + name + '.pickle', 'wb') as cw:
@@ -177,6 +179,11 @@ class LoadEnsembleParameters:
         f.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1,
                                                                                               clf_report))
         f.close()
+
+        ff = open(self.params.outpath + 'Ensemble_test_report_rm_0.txt', 'w')
+        ff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
+                                                                                              clf_report_rm_0))
+        ff.close()
 
 
 if __name__ == '__main__':
