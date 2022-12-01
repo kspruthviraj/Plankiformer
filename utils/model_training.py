@@ -532,7 +532,7 @@ class import_and_train_model:
         self.loss = checkpoint['loss']
         self.f1 = checkpoint['f1']
         self.acc = checkpoint['acc']
-        self.initial_epoch = checkpoint['epoch']
+        self.initial_epoch = checkpoint['epoch'] + 1
         self.best_values = [self.loss, self.f1, self.acc]
 
         if modeltype == 0:
