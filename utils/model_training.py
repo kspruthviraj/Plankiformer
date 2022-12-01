@@ -19,9 +19,6 @@ from torchvision.utils import make_grid
 torch.manual_seed(0)
 
 
-# import streamlit as st
-
-
 class import_and_train_model:
     def __init__(self, initMode='default', verbose=True):
         self.best_values = [0, 0, 0]
