@@ -529,6 +529,7 @@ def LoadImages(datapaths, L, class_select=None, classifier=None, resize_images=N
         dfA.npimage = dfA.npimage / 255.0
         df = pd.concat([dfB, dfA], axis=0)  # Concatenate Selected class and all other class
     df = df.sample(frac=1).reset_index(drop=True)
+    df.sort_values(by=['filename'], inplace=True)
     return df
 
 
