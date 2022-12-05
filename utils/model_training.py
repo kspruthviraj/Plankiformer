@@ -61,7 +61,7 @@ class import_and_train_model:
             self.model = timm.create_model('inception_v4', pretrained=True,
                                            num_classes=len(np.unique(classes)))
         elif train_main.params.architecture == 'vit':
-            self.model = timm.create_model('vit_base_patch8_224', pretrained=True,
+            self.model = timm.create_model('vit_base_patch16_224', pretrained=True,
                                            num_classes=len(np.unique(classes)))
         else:
             print('This model cannot be imported. Please check from the list of models')
@@ -138,7 +138,7 @@ class import_and_train_model:
             self.model = timm.create_model('inception_v4', pretrained=True,
                                            num_classes=len(np.unique(classes)))
         elif train_main.params.architecture == 'vit':
-            self.model = timm.create_model('vit_base_patch8_224', pretrained=True,
+            self.model = timm.create_model('vit_base_patch16_224', pretrained=True,
                                            num_classes=len(np.unique(classes)))
         else:
             print('This model cannot be imported. Please check from the list of models')
