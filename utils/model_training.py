@@ -82,7 +82,7 @@ class import_and_train_model:
                 param.requires_grad = False
 
             for i, param in enumerate(self.model.parameters()):
-                if i + 1 > n_layer - 2: 
+                if i + 1 > n_layer - 2:
                     param.requires_grad = True
 
         else:
@@ -158,7 +158,7 @@ class import_and_train_model:
                 param.requires_grad = False
 
             for i, param in enumerate(self.model.parameters()):
-                if i + 1 > n_layer - 2: 
+                if i + 1 > n_layer - 2:
                     param.requires_grad = True
 
         else:
@@ -293,6 +293,7 @@ class import_and_train_model:
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 2:
+
                 if train_f1 > best_f1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
@@ -350,7 +351,7 @@ class import_and_train_model:
                 test_a = cp['val_acc']
                 test_f = cp['val_f1']
                 test_l = cp['val_loss']
-                train_acc_resumed = train_a + train_accuracies 
+                train_acc_resumed = train_a + train_accuracies
                 test_acc_resumed = test_a + test_accuracies
                 train_f1s_resumed = train_f + train_f1s
                 test_f1s_resumed = test_f + test_f1s
@@ -572,8 +573,9 @@ class import_and_train_model:
                     param.requires_grad = False
 
                 for i, param in enumerate(self.model.parameters()):
-                    if i + 1 > n_layer - 2: 
+                    if i + 1 > n_layer - 2:
                         param.requires_grad = True
+                    i = i + 1
 
             else:
                 for param in self.model.parameters():
@@ -598,7 +600,7 @@ class import_and_train_model:
                     param.requires_grad = False
 
                 for i, param in enumerate(self.model.parameters()):
-                    if i + 1 > n_layer - 2: 
+                    if i + 1 > n_layer - 2:
                         param.requires_grad = True
 
             else:
@@ -1181,19 +1183,19 @@ class import_and_train_model:
             labels = np.unique(GT_label)
             unknown_index = np.where(labels=='unknown')[0][0]
             labels_rm_unknown = np.delete(labels, unknown_index)
-            
+
             df_labels = pd.DataFrame(data=[GT_label, Ens_DEIT_label])
             df_labels_rm_unknown = df_labels.drop(columns=df_labels.columns[df_labels.iloc[0] == 'unknown'])
 
-            # # for phyto  
+            # # for phyto
             # labels = np.unique(GT_label)
-            # unknown_index = np.where(labels=='unknown')[0][0]            
+            # unknown_index = np.where(labels=='unknown')[0][0]
             # unknown_eccentric_index = np.where(labels=='unknown_eccentric')[0][0]
             # unknown_elongated_index = np.where(labels=='unknown_elongated')[0][0]
             # unknown_probably_dirt_index = np.where(labels=='unknown_probably_dirt')[0][0]
             # unrecognizable_dots_index = np.where(labels=='unrecognizable_dots')[0][0]
             # zooplankton_index = np.where(labels=='zooplankton')[0][0]
-            
+
             # labels_rm_unknown = np.delete(labels, [unknown_index, unknown_eccentric_index, unknown_elongated_index, unknown_probably_dirt_index, unrecognizable_dots_index, zooplankton_index])
 
             # df_labels = pd.DataFrame(data=[GT_label, Ens_DEIT_label])
@@ -1622,6 +1624,7 @@ def cls_predict_on_unseen_with_y(test_main, val_loader, model, criterion, time_b
             else:
                 device = torch.device("cpu")
 
+            # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
@@ -1672,8 +1675,8 @@ def quantification(GT_label, Pred_label, Pred_prob):
     pred_classes.sort()
 
     train_counts_summary = {
-        'aphanizomenon': 322, 
-        'asplanchna': 679, 
+        'aphanizomenon': 322,
+        'asplanchna': 679,
         'asterionella': 1057,
         'bosmina': 87,
         'brachionus': 650,
