@@ -466,7 +466,7 @@ class import_and_train_model:
                 self.early_stopping(test_loss)
                 if self.early_stopping.early_stop:
                     break
-            lr_scheduler(test_loss)
+            # lr_scheduler(test_loss)
 
         total_mins = (time() - time_begin) / 60
 
