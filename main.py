@@ -118,7 +118,7 @@ class LoadInputParameters:
                                                     '"kaggle", "eilat", "rsmas", "birds", "dogs", "beetle", "wildtrap"')
 
         # For model training
-        parser.add_argument('-architecture', choices=['efficientnet', 'densenet', 'mobilenet', 'inception', 'deit', 'vit'],
+        parser.add_argument('-architecture', choices=['efficientnetb2', 'efficientnetb5', 'efficientnetb6', 'efficientnetb7', 'densenet', 'mobilenet', 'inception', 'deit', 'vit'],
                             default='deit', help='Choose the model architecture')
         # parser.add_argument('-architecture', choices=['cnn', 'deit'],
         #                     default='deit', help='Choose between different datasets "cnn", "deit"')
@@ -177,6 +177,9 @@ class LoadInputParameters:
         parser.add_argument('-last_layer_finetune_1', choices=['yes', 'no'], default='no', )
         parser.add_argument('-last_layer_finetune_2', choices=['yes', 'no'], default='no', )
         parser.add_argument('-save_intermediate_epochs', choices=['yes', 'no'], default='no', )
+
+        # Hyperparameter tuning
+        parser.add_argument('-HP_tuning', choices=['yes', 'no'], default='no', )
 
         args = parser.parse_args(string)
 
