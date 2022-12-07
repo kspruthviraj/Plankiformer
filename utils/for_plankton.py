@@ -401,7 +401,7 @@ class AugmentedDataset(Dataset):
             # T.RandAugment(),
             # T.TrivialAugmentWide(),
             # T.AugMix(),
-            T.RandomResizedCrop(scale=(0.9, 1.2)),
+            # T.RandomResizedCrop(size=(224, 224)),
             # T.RandomErasing(),
             # T.Grayscale(),
             # T.RandomInvert(),
@@ -412,7 +412,7 @@ class AugmentedDataset(Dataset):
             # T.GaussianBlur(kernel_size=(1, 5), sigma=(0.1, 2)),
             # T.RandomPerspective(distortion_scale=0.8, p=0.1),
             T.RandomRotation(degrees=(0, 180)),
-            # T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3), scale=(0.5, 0.9)),
+            T.RandomAffine(degrees=(30, 90), translate=(0.1, 0.3), scale=(0.5, 0.9)),
             T.ToTensor()])
     transform3_y = T.Compose([T.ToTensor()])
 
