@@ -16,7 +16,9 @@ from scipy.stats import gmean
 from sklearn.metrics import f1_score, accuracy_score, classification_report, mean_absolute_error, mean_squared_error, r2_score, recall_score, roc_curve
 from torchvision.utils import make_grid
 
+np.random.seed(0)
 torch.manual_seed(0)
+torch.cuda.manual_seed_all(0)
 
 
 class import_and_train_model:

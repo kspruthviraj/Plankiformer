@@ -13,7 +13,9 @@ from torch.utils.data import Dataset
 from torchvision import datasets
 import torchvision.transforms as T
 
+np.random.seed(0)
 torch.manual_seed(0)
+torch.cuda.manual_seed_all(0)
 
 
 # from auto_augment import AutoAugment, Cutout

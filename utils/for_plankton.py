@@ -9,7 +9,10 @@ import pandas as pd
 import torch
 import torchvision.transforms as T
 from torch.utils.data import DataLoader, Dataset
+
+np.random.seed(0)
 torch.manual_seed(0)
+torch.cuda.manual_seed_all(0)
 
 
 class CreateDataForPlankton:
