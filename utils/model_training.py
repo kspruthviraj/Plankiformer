@@ -803,7 +803,7 @@ class import_and_train_model:
             else:
                 print('Choose the correct finetune label')
 
-    def run_prediction_on_unseen(self, test_main, data_loader, name):
+    def run_prediction_on_unseen(self, train_main, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
         if len(test_main.params.model_path) > 1:
             print("Do you want to predict using ensemble model ? If so then set the ensemble parameter to 1 and run "
@@ -825,7 +825,7 @@ class import_and_train_model:
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            output, prob = cls_predict_on_unseen(test_main, data_loader.test_dataloader, self.model)
+            output, prob = cls_predict_on_unseen(train_main, test_main, data_loader.test_dataloader, self.model)
 
             output = torch.cat(output)
             prob = torch.cat(prob)
@@ -867,7 +867,7 @@ class import_and_train_model:
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write,
                            fmt='%s')
 
-    def run_ensemble_prediction_on_unseen(self, test_main, data_loader, name):
+    def run_ensemble_prediction_on_unseen(self, train_main, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
         Ensemble_prob = []
         im_names = data_loader.Filenames
@@ -886,7 +886,7 @@ class import_and_train_model:
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
+            output, prob = cls_predict_on_unseen(train_main, test_main, data_loader.test_dataloader, self.model)
 
             prob = torch.cat(prob)
 
@@ -944,7 +944,7 @@ class import_and_train_model:
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
 
-    def run_prediction_on_unseen_with_y(self, test_main, data_loader, name):
+    def run_prediction_on_unseen_with_y(self, train_main, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
         if len(test_main.params.model_path) > 1:
             print("Do you want to predict using ensemble model ? If so then set the ensemble parameter to 1 and run "
@@ -964,7 +964,7 @@ class import_and_train_model:
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(test_main, data_loader.test_dataloader,
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(train_main, test_main, data_loader.test_dataloader,
                                                                           self.model,
                                                                           self.criterion,
                                                                           time_begin=time())
@@ -1054,7 +1054,7 @@ class import_and_train_model:
                                                                                                   clf_report_rm_unknown))
             ffff.close()
 
-    def run_ensemble_prediction_on_unseen_with_y(self, test_main, data_loader, name):
+    def run_ensemble_prediction_on_unseen_with_y(self, train_main, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
         Ensemble_prob = []
         Ensemble_GT = []
@@ -1080,7 +1080,7 @@ class import_and_train_model:
             # self.model = self.model.module.to(device)
 
             # output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
-            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(data_loader.test_dataloader, self.model,
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(train_main, test_main, data_loader.test_dataloader, self.model,
                                                                           self.criterion,
                                                                           time_begin=time())
 
@@ -1344,23 +1344,23 @@ class import_and_train_model:
         if test_main.params.finetuned == 0:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen(test_main, data_loader, 'original')
+                self.run_prediction_on_unseen(train_main, test_main, data_loader, 'original')
             else:
-                self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'original')
+                self.run_ensemble_prediction_on_unseen(train_main, test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen(test_main, data_loader, 'tuned')
+                self.run_prediction_on_unseen(train_main, test_main, data_loader, 'tuned')
             else:
-                self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'tuned')
+                self.run_ensemble_prediction_on_unseen(train_main, test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen(test_main, data_loader, 'finetuned')
+                self.run_prediction_on_unseen(train_main, test_main, data_loader, 'finetuned')
             else:
-                self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'finetuned')
+                self.run_ensemble_prediction_on_unseen(train_main, test_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')
 
@@ -1371,23 +1371,23 @@ class import_and_train_model:
         if test_main.params.finetuned == 0:
             # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen_with_y(test_main, data_loader, 'original')
+                self.run_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'original')
             else:
-                self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'original')
+                self.run_ensemble_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
             # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
+                self.run_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'tuned')
             else:
-                self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
+                self.run_ensemble_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
             # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
+                self.run_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'finetuned')
             else:
-                self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
+                self.run_ensemble_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')
 
@@ -1641,6 +1641,10 @@ def cls_predict(train_main, val_loader, model, criterion, time_begin=None):
             targets.append(target)
 
             output = model(images)
+
+            if train_main.params.architecture == 'deit' or train_main.params.architecture == 'vit':
+                output = torch.mean(output, 1)
+
             outputs.append(output)
             prob = torch.nn.functional.softmax(output, dim=1)
             probs.append(prob)
@@ -1658,7 +1662,7 @@ def cls_predict(train_main, val_loader, model, criterion, time_begin=None):
     return avg_acc1, targets, outputs, probs
 
 
-def cls_predict_on_unseen(test_main, test_loader, model):
+def cls_predict_on_unseen(train_main, test_main, test_loader, model):
     model.eval()
     outputs = []
     probs = []
@@ -1677,6 +1681,10 @@ def cls_predict_on_unseen(test_main, test_loader, model):
             images = images.to(device)
 
             output = model(images)
+
+            if train_main.params.architecture == 'deit' or train_main.params.architecture == 'vit':
+                output = torch.mean(output, 1)
+
             outputs.append(output)
             prob = torch.nn.functional.softmax(output, dim=1)
             probs.append(prob)
@@ -1687,7 +1695,7 @@ def cls_predict_on_unseen(test_main, test_loader, model):
     return outputs, probs
 
 
-def cls_predict_on_unseen_with_y(test_main, val_loader, model, criterion, time_begin=None):
+def cls_predict_on_unseen_with_y(train_main, test_main, val_loader, model, criterion, time_begin=None):
     model.eval()
     loss_val, acc1_val = 0, 0
     n = 0
@@ -1705,6 +1713,10 @@ def cls_predict_on_unseen_with_y(test_main, val_loader, model, criterion, time_b
             targets.append(target)
 
             output = model(images)
+
+            if train_main.params.architecture == 'deit' or train_main.params.architecture == 'vit':
+                output = torch.mean(output, 1)
+
             outputs.append(output)
             prob = torch.nn.functional.softmax(output, dim=1)
             probs.append(prob)
