@@ -317,9 +317,9 @@ class import_and_train_model:
             if epoch + 1 == epochs:
                 torch.save({'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
-                            'loss': train_loss,
-                            'f1': train_f1,
-                            'acc': train_acc1,
+                            'loss': test_loss,
+                            'f1': test_f1,
+                            'acc': test_acc1,
                             'epoch': epoch,
                             'train_acc': train_accuracies,
                             'val_acc': test_accuracies,
@@ -335,9 +335,9 @@ class import_and_train_model:
                 if (epoch + 1) % 10 == 0:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': train_loss,
-                                'f1': train_f1,
-                                'acc': train_acc1,
+                                'loss': test_loss,
+                                'f1': test_f1,
+                                'acc': test_acc1,
                                 'epoch': epoch,
                                 'train_acc': train_accuracies,
                                 'val_acc': test_accuracies,
@@ -353,9 +353,9 @@ class import_and_train_model:
                 if test_loss < best_loss or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': train_loss,
-                                'f1': train_f1,
-                                'acc': train_acc1,
+                                'loss': test_loss,
+                                'f1': test_f1,
+                                'acc': test_acc1,
                                 'epoch': epoch,
                                 'train_acc': train_accuracies,
                                 'val_acc': test_accuracies,
@@ -369,9 +369,9 @@ class import_and_train_model:
                 if test_f1 > best_f1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': train_loss,
-                                'f1': train_f1,
-                                'acc': train_acc1,
+                                'loss': test_loss,
+                                'f1': test_f1,
+                                'acc': test_acc1,
                                 'epoch': epoch,
                                 'train_acc': train_accuracies,
                                 'val_acc': test_accuracies,
@@ -385,9 +385,9 @@ class import_and_train_model:
                 if test_acc1 > best_acc1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': train_loss,
-                                'f1': train_f1,
-                                'acc': train_acc1,
+                                'loss': test_loss,
+                                'f1': test_f1,
+                                'acc': test_acc1,
                                 'epoch': epoch,
                                 'train_acc': train_accuracies,
                                 'val_acc': test_accuracies,
@@ -1330,11 +1330,13 @@ class import_and_train_model:
                     self.criterion = self.criterion.cuda(test_main.params.gpu_id)
 
         # Observe that all parameters are being optimized
-        if train_main.params.last_layer_finetune == 'yes':
-            self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
-                                               lr=train_main.params.lr, weight_decay=train_main.params.weight_decay)
-        else:
-            self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+        # if train_main.params.last_layer_finetune == 'yes':
+        #     self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
+        #                                        lr=train_main.params.lr, weight_decay=train_main.params.weight_decay)
+        # else:
+        #     self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+        #                                        weight_decay=train_main.params.weight_decay)
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
                                                weight_decay=train_main.params.weight_decay)
 
     def load_model_and_run_prediction(self, train_main, test_main, data_loader):
