@@ -209,8 +209,8 @@ class CreateDataset:
         else:
             print("Set the right data type")
 
-        with open(test_main.params.test_outpath + '/Data_test_for_debug.pickle', 'wb') as a:
-            pickle.dump(self.Data, a, protocol=4)
+        # with open(test_main.params.test_outpath + '/Data_test_for_debug.pickle', 'wb') as a:
+        #     pickle.dump(self.Data, a, protocol=4)
 
         self.Filenames = [self.tt.trainFilenames]
 

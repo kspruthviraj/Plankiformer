@@ -63,20 +63,20 @@ def performance_matrix(model_performance_paths):
         for j, idataset in enumerate(dataset_names):
             test_report_path = imodel_path + '/' + idataset + '/'
 
-            if 'Single_test_report_finetuned.txt' in os.listdir(test_report_path):
-                test_report_file = test_report_path + 'Single_test_report_finetuned.txt'
-            elif 'Ensemble_test_report_geo_mean_finetuned.txt' in os.listdir(test_report_path):
-                test_report_file = test_report_path + 'Ensemble_test_report_geo_mean_finetuned.txt'
+            # if 'Single_test_report_finetuned.txt' in os.listdir(test_report_path):
+            #     test_report_file = test_report_path + 'Single_test_report_finetuned.txt'
+            # elif 'Ensemble_test_report_geo_mean_finetuned.txt' in os.listdir(test_report_path):
+            #     test_report_file = test_report_path + 'Ensemble_test_report_geo_mean_finetuned.txt'
 
             # if 'Single_test_report_finetuned.txt' in os.listdir(test_report_path):
             #     test_report_file = test_report_path + 'Single_test_report_finetuned.txt'
             # elif 'Ensemble_test_report_rm_unknown_geo_mean_finetuned.txt' in os.listdir(test_report_path):
             #     test_report_file = test_report_path + 'Ensemble_test_report_rm_unknown_geo_mean_finetuned.txt'
 
-            # if 'Single_test_report_tuned.txt' in os.listdir(test_report_path):
-            #     test_report_file = test_report_path + 'Single_test_report_tuned.txt'
-            # elif 'Ensemble_test_report_geo_mean_tuned.txt' in os.listdir(test_report_path):
-            #     test_report_file = test_report_path + 'Ensemble_test_report_geo_mean_tuned.txt'
+            if 'Single_test_report_tuned.txt' in os.listdir(test_report_path):
+                test_report_file = test_report_path + 'Single_test_report_tuned.txt'
+            elif 'Ensemble_test_report_geo_mean_tuned.txt' in os.listdir(test_report_path):
+                test_report_file = test_report_path + 'Ensemble_test_report_geo_mean_tuned.txt'
 
             accuracy_value, f1_value = read_test_report(test_report_file)
             accuracy[i, j], f1_score[i, j] = accuracy_value, f1_value

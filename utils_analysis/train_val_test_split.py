@@ -46,27 +46,27 @@ def SplitFrom_pickle(datapath, outpath, split_pickle_file):
             os.makedirs(outpath + '/0_train/' + iclass)
         for img in train_filenames:
             if iclass + '/' in img:
-                if not os.path.exists(datapath + '/' + img[50:]):
+                if not os.path.exists(datapath + '/' + img[83:]):
                     continue
-                shutil.copy(datapath + '/' + img[50:], outpath + '/0_train/' + iclass)
+                shutil.copy(datapath + '/' + img[83:], outpath + '/0_train/' + iclass)
 
     for iclass in list_classes:
         if not os.path.exists(outpath + '/0_test/' + iclass):
             os.makedirs(outpath + '/0_test/' + iclass)
         for img in test_filenames:
             if iclass + '/' in img:
-                if not os.path.exists(datapath + '/' + img[50:]):
+                if not os.path.exists(datapath + '/' + img[83:]):
                     continue
-                shutil.copy(datapath + '/' + img[50:], outpath + '/0_test/' + iclass)
+                shutil.copy(datapath + '/' + img[83:], outpath + '/0_test/' + iclass)
 
     for iclass in list_classes:
         if not os.path.exists(outpath + '/0_val/' + iclass):
             os.makedirs(outpath + '/0_val/' + iclass)
         for img in val_filenames:
             if iclass + '/' in img:
-                if not os.path.exists(datapath + '/' + img[50:]):
+                if not os.path.exists(datapath + '/' + img[83:]):
                     continue
-                shutil.copy(datapath + '/' + img[50:], outpath + '/0_val/' + iclass)
+                shutil.copy(datapath + '/' + img[83:], outpath + '/0_val/' + iclass)
 
 
 def SplitByTime(datapath, outpath):
@@ -95,4 +95,4 @@ def SplitByTime(datapath, outpath):
                 shutil.copy(datapath + '/' + iclass + '/' + img, outpath + '/after2021/' + iclass)
 
 
-
+SplitFrom_pickle('/home/EAWAG/chenchen/data/Zooplankton/train_data/training_zooplankton_new_220823/', '/home/EAWAG/chenchen/data/Zooplankton/train_data/splitting_20221212/', '/home/EAWAG/chenchen/data/Zooplankton/train_data/splitting_20221212/Files_used_for_training_testing.pickle')
