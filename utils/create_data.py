@@ -104,7 +104,7 @@ def ResizeWithoutProportions(im, desired_size):
 
 def ResizeWithProportions(im, desired_size):
     """
-    Take and image and resize it to a square of the desired size.
+    Take an image and resize it to a square of the desired size.
     0) If any dimension of the image is larger than the desired size, shrink until the image can fully fit in the
     desired size
     1) Add black paddings to create a square

@@ -123,7 +123,6 @@ class LoadInputParameters:
         # parser.add_argument('-architecture', choices=['cnn', 'deit'],
         #                     default='deit', help='Choose between different datasets "cnn", "deit"')
 
-
         parser.add_argument('-batch_size', type=int, default=16, help="Batch size for training")
         parser.add_argument('-image_size', type=int, default=224, help="Image size for training the model")
         parser.add_argument('-epochs', type=int, default=30, help="number of epochs for training the model")
