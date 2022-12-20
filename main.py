@@ -178,8 +178,6 @@ class LoadInputParameters:
         parser.add_argument('-last_layer_finetune_2', choices=['yes', 'no'], default='no', )
         parser.add_argument('-save_intermediate_epochs', choices=['yes', 'no'], default='no', )
 
-        # Hyperparameter tuning
-        parser.add_argument('-HP_tuning', choices=['yes', 'no'], default='no', )
 
         args = parser.parse_args(string)
 

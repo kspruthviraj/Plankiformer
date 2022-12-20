@@ -1054,6 +1054,26 @@ class import_and_train_model:
                                                                                                   clf_report_rm_unknown))
             ffff.close()
 
+            bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown, df_count_rm_unknown = extra_metrics(df_labels_rm_unknown.iloc[0].tolist(), df_labels_rm_unknown.iloc[1].tolist())
+            fffff = open(test_main.params.test_outpath + 'Single_test_report_extra_rm_unknown_' + name + '.txt', 'w')
+            fffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown))
+            fffff.close()
+
+            class_target = np.unique(target_label).tolist()
+            class_output = np.unique(output_label).tolist()
+            zero_support = list(set(class_output)-set(class_target))
+            df_labels_rm_0 = pd.DataFrame(data=[target_label, output_label])
+            df_labels_rm_0_t = df_labels_rm_0.transpose()
+            
+            for i in zero_support:
+                df_labels_rm_0_t = df_labels_rm_0_t[df_labels_rm_0_t.iloc[:, 1] != i]
+            df_labels_rm_0 = df_labels_rm_0_t.transpose()
+            print(df_labels_rm_0.shape)
+            bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0, df_count_rm_0 = extra_metrics(df_labels_rm_0.iloc[0].tolist(), df_labels_rm_0.iloc[1].tolist())
+            ffffff = open(test_main.params.test_outpath + 'Single_test_report_extra_rm_0_' + name + '.txt', 'w')
+            ffffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0))
+            ffffff.close()
+
     def run_ensemble_prediction_on_unseen_with_y(self, train_main, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
         Ensemble_prob = []
@@ -1286,6 +1306,23 @@ class import_and_train_model:
                                                                                                   clf_report_rm_unknown))
             ffff.close()
 
+            bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown, df_count_rm_unknown = extra_metrics(df_labels_rm_unknown.iloc[0].tolist(), df_labels_rm_unknown.iloc[1].tolist())
+            fffff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_rm_unknown_' + name + '.txt', 'w')
+            fffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown))
+            fffff.close()
+
+            class_target = np.unique(target_label).tolist()
+            class_output = np.unique(output_label).tolist()
+            zero_support = list(set(class_output)-set(class_target))
+            df_labels_rm_0 = pd.DataFrame(data=[target_label, output_label])
+            for i in zero_support:
+                df_labels_rm_0 = df_labels_rm_0.drop(columns=df_labels_rm_0.columns[df_labels.iloc[0] == i])
+
+            bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0, df_count_rm_0 = extra_metrics(df_labels_rm_0.iloc[0].tolist(), df_labels_rm_0.iloc[1].tolist())
+            ffffff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_rm_0_' + name + '.txt', 'w')
+            ffffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0))
+            ffffff.close()
+
 
             # filenames_out = im_names[0]
             # for jj in range(len(filenames_out)):
@@ -1371,21 +1408,21 @@ class import_and_train_model:
         self.import_deit_models_for_testing(train_main, test_main)
 
         if test_main.params.finetuned == 0:
-            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'original')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
-            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'tuned')
             else:
                 self.run_ensemble_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
-            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
                 self.run_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'finetuned')
             else:
