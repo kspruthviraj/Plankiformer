@@ -13,7 +13,8 @@ import torch.nn as nn
 import torch.optim
 import torch.utils.data
 from scipy.stats import gmean
-from sklearn.metrics import f1_score, accuracy_score, classification_report, mean_absolute_error, mean_squared_error, r2_score, recall_score, roc_curve
+from sklearn.metrics import f1_score, accuracy_score, classification_report, mean_absolute_error, mean_squared_error, \
+    r2_score, recall_score, roc_curve
 from torchvision.utils import make_grid
 
 np.random.seed(0)
@@ -46,7 +47,7 @@ class import_and_train_model:
 
     def import_deit_models(self, train_main, data_loader):
         classes = data_loader.classes
-        num_classes=len(np.unique(classes))
+        num_classes = len(np.unique(classes))
 
         if train_main.params.architecture == 'deit':
             self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
@@ -83,26 +84,25 @@ class import_and_train_model:
             in_features = self.model.get_classifier()[-1].in_features
             pretrained_layers = list(self.model.children())[:-2]
             additional_layers = nn.Sequential(
-                                    nn.Dropout(p=0.4),
-                                    nn.Linear(in_features=in_features, out_features=512),
-                                    nn.ReLU(inplace=True),
-                                    nn.Dropout(p=0.3),
-                                    nn.Linear(in_features=512, out_features=num_classes),
-                                    )
+                nn.Dropout(p=0.4),
+                nn.Linear(in_features=in_features, out_features=512),
+                nn.ReLU(inplace=True),
+                nn.Dropout(p=0.3),
+                nn.Linear(in_features=512, out_features=num_classes),
+            )
             self.model = nn.Sequential(*pretrained_layers, additional_layers)
 
         else:
             in_features = self.model.get_classifier().in_features
             pretrained_layers = list(self.model.children())[:-1]
             additional_layers = nn.Sequential(
-                                    nn.Dropout(p=0.4),
-                                    nn.Linear(in_features=in_features, out_features=512),
-                                    nn.ReLU(inplace=True),
-                                    nn.Dropout(p=0.3),
-                                    nn.Linear(in_features=512, out_features=num_classes),
-                                    )
+                nn.Dropout(p=0.4),
+                nn.Linear(in_features=in_features, out_features=512),
+                nn.ReLU(inplace=True),
+                nn.Dropout(p=0.3),
+                nn.Linear(in_features=512, out_features=num_classes),
+            )
             self.model = nn.Sequential(*pretrained_layers, additional_layers)
-
 
         if torch.cuda.is_available():
             device = torch.device("cuda:" + str(train_main.params.gpu_id))
@@ -120,7 +120,7 @@ class import_and_train_model:
                 param.requires_grad = False
 
             for i, param in enumerate(self.model.parameters()):
-                if i + 1 > n_layer - 2: 
+                if i + 1 > n_layer - 2:
                     param.requires_grad = True
 
         else:
@@ -158,7 +158,7 @@ class import_and_train_model:
 
     def import_deit_models_for_testing(self, train_main, test_main):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
-        num_classes=len(np.unique(classes))
+        num_classes = len(np.unique(classes))
 
         if train_main.params.architecture == 'deit':
             self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
@@ -195,26 +195,25 @@ class import_and_train_model:
             in_features = self.model.get_classifier()[-1].in_features
             pretrained_layers = list(self.model.children())[:-2]
             additional_layers = nn.Sequential(
-                                    nn.Dropout(p=0.4),
-                                    nn.Linear(in_features=in_features, out_features=512),
-                                    nn.ReLU(inplace=True),
-                                    nn.Dropout(p=0.3),
-                                    nn.Linear(in_features=512, out_features=num_classes),
-                                    )
+                nn.Dropout(p=0.4),
+                nn.Linear(in_features=in_features, out_features=512),
+                nn.ReLU(inplace=True),
+                nn.Dropout(p=0.3),
+                nn.Linear(in_features=512, out_features=num_classes),
+            )
             self.model = nn.Sequential(*pretrained_layers, additional_layers)
 
         else:
             in_features = self.model.get_classifier().in_features
             pretrained_layers = list(self.model.children())[:-1]
             additional_layers = nn.Sequential(
-                                    nn.Dropout(p=0.4),
-                                    nn.Linear(in_features=in_features, out_features=512),
-                                    nn.ReLU(inplace=True),
-                                    nn.Dropout(p=0.3),
-                                    nn.Linear(in_features=512, out_features=num_classes),
-                                    )
+                nn.Dropout(p=0.4),
+                nn.Linear(in_features=in_features, out_features=512),
+                nn.ReLU(inplace=True),
+                nn.Dropout(p=0.3),
+                nn.Linear(in_features=512, out_features=num_classes),
+            )
             self.model = nn.Sequential(*pretrained_layers, additional_layers)
-
 
         if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
             device = torch.device("cuda:" + str(test_main.params.gpu_id))
@@ -345,7 +344,8 @@ class import_and_train_model:
                                 'val_f1': test_f1s,
                                 'train_loss': train_losses,
                                 'val_loss': test_losses},
-                               data_loader.checkpoint_path + '/trained_model_' + name + '_' + str(epoch + 1) + '_epoch.pth')
+                               data_loader.checkpoint_path + '/trained_model_' + name + '_' + str(
+                                   epoch + 1) + '_epoch.pth')
                 else:
                     pass
 
@@ -422,7 +422,7 @@ class import_and_train_model:
                 test_a = cp['val_acc']
                 test_f = cp['val_f1']
                 test_l = cp['val_loss']
-                train_acc_resumed = train_a + train_accuracies 
+                train_acc_resumed = train_a + train_accuracies
                 test_acc_resumed = test_a + test_accuracies
                 train_f1s_resumed = train_f + train_f1s
                 test_f1s_resumed = test_f + test_f1s
@@ -558,7 +558,7 @@ class import_and_train_model:
 
         ff = open(data_loader.checkpoint_path + 'test_report_rm_0_' + name + '.txt', 'w')
         ff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
-                                                                                              clf_report_rm_0))
+                                                                                               clf_report_rm_0))
         ff.close()
 
     def load_trained_model(self, train_main, data_loader, modeltype):
@@ -964,7 +964,8 @@ class import_and_train_model:
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(train_main, test_main, data_loader.test_dataloader,
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(train_main, test_main,
+                                                                          data_loader.test_dataloader,
                                                                           self.model,
                                                                           self.criterion,
                                                                           time_begin=time())
@@ -1027,41 +1028,51 @@ class import_and_train_model:
             f.close()
 
             ff = open(test_main.params.test_outpath + 'Single_test_report_rm_0_' + name + '.txt', 'w')
-            ff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
-                                                                                                  clf_report_rm_0))
+            ff.write(
+                '\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
+                                                                                              clf_report_rm_0))
             ff.close()
 
             bias, MAE, MSE, RMSE, R2, weighted_recall, df_count = extra_metrics(target_label.tolist(), output_label)
             fff = open(test_main.params.test_outpath + 'Single_test_report_extra_' + name + '.txt', 'w')
-            fff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias, MAE, MSE, RMSE, R2, weighted_recall))
+            fff.write(
+                '\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(
+                    bias, MAE, MSE, RMSE, R2, weighted_recall))
             fff.close()
 
             df_count.to_excel(test_main.params.test_outpath + 'Population_count.xlsx', index=True, header=True)
 
             labels = np.unique(target_label)
-            unknown_index = np.where(labels=='unknown')[0][0]
+            unknown_index = np.where(labels == 'unknown')[0][0]
             labels_rm_unknown = np.delete(labels, unknown_index)
 
             df_labels = pd.DataFrame(data=[target_label, output_label])
             df_labels_rm_unknown = df_labels.drop(columns=df_labels.columns[df_labels.iloc[0] == 'unknown'])
 
-            accuracy_rm_unknown = accuracy_score(df_labels_rm_unknown.iloc[0].tolist(), df_labels_rm_unknown.iloc[1].tolist())
+            accuracy_rm_unknown = accuracy_score(df_labels_rm_unknown.iloc[0].tolist(),
+                                                 df_labels_rm_unknown.iloc[1].tolist())
             clf_report_rm_unknown = classification_report(target_label, output_label, labels=labels_rm_unknown)
             f1_rm_unknown = f1_score(target_label, output_label, average='macro', labels=labels_rm_unknown)
 
             ffff = open(test_main.params.test_outpath + 'Single_test_report_rm_unknown_' + name + '.txt', 'w')
-            ffff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_rm_unknown, f1_rm_unknown,
-                                                                                                  clf_report_rm_unknown))
+            ffff.write(
+                '\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_rm_unknown,
+                                                                                              f1_rm_unknown,
+                                                                                              clf_report_rm_unknown))
             ffff.close()
 
-            bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown, df_count_rm_unknown = extra_metrics(df_labels_rm_unknown.iloc[0].tolist(), df_labels_rm_unknown.iloc[1].tolist())
+            bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown, df_count_rm_unknown = extra_metrics(
+                df_labels_rm_unknown.iloc[0].tolist(), df_labels_rm_unknown.iloc[1].tolist())
             fffff = open(test_main.params.test_outpath + 'Single_test_report_extra_rm_unknown_' + name + '.txt', 'w')
-            fffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown))
+            fffff.write(
+                '\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(
+                    bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown,
+                    weighted_recall_rm_unknown))
             fffff.close()
 
             class_target = np.unique(target_label).tolist()
             class_output = np.unique(output_label).tolist()
-            zero_support = list(set(class_output)-set(class_target))
+            zero_support = list(set(class_output) - set(class_target))
             df_labels_rm_0 = pd.DataFrame(data=[target_label, output_label])
             df_labels_rm_0_t = df_labels_rm_0.transpose()
 
@@ -1069,9 +1080,12 @@ class import_and_train_model:
                 df_labels_rm_0_t = df_labels_rm_0_t[df_labels_rm_0_t.iloc[:, 1] != i]
             df_labels_rm_0 = df_labels_rm_0_t.transpose()
             print(df_labels_rm_0.shape)
-            bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0, df_count_rm_0 = extra_metrics(df_labels_rm_0.iloc[0].tolist(), df_labels_rm_0.iloc[1].tolist())
+            bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0, df_count_rm_0 = extra_metrics(
+                df_labels_rm_0.iloc[0].tolist(), df_labels_rm_0.iloc[1].tolist())
             ffffff = open(test_main.params.test_outpath + 'Single_test_report_extra_rm_0_' + name + '.txt', 'w')
-            ffffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0))
+            ffffff.write(
+                '\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(
+                    bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0))
             ffffff.close()
 
     def run_ensemble_prediction_on_unseen_with_y(self, train_main, test_main, data_loader, name):
@@ -1100,7 +1114,8 @@ class import_and_train_model:
             # self.model = self.model.module.to(device)
 
             # output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
-            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(train_main, test_main, data_loader.test_dataloader, self.model,
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(train_main, test_main,
+                                                                          data_loader.test_dataloader, self.model,
                                                                           self.criterion,
                                                                           time_begin=time())
 
@@ -1119,7 +1134,7 @@ class import_and_train_model:
 
             GT_Pred_GTLabel_PredLabel_Prob = [target, output_max, target_label, output_label, prob]
             with open(
-                    test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_Prob_' + name + '_' + str(i+1) +
+                    test_main.params.test_outpath + '/GT_Pred_GTLabel_PredLabel_Prob_' + name + '_' + str(i + 1) +
                     '.pickle', 'wb') as cw:
                 pickle.dump(GT_Pred_GTLabel_PredLabel_Prob, cw)
 
@@ -1186,8 +1201,9 @@ class import_and_train_model:
             f.close()
 
             ff = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_0_' + name2 + name + '.txt', 'w')
-            ff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
-                                                                                                  clf_report_rm_0))
+            ff.write(
+                '\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
+                                                                                              clf_report_rm_0))
             ff.close()
 
             # filenames_out = im_names[0]
@@ -1220,10 +1236,12 @@ class import_and_train_model:
                                                                                                   clf_report))
             f.close()
 
-            ff = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_0_' + name2 + name + '_thresholded_' + str(
-                test_main.params.threshold) + '.txt', 'w')
-            ff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
-                                                                                                  clf_report_rm_0))
+            ff = open(
+                test_main.params.test_outpath + 'Ensemble_test_report_rm_0_' + name2 + name + '_thresholded_' + str(
+                    test_main.params.threshold) + '.txt', 'w')
+            ff.write(
+                '\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
+                                                                                              clf_report_rm_0))
             ff.close()
 
             # filenames_out = im_names[0]
@@ -1259,21 +1277,24 @@ class import_and_train_model:
             f.close()
 
             ff = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_0_' + name2 + name + '.txt', 'w')
-            ff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
-                                                                                                  clf_report_rm_0))
+            ff.write(
+                '\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_model, f1_rm_0,
+                                                                                              clf_report_rm_0))
             ff.close()
 
             bias, MAE, MSE, RMSE, R2, weighted_recall, df_count = extra_metrics(GT_label.tolist(), Ens_DEIT_label)
             fff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_' + name2 + name + '.txt', 'w')
-            fff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias, MAE, MSE, RMSE, R2, weighted_recall))
+            fff.write(
+                '\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(
+                    bias, MAE, MSE, RMSE, R2, weighted_recall))
             fff.close()
 
             df_count.to_excel(test_main.params.test_outpath + 'Population_count.xlsx', index=True, header=True)
 
             labels = np.unique(GT_label)
-            unknown_index = np.where(labels=='unknown')[0][0]
+            unknown_index = np.where(labels == 'unknown')[0][0]
             labels_rm_unknown = np.delete(labels, unknown_index)
-            
+
             df_labels = pd.DataFrame(data=[GT_label, Ens_DEIT_label])
             df_labels_rm_unknown = df_labels.drop(columns=df_labels.columns[df_labels.iloc[0] == 'unknown'])
 
@@ -1285,7 +1306,7 @@ class import_and_train_model:
             # unknown_probably_dirt_index = np.where(labels=='unknown_probably_dirt')[0][0]
             # unrecognizable_dots_index = np.where(labels=='unrecognizable_dots')[0][0]
             # zooplankton_index = np.where(labels=='zooplankton')[0][0]
-            
+
             # labels_rm_unknown = np.delete(labels, [unknown_index, unknown_eccentric_index, unknown_elongated_index, unknown_probably_dirt_index, unrecognizable_dots_index, zooplankton_index])
 
             # df_labels = pd.DataFrame(data=[GT_label, Ens_DEIT_label])
@@ -1296,33 +1317,41 @@ class import_and_train_model:
             # df_labels_rm_unknown = df_labels_rm_unknown.drop(columns=df_labels.columns[df_labels.iloc[0] == 'unrecognizable_dots'])
             # df_labels_rm_unknown = df_labels_rm_unknown.drop(columns=df_labels.columns[df_labels.iloc[0] == 'zooplankton'])
 
-
-            accuracy_rm_unknown = accuracy_score(df_labels_rm_unknown.iloc[0].tolist(), df_labels_rm_unknown.iloc[1].tolist())
+            accuracy_rm_unknown = accuracy_score(df_labels_rm_unknown.iloc[0].tolist(),
+                                                 df_labels_rm_unknown.iloc[1].tolist())
             clf_report_rm_unknown = classification_report(GT_label, Ens_DEIT_label, labels=labels_rm_unknown)
             f1_rm_unknown = f1_score(GT_label, Ens_DEIT_label, average='macro', labels=labels_rm_unknown)
 
             ffff = open(test_main.params.test_outpath + 'Ensemble_test_report_rm_unknown_' + name2 + name + '.txt', 'w')
-            ffff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_rm_unknown, f1_rm_unknown,
-                                                                                                  clf_report_rm_unknown))
+            ffff.write(
+                '\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_rm_unknown,
+                                                                                              f1_rm_unknown,
+                                                                                              clf_report_rm_unknown))
             ffff.close()
 
-            bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown, df_count_rm_unknown = extra_metrics(df_labels_rm_unknown.iloc[0].tolist(), df_labels_rm_unknown.iloc[1].tolist())
+            bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown, df_count_rm_unknown = extra_metrics(
+                df_labels_rm_unknown.iloc[0].tolist(), df_labels_rm_unknown.iloc[1].tolist())
             fffff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_rm_unknown_' + name + '.txt', 'w')
-            fffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown))
+            fffff.write(
+                '\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(
+                    bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown,
+                    weighted_recall_rm_unknown))
             fffff.close()
 
             class_target = np.unique(target_label).tolist()
             class_output = np.unique(output_label).tolist()
-            zero_support = list(set(class_output)-set(class_target))
+            zero_support = list(set(class_output) - set(class_target))
             df_labels_rm_0 = pd.DataFrame(data=[target_label, output_label])
             for i in zero_support:
                 df_labels_rm_0 = df_labels_rm_0.drop(columns=df_labels_rm_0.columns[df_labels.iloc[0] == i])
 
-            bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0, df_count_rm_0 = extra_metrics(df_labels_rm_0.iloc[0].tolist(), df_labels_rm_0.iloc[1].tolist())
+            bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0, df_count_rm_0 = extra_metrics(
+                df_labels_rm_0.iloc[0].tolist(), df_labels_rm_0.iloc[1].tolist())
             ffffff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_rm_0_' + name + '.txt', 'w')
-            ffffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0))
+            ffffff.write(
+                '\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(
+                    bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0))
             ffffff.close()
-
 
             # filenames_out = im_names[0]
             # for jj in range(len(filenames_out)):
@@ -1374,7 +1403,7 @@ class import_and_train_model:
         #     self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
         #                                        weight_decay=train_main.params.weight_decay)
         self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
-                                               weight_decay=train_main.params.weight_decay)
+                                           weight_decay=train_main.params.weight_decay)
 
     def load_model_and_run_prediction(self, train_main, test_main, data_loader):
 
@@ -1774,7 +1803,6 @@ def cls_predict_on_unseen_with_y(train_main, test_main, val_loader, model, crite
 
 
 def extra_metrics(GT_label, Pred_label):
-
     list_class = list(set(np.unique(GT_label)).union(set(np.unique(Pred_label))))
     list_class.sort()
     df_count_Pred_GT = pd.DataFrame(index=list_class, columns=['Predict', 'Ground_truth'])
@@ -1786,7 +1814,8 @@ def extra_metrics(GT_label, Pred_label):
     df_percentage_Pred_GT = df_count_Pred_GT.div(df_count_Pred_GT.sum(axis=0), axis=1)
     df_count_Pred_GT['Bias'] = df_count_Pred_GT['Predict'] - df_count_Pred_GT['Ground_truth']
 
-    bias = np.sum(df_percentage_Pred_GT['Predict'] - df_percentage_Pred_GT['Ground_truth']) / df_percentage_Pred_GT.shape[0]
+    bias = np.sum(df_percentage_Pred_GT['Predict'] - df_percentage_Pred_GT['Ground_truth']) / \
+           df_percentage_Pred_GT.shape[0]
     MAE = mean_absolute_error(df_percentage_Pred_GT['Ground_truth'], df_percentage_Pred_GT['Predict'])
     MSE = mean_squared_error(df_percentage_Pred_GT['Ground_truth'], df_percentage_Pred_GT['Predict'])
     RMSE = np.sqrt(MSE)
@@ -1802,8 +1831,8 @@ def quantification(GT_label, Pred_label, Pred_prob):
     pred_classes.sort()
 
     train_counts_summary = {
-        'aphanizomenon': 322, 
-        'asplanchna': 679, 
+        'aphanizomenon': 322,
+        'asplanchna': 679,
         'asterionella': 1057,
         'bosmina': 87,
         'brachionus': 650,
@@ -1838,7 +1867,7 @@ def quantification(GT_label, Pred_label, Pred_prob):
         'unknown': 1660,
         'unknown_plankton': 310,
         'uroglena': 1953
-        }
+    }
 
     CC = []
     AC = []
