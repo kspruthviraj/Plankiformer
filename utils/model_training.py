@@ -16,7 +16,9 @@ from scipy.stats import gmean
 from sklearn.metrics import f1_score, accuracy_score, classification_report, mean_absolute_error, mean_squared_error, r2_score, recall_score, roc_curve
 from torchvision.utils import make_grid
 
+np.random.seed(0)
 torch.manual_seed(0)
+torch.cuda.manual_seed_all(0)
 
 
 class import_and_train_model:
@@ -44,27 +46,63 @@ class import_and_train_model:
 
     def import_deit_models(self, train_main, data_loader):
         classes = data_loader.classes
+        num_classes=len(np.unique(classes))
 
         if train_main.params.architecture == 'deit':
             self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
-        elif train_main.params.architecture == 'efficientnet':
+                                           num_classes=num_classes)
+        elif train_main.params.architecture == 'efficientnetb2':
+            self.model = timm.create_model('tf_efficientnet_b2', pretrained=True,
+                                           num_classes=num_classes)
+        elif train_main.params.architecture == 'efficientnetb5':
+            self.model = timm.create_model('tf_efficientnet_b5', pretrained=True,
+                                           num_classes=num_classes)
+        elif train_main.params.architecture == 'efficientnetb6':
+            self.model = timm.create_model('tf_efficientnet_b6', pretrained=True,
+                                           num_classes=num_classes)
+        elif train_main.params.architecture == 'efficientnetb7':
             self.model = timm.create_model('tf_efficientnet_b7', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
+                                           num_classes=num_classes)
         elif train_main.params.architecture == 'densenet':
             self.model = timm.create_model('densenet161', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
+                                           num_classes=num_classes)
         elif train_main.params.architecture == 'mobilenet':
             self.model = timm.create_model('mobilenetv3_large_100_miil', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
+                                           num_classes=num_classes)
         elif train_main.params.architecture == 'inception':
             self.model = timm.create_model('inception_v4', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
+                                           num_classes=num_classes)
         elif train_main.params.architecture == 'vit':
             self.model = timm.create_model('vit_base_patch16_224', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
+                                           num_classes=num_classes)
         else:
             print('This model cannot be imported. Please check from the list of models')
+
+        # additional layers
+        if train_main.params.architecture == 'deit':
+            in_features = self.model.get_classifier()[-1].in_features
+            pretrained_layers = list(self.model.children())[:-2]
+            additional_layers = nn.Sequential(
+                                    nn.Dropout(p=0.4),
+                                    nn.Linear(in_features=in_features, out_features=512),
+                                    nn.ReLU(inplace=True),
+                                    nn.Dropout(p=0.3),
+                                    nn.Linear(in_features=512, out_features=num_classes),
+                                    )
+            self.model = nn.Sequential(*pretrained_layers, additional_layers)
+
+        else:
+            in_features = self.model.get_classifier().in_features
+            pretrained_layers = list(self.model.children())[:-1]
+            additional_layers = nn.Sequential(
+                                    nn.Dropout(p=0.4),
+                                    nn.Linear(in_features=in_features, out_features=512),
+                                    nn.ReLU(inplace=True),
+                                    nn.Dropout(p=0.3),
+                                    nn.Linear(in_features=512, out_features=num_classes),
+                                    )
+            self.model = nn.Sequential(*pretrained_layers, additional_layers)
+
 
         if torch.cuda.is_available():
             device = torch.device("cuda:" + str(train_main.params.gpu_id))
@@ -82,7 +120,7 @@ class import_and_train_model:
                 param.requires_grad = False
 
             for i, param in enumerate(self.model.parameters()):
-                if i + 1 > n_layer - 2:
+                if i + 1 > n_layer - 2: 
                     param.requires_grad = True
 
         else:
@@ -120,28 +158,63 @@ class import_and_train_model:
 
     def import_deit_models_for_testing(self, train_main, test_main):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
-        # self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
-        #                                num_classes=len(np.unique(classes)))
+        num_classes=len(np.unique(classes))
+
         if train_main.params.architecture == 'deit':
             self.model = timm.create_model('deit_base_distilled_patch16_224', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
-        elif train_main.params.architecture == 'efficientnet':
+                                           num_classes=num_classes)
+        elif train_main.params.architecture == 'efficientnetb2':
+            self.model = timm.create_model('tf_efficientnet_b2', pretrained=True,
+                                           num_classes=num_classes)
+        elif train_main.params.architecture == 'efficientnetb5':
+            self.model = timm.create_model('tf_efficientnet_b5', pretrained=True,
+                                           num_classes=num_classes)
+        elif train_main.params.architecture == 'efficientnetb6':
+            self.model = timm.create_model('tf_efficientnet_b6', pretrained=True,
+                                           num_classes=num_classes)
+        elif train_main.params.architecture == 'efficientnetb7':
             self.model = timm.create_model('tf_efficientnet_b7', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
+                                           num_classes=num_classes)
         elif train_main.params.architecture == 'densenet':
             self.model = timm.create_model('densenet161', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
+                                           num_classes=num_classes)
         elif train_main.params.architecture == 'mobilenet':
             self.model = timm.create_model('mobilenetv3_large_100_miil', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
+                                           num_classes=num_classes)
         elif train_main.params.architecture == 'inception':
             self.model = timm.create_model('inception_v4', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
+                                           num_classes=num_classes)
         elif train_main.params.architecture == 'vit':
             self.model = timm.create_model('vit_base_patch16_224', pretrained=True,
-                                           num_classes=len(np.unique(classes)))
+                                           num_classes=num_classes)
         else:
             print('This model cannot be imported. Please check from the list of models')
+
+        # additional layers
+        if train_main.params.architecture == 'deit':
+            in_features = self.model.get_classifier()[-1].in_features
+            pretrained_layers = list(self.model.children())[:-2]
+            additional_layers = nn.Sequential(
+                                    nn.Dropout(p=0.4),
+                                    nn.Linear(in_features=in_features, out_features=512),
+                                    nn.ReLU(inplace=True),
+                                    nn.Dropout(p=0.3),
+                                    nn.Linear(in_features=512, out_features=num_classes),
+                                    )
+            self.model = nn.Sequential(*pretrained_layers, additional_layers)
+
+        else:
+            in_features = self.model.get_classifier().in_features
+            pretrained_layers = list(self.model.children())[:-1]
+            additional_layers = nn.Sequential(
+                                    nn.Dropout(p=0.4),
+                                    nn.Linear(in_features=in_features, out_features=512),
+                                    nn.ReLU(inplace=True),
+                                    nn.Dropout(p=0.3),
+                                    nn.Linear(in_features=512, out_features=num_classes),
+                                    )
+            self.model = nn.Sequential(*pretrained_layers, additional_layers)
+
 
         if torch.cuda.is_available() and test_main.params.use_gpu == 'yes':
             device = torch.device("cuda:" + str(test_main.params.gpu_id))
@@ -158,7 +231,7 @@ class import_and_train_model:
                 param.requires_grad = False
 
             for i, param in enumerate(self.model.parameters()):
-                if i + 1 > n_layer - 2:
+                if i + 1 > n_layer - 5:
                     param.requires_grad = True
 
         else:
@@ -244,9 +317,9 @@ class import_and_train_model:
             if epoch + 1 == epochs:
                 torch.save({'model_state_dict': self.model.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict(),
-                            'loss': train_loss,
-                            'f1': train_f1,
-                            'acc': train_acc1,
+                            'loss': test_loss,
+                            'f1': test_f1,
+                            'acc': test_acc1,
                             'epoch': epoch,
                             'train_acc': train_accuracies,
                             'val_acc': test_accuracies,
@@ -262,9 +335,9 @@ class import_and_train_model:
                 if (epoch + 1) % 10 == 0:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': train_loss,
-                                'f1': train_f1,
-                                'acc': train_acc1,
+                                'loss': test_loss,
+                                'f1': test_f1,
+                                'acc': test_acc1,
                                 'epoch': epoch,
                                 'train_acc': train_accuracies,
                                 'val_acc': test_accuracies,
@@ -277,12 +350,12 @@ class import_and_train_model:
                     pass
 
             if train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 1:
-                if train_loss < best_loss or epoch == 1:
+                if test_loss < best_loss or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': train_loss,
-                                'f1': train_f1,
-                                'acc': train_acc1,
+                                'loss': test_loss,
+                                'f1': test_f1,
+                                'acc': test_acc1,
                                 'epoch': epoch,
                                 'train_acc': train_accuracies,
                                 'val_acc': test_accuracies,
@@ -293,13 +366,12 @@ class import_and_train_model:
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 2:
-
-                if train_f1 > best_f1 or epoch == 1:
+                if test_f1 > best_f1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': train_loss,
-                                'f1': train_f1,
-                                'acc': train_acc1,
+                                'loss': test_loss,
+                                'f1': test_f1,
+                                'acc': test_acc1,
                                 'epoch': epoch,
                                 'train_acc': train_accuracies,
                                 'val_acc': test_accuracies,
@@ -310,12 +382,12 @@ class import_and_train_model:
                                data_loader.checkpoint_path + '/trained_model_' + name + '.pth')
 
             elif train_main.params.save_best_model_on_loss_or_f1_or_accuracy == 3:
-                if train_acc1 > best_acc1 or epoch == 1:
+                if test_acc1 > best_acc1 or epoch == 1:
                     torch.save({'model_state_dict': self.model.state_dict(),
                                 'optimizer_state_dict': self.optimizer.state_dict(),
-                                'loss': train_loss,
+                                'loss': test_loss,
                                 'f1': test_f1,
-                                'acc': train_acc1,
+                                'acc': test_acc1,
                                 'epoch': epoch,
                                 'train_acc': train_accuracies,
                                 'val_acc': test_accuracies,
@@ -327,16 +399,15 @@ class import_and_train_model:
             else:
                 print('Choose correct metric i.e. based on loss or acc or f1 to save the model')
 
-            best_acc1 = max(train_acc1, best_acc1)
+            best_acc1 = max(test_acc1, best_acc1)
             best_f1 = max(test_f1, best_f1)
-            best_loss = min(train_loss, best_loss)
+            best_loss = min(test_loss, best_loss)
 
             total_mins_per_epoch = (time() - time_begin_epoch) / 60
 
             print('[Train] Acc:{}, F1:{}, loss:{}'.format(np.round(train_accuracy, 3),
                                                           np.round(train_f1, 3),
-                                                          np.round(train_loss, 3),
-                                                          np.round(test_accuracy, 3)))
+                                                          np.round(train_loss, 3)))
             print('[Val] Acc:{}, F1:{}, loss:{}, epoch time (in mins) :{}, cumulative time (in mins):{}'.format(
                 np.round(test_accuracy, 3),
                 np.round(test_f1, 3),
@@ -351,7 +422,7 @@ class import_and_train_model:
                 test_a = cp['val_acc']
                 test_f = cp['val_f1']
                 test_l = cp['val_loss']
-                train_acc_resumed = train_a + train_accuracies
+                train_acc_resumed = train_a + train_accuracies 
                 test_acc_resumed = test_a + test_accuracies
                 train_f1s_resumed = train_f + train_f1s
                 test_f1s_resumed = test_f + test_f1s
@@ -391,13 +462,13 @@ class import_and_train_model:
                 plt.close()
 
             if train_main.params.run_lr_scheduler == 'yes':
-                self.lr_scheduler(train_loss)
+                self.lr_scheduler(test_loss)
 
             if train_main.params.run_early_stopping == 'yes':
-                self.early_stopping(train_loss)
+                self.early_stopping(test_loss)
                 if self.early_stopping.early_stop:
                     break
-            lr_scheduler(train_loss)
+            # lr_scheduler(test_loss)
 
         total_mins = (time() - time_begin) / 60
 
@@ -415,10 +486,10 @@ class import_and_train_model:
 
         Logs = pd.read_pickle(Log_Path + '/Logs_' + name + '.pickle')
 
-        train_losses = Logs[0]
-        train_f1s = Logs[4]
-        test_losses = Logs[2]
-        test_f1s = Logs[5]
+        # train_losses = Logs[0]
+        # train_f1s = Logs[4]
+        # test_losses = Logs[2]
+        # test_f1s = Logs[5]
 
         # plt.figure(figsize=(10, 3))
 
@@ -573,9 +644,8 @@ class import_and_train_model:
                     param.requires_grad = False
 
                 for i, param in enumerate(self.model.parameters()):
-                    if i + 1 > n_layer - 2:
+                    if i + 1 > n_layer - 5:
                         param.requires_grad = True
-                    i = i + 1
 
             else:
                 for param in self.model.parameters():
@@ -600,7 +670,7 @@ class import_and_train_model:
                     param.requires_grad = False
 
                 for i, param in enumerate(self.model.parameters()):
-                    if i + 1 > n_layer - 2:
+                    if i + 1 > n_layer - 5:
                         param.requires_grad = True
 
             else:
@@ -733,7 +803,7 @@ class import_and_train_model:
             else:
                 print('Choose the correct finetune label')
 
-    def run_prediction_on_unseen(self, test_main, data_loader, name):
+    def run_prediction_on_unseen(self, train_main, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
         if len(test_main.params.model_path) > 1:
             print("Do you want to predict using ensemble model ? If so then set the ensemble parameter to 1 and run "
@@ -755,7 +825,7 @@ class import_and_train_model:
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            output, prob = cls_predict_on_unseen(test_main, data_loader.test_dataloader, self.model)
+            output, prob = cls_predict_on_unseen(train_main, test_main, data_loader.test_dataloader, self.model)
 
             output = torch.cat(output)
             prob = torch.cat(prob)
@@ -797,7 +867,7 @@ class import_and_train_model:
                 np.savetxt(test_main.params.test_outpath + '/Single_model_Plankiformer_predictions.txt', To_write,
                            fmt='%s')
 
-    def run_ensemble_prediction_on_unseen(self, test_main, data_loader, name):
+    def run_ensemble_prediction_on_unseen(self, train_main, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
         Ensemble_prob = []
         im_names = data_loader.Filenames
@@ -816,7 +886,7 @@ class import_and_train_model:
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
+            output, prob = cls_predict_on_unseen(train_main, test_main, data_loader.test_dataloader, self.model)
 
             prob = torch.cat(prob)
 
@@ -874,7 +944,7 @@ class import_and_train_model:
             np.savetxt(test_main.params.test_outpath + '/Ensemble_models_Plankiformer_predictions_' + name2 + name +
                        '.txt', To_write, fmt='%s')
 
-    def run_prediction_on_unseen_with_y(self, test_main, data_loader, name):
+    def run_prediction_on_unseen_with_y(self, train_main, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
         if len(test_main.params.model_path) > 1:
             print("Do you want to predict using ensemble model ? If so then set the ensemble parameter to 1 and run "
@@ -894,7 +964,7 @@ class import_and_train_model:
             # device = torch.device("cpu")
             # self.model = self.model.module.to(device)
 
-            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(test_main, data_loader.test_dataloader,
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(train_main, test_main, data_loader.test_dataloader,
                                                                           self.model,
                                                                           self.criterion,
                                                                           time_begin=time())
@@ -984,7 +1054,27 @@ class import_and_train_model:
                                                                                                   clf_report_rm_unknown))
             ffff.close()
 
-    def run_ensemble_prediction_on_unseen_with_y(self, test_main, data_loader, name):
+            bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown, df_count_rm_unknown = extra_metrics(df_labels_rm_unknown.iloc[0].tolist(), df_labels_rm_unknown.iloc[1].tolist())
+            fffff = open(test_main.params.test_outpath + 'Single_test_report_extra_rm_unknown_' + name + '.txt', 'w')
+            fffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown))
+            fffff.close()
+
+            class_target = np.unique(target_label).tolist()
+            class_output = np.unique(output_label).tolist()
+            zero_support = list(set(class_output)-set(class_target))
+            df_labels_rm_0 = pd.DataFrame(data=[target_label, output_label])
+            df_labels_rm_0_t = df_labels_rm_0.transpose()
+
+            for i in zero_support:
+                df_labels_rm_0_t = df_labels_rm_0_t[df_labels_rm_0_t.iloc[:, 1] != i]
+            df_labels_rm_0 = df_labels_rm_0_t.transpose()
+            print(df_labels_rm_0.shape)
+            bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0, df_count_rm_0 = extra_metrics(df_labels_rm_0.iloc[0].tolist(), df_labels_rm_0.iloc[1].tolist())
+            ffffff = open(test_main.params.test_outpath + 'Single_test_report_extra_rm_0_' + name + '.txt', 'w')
+            ffffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0))
+            ffffff.close()
+
+    def run_ensemble_prediction_on_unseen_with_y(self, train_main, test_main, data_loader, name):
         classes = np.load(test_main.params.main_param_path + '/classes.npy')
         Ensemble_prob = []
         Ensemble_GT = []
@@ -1010,7 +1100,7 @@ class import_and_train_model:
             # self.model = self.model.module.to(device)
 
             # output, prob = cls_predict_on_unseen(data_loader.test_dataloader, self.model)
-            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(data_loader.test_dataloader, self.model,
+            avg_acc1, target, output, prob = cls_predict_on_unseen_with_y(train_main, test_main, data_loader.test_dataloader, self.model,
                                                                           self.criterion,
                                                                           time_begin=time())
 
@@ -1183,19 +1273,19 @@ class import_and_train_model:
             labels = np.unique(GT_label)
             unknown_index = np.where(labels=='unknown')[0][0]
             labels_rm_unknown = np.delete(labels, unknown_index)
-
+            
             df_labels = pd.DataFrame(data=[GT_label, Ens_DEIT_label])
             df_labels_rm_unknown = df_labels.drop(columns=df_labels.columns[df_labels.iloc[0] == 'unknown'])
 
-            # # for phyto
+            # # for phyto  
             # labels = np.unique(GT_label)
-            # unknown_index = np.where(labels=='unknown')[0][0]
+            # unknown_index = np.where(labels=='unknown')[0][0]            
             # unknown_eccentric_index = np.where(labels=='unknown_eccentric')[0][0]
             # unknown_elongated_index = np.where(labels=='unknown_elongated')[0][0]
             # unknown_probably_dirt_index = np.where(labels=='unknown_probably_dirt')[0][0]
             # unrecognizable_dots_index = np.where(labels=='unrecognizable_dots')[0][0]
             # zooplankton_index = np.where(labels=='zooplankton')[0][0]
-
+            
             # labels_rm_unknown = np.delete(labels, [unknown_index, unknown_eccentric_index, unknown_elongated_index, unknown_probably_dirt_index, unrecognizable_dots_index, zooplankton_index])
 
             # df_labels = pd.DataFrame(data=[GT_label, Ens_DEIT_label])
@@ -1215,6 +1305,23 @@ class import_and_train_model:
             ffff.write('\n Accuracy\n\n{}\n\nF1 Score\n\n{}\n\nClassification Report\n\n{}\n'.format(accuracy_rm_unknown, f1_rm_unknown,
                                                                                                   clf_report_rm_unknown))
             ffff.close()
+
+            bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown, df_count_rm_unknown = extra_metrics(df_labels_rm_unknown.iloc[0].tolist(), df_labels_rm_unknown.iloc[1].tolist())
+            fffff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_rm_unknown_' + name + '.txt', 'w')
+            fffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_unknown, MAE_rm_unknown, MSE_rm_unknown, RMSE_rm_unknown, R2_rm_unknown, weighted_recall_rm_unknown))
+            fffff.close()
+
+            class_target = np.unique(target_label).tolist()
+            class_output = np.unique(output_label).tolist()
+            zero_support = list(set(class_output)-set(class_target))
+            df_labels_rm_0 = pd.DataFrame(data=[target_label, output_label])
+            for i in zero_support:
+                df_labels_rm_0 = df_labels_rm_0.drop(columns=df_labels_rm_0.columns[df_labels.iloc[0] == i])
+
+            bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0, df_count_rm_0 = extra_metrics(df_labels_rm_0.iloc[0].tolist(), df_labels_rm_0.iloc[1].tolist())
+            ffffff = open(test_main.params.test_outpath + 'Ensemble_test_report_extra_rm_0_' + name + '.txt', 'w')
+            ffffff.write('\nbias\n\n{}\n\nMAE\n\n{}\n\nMSE\n\n{}\n\nRMSE\n\n{}\n\nR2\n\n{}\n\nweighted_recall\n\n{}\n'.format(bias_rm_0, MAE_rm_0, MSE_rm_0, RMSE_rm_0, R2_rm_0, weighted_recall_rm_0))
+            ffffff.close()
 
 
             # filenames_out = im_names[0]
@@ -1260,11 +1367,13 @@ class import_and_train_model:
                     self.criterion = self.criterion.cuda(test_main.params.gpu_id)
 
         # Observe that all parameters are being optimized
-        if train_main.params.last_layer_finetune == 'yes':
-            self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
-                                               lr=train_main.params.lr, weight_decay=train_main.params.weight_decay)
-        else:
-            self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+        # if train_main.params.last_layer_finetune == 'yes':
+        #     self.optimizer = torch.optim.AdamW(filter(lambda p: p.requires_grad, self.model.parameters()),
+        #                                        lr=train_main.params.lr, weight_decay=train_main.params.weight_decay)
+        # else:
+        #     self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
+        #                                        weight_decay=train_main.params.weight_decay)
+        self.optimizer = torch.optim.AdamW(self.model.parameters(), lr=train_main.params.lr,
                                                weight_decay=train_main.params.weight_decay)
 
     def load_model_and_run_prediction(self, train_main, test_main, data_loader):
@@ -1274,23 +1383,23 @@ class import_and_train_model:
         if test_main.params.finetuned == 0:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen(test_main, data_loader, 'original')
+                self.run_prediction_on_unseen(train_main, test_main, data_loader, 'original')
             else:
-                self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'original')
+                self.run_ensemble_prediction_on_unseen(train_main, test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen(test_main, data_loader, 'tuned')
+                self.run_prediction_on_unseen(train_main, test_main, data_loader, 'tuned')
             else:
-                self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'tuned')
+                self.run_ensemble_prediction_on_unseen(train_main, test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
             self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen(test_main, data_loader, 'finetuned')
+                self.run_prediction_on_unseen(train_main, test_main, data_loader, 'finetuned')
             else:
-                self.run_ensemble_prediction_on_unseen(test_main, data_loader, 'finetuned')
+                self.run_ensemble_prediction_on_unseen(train_main, test_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')
 
@@ -1299,25 +1408,25 @@ class import_and_train_model:
         self.import_deit_models_for_testing(train_main, test_main)
 
         if test_main.params.finetuned == 0:
-            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen_with_y(test_main, data_loader, 'original')
+                self.run_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'original')
             else:
-                self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'original')
+                self.run_ensemble_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'original')
 
         elif test_main.params.finetuned == 1:
-            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
+                self.run_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'tuned')
             else:
-                self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'tuned')
+                self.run_ensemble_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'tuned')
 
         elif test_main.params.finetuned == 2:
-            # self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
+            self.initialize_model(train_main, test_main, data_loader, train_main.params.lr)
             if test_main.params.ensemble == 0:
-                self.run_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
+                self.run_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'finetuned')
             else:
-                self.run_ensemble_prediction_on_unseen_with_y(test_main, data_loader, 'finetuned')
+                self.run_ensemble_prediction_on_unseen_with_y(train_main, test_main, data_loader, 'finetuned')
         else:
             print('Choose the correct finetune label')
 
@@ -1471,6 +1580,9 @@ def cls_train(train_main, train_loader, model, criterion, optimizer, clip_grad_n
         else:
             output, x = model(images)
 
+        if train_main.params.architecture == 'deit' or train_main.params.architecture == 'vit':
+            output = torch.mean(output, 1)
+
         loss = criterion(output, target.long())
 
         acc1 = accuracy(output, target)
@@ -1522,6 +1634,10 @@ def cls_validate(train_main, val_loader, model, criterion, time_begin=None):
             images, target = images.to(device), target.to(device)
 
             output = model(images)
+
+            if train_main.params.architecture == 'deit' or train_main.params.architecture == 'vit':
+                output = torch.mean(output, 1)
+
             # loss = criterion(output, target)
             loss = criterion(output, target.long())
             acc1 = accuracy(output, target)
@@ -1564,6 +1680,10 @@ def cls_predict(train_main, val_loader, model, criterion, time_begin=None):
             targets.append(target)
 
             output = model(images)
+
+            if train_main.params.architecture == 'deit' or train_main.params.architecture == 'vit':
+                output = torch.mean(output, 1)
+
             outputs.append(output)
             prob = torch.nn.functional.softmax(output, dim=1)
             probs.append(prob)
@@ -1581,7 +1701,7 @@ def cls_predict(train_main, val_loader, model, criterion, time_begin=None):
     return avg_acc1, targets, outputs, probs
 
 
-def cls_predict_on_unseen(test_main, test_loader, model):
+def cls_predict_on_unseen(train_main, test_main, test_loader, model):
     model.eval()
     outputs = []
     probs = []
@@ -1600,6 +1720,10 @@ def cls_predict_on_unseen(test_main, test_loader, model):
             images = images.to(device)
 
             output = model(images)
+
+            if train_main.params.architecture == 'deit' or train_main.params.architecture == 'vit':
+                output = torch.mean(output, 1)
+
             outputs.append(output)
             prob = torch.nn.functional.softmax(output, dim=1)
             probs.append(prob)
@@ -1610,7 +1734,7 @@ def cls_predict_on_unseen(test_main, test_loader, model):
     return outputs, probs
 
 
-def cls_predict_on_unseen_with_y(test_main, val_loader, model, criterion, time_begin=None):
+def cls_predict_on_unseen_with_y(train_main, test_main, val_loader, model, criterion, time_begin=None):
     model.eval()
     loss_val, acc1_val = 0, 0
     n = 0
@@ -1624,11 +1748,14 @@ def cls_predict_on_unseen_with_y(test_main, val_loader, model, criterion, time_b
             else:
                 device = torch.device("cpu")
 
-            # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
             images, target = images.to(device), target.to(device)
             targets.append(target)
 
             output = model(images)
+
+            if train_main.params.architecture == 'deit' or train_main.params.architecture == 'vit':
+                output = torch.mean(output, 1)
+
             outputs.append(output)
             prob = torch.nn.functional.softmax(output, dim=1)
             probs.append(prob)
@@ -1675,8 +1802,8 @@ def quantification(GT_label, Pred_label, Pred_prob):
     pred_classes.sort()
 
     train_counts_summary = {
-        'aphanizomenon': 322,
-        'asplanchna': 679,
+        'aphanizomenon': 322, 
+        'asplanchna': 679, 
         'asterionella': 1057,
         'bosmina': 87,
         'brachionus': 650,

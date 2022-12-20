@@ -12,7 +12,9 @@ from timm.data.auto_augment import rand_augment_transform
 from torch.utils.data import Dataset
 from torchvision import datasets
 
+np.random.seed(0)
 torch.manual_seed(0)
+torch.cuda.manual_seed_all(0)
 
 
 # from auto_augment import AutoAugment, Cutout

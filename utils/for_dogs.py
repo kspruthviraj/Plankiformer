@@ -12,7 +12,10 @@ from PIL import Image
 from sklearn.utils import compute_class_weight
 from torch.utils.data import Dataset
 from torchvision.datasets.utils import download_url, list_dir
+
+np.random.seed(0)
 torch.manual_seed(0)
+torch.cuda.manual_seed_all(0)
 
 
 class CreateDataForDogs:
