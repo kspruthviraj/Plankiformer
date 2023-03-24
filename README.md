@@ -30,3 +30,11 @@ You can train the model using:
 python main.py -datapaths ./data/PhytoData/ -outpath ./out/phyto_out/ -classifier multi -aug -datakind image -ttkind image -save_data yes -resize_images 1 -L 128 -valid_set yes -test_set yes -dataset_name zoolake -training_data False -epochs 40 -finetune 2 -finetune_epochs 40 -balance_weight yes -batch_size 32 -init_name Init_0
 ```
 There are lots of input commands that can be given to the script. To query them, use the `-h` flag (`python main.py -h`). 
+
+
+# Example Performance reports on the Phytoplankton and Zooplankton images using EfficientNet-B7 networks.
+
+
+
+
+
