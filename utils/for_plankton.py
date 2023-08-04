@@ -15,8 +15,8 @@ from scipy.ndimage import gaussian_filter
 np.random.seed(0)
 torch.manual_seed(0)
 torch.cuda.manual_seed_all(0)
-bcg_noise_components = np.load('/home/EAWAG/kyathasr/GAN_project/GAN_train_ver02/scripts/ver02/train_model/bcg_noise_components.npy')
-pillow_noise_components = np.load('/home/EAWAG/kyathasr/GAN_project/GAN_train_ver02/scripts/ver02/train_model/pillow_noise_components.npy')
+bcg_noise_components = np.load('./bcg_noise_components.npy')
+pillow_noise_components = np.load('./pillow_noise_components.npy')
 
 class CreateDataForPlankton:
     def __init__(self):
